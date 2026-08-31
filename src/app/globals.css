@@ -1,0 +1,49 @@
+/*
+ * Tokens da identidade da Associação Amigos do Nordeste.
+ * As cores saíram do logo: o laranja dos raios do sol, o âmbar do gradiente,
+ * o verde do cacto e o amarelo da abelha.
+ *
+ * Regra: nenhum componente escreve hex direto. Sempre var(--...).
+ */
+:root {
+  --laranja: #e54314;
+  --laranja-escuro: #c93a11;
+  --ambar: #f49924;
+  --verde: #119037;
+  --amarelo: #ffc728;
+
+  --pagina: #faf6f1;
+  --superficie: #ffffff;
+  --laranja-claro: #fcebe3;
+  --verde-claro: #e6f2e9;
+  --ambar-claro: #fef3e0;
+
+  --texto-forte: #1f1b18;
+  --texto-medio: #6b6259;
+  --texto-suave: #9c938a;
+  --linha: #e8e0d8;
+
+  --raio: 10px;
+  --sombra: 0 1px 2px rgb(31 27 24 / 6%), 0 8px 24px -12px rgb(31 27 24 / 14%);
+}
+
+* { box-sizing: border-box; }
+
+html, body {
+  margin: 0;
+  padding: 0;
+  background: var(--pagina);
+  color: var(--texto-forte);
+  font-family: system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+  font-size: 15px;
+  line-height: 1.5;
+}
+
+a { color: var(--laranja); }
+
+/* Foco sempre visível: a usuária pode navegar boa parte do cadastro no teclado,
+   e é isso que torna a digitação rápida. */
+:focus-visible {
+  outline: 2px solid var(--laranja);
+  outline-offset: 2px;
+}
