@@ -2,7 +2,7 @@
 
 Frontend do cadastro de famílias da Associação Amigos do Nordeste (Sertão do
 Moxotó, PE). Trabalho semestral de faculdade. O backend fica em **outro
-repositório** (`cadastro-familias-api`), NestJS + TypeORM + Postgres.
+repositório** (`cadastro-familias-api`), Java 21 + Spring Boot 3.4 + Postgres.
 
 ## Stack
 

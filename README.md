@@ -9,7 +9,8 @@ Next.js 15 (App Router) · React 19 · TypeScript
 |---|---|
 | Backend | `cadastro-familias-api` — *(colar a URL do repositório aqui)* |
 | Protótipo (Figma) | https://www.figma.com/design/dEZbIRWGGdOQEsvAtsmFxQ |
-| Especificação e ADRs | no repositório da API, em `docs/` |
+| Especificação, requisitos e ADRs | no repositório da API, em `docs/` |
+| Backend | Java 21 + Spring Boot 3.4 |
 
 ---
 
@@ -24,7 +25,8 @@ pnpm dev                       # http://localhost:3000
 ```
 
 Sem a API rodando, a tela de login carrega mas nada funciona. Suba o outro
-repositório primeiro (`docker compose up -d db && pnpm dev` lá).
+repositório primeiro — ele é Java/Spring Boot: `docker compose up -d db` e
+`mvn spring-boot:run`.
 
 ---
 
@@ -60,7 +62,8 @@ copiada aqui e lá vira uma lista divergente em duas semanas — e o erro só
 aparece quando a associação abre a tela. `src/tipos/dominio.ts` guarda **só as
 declarações de tipo**, nunca valores.
 
-A referência das rotas é o Swagger da API, em `http://localhost:3333/api/docs`.
+A referência das rotas é o Swagger da API, em
+`http://localhost:3333/swagger-ui.html`.
 
 ### Autenticação
 
@@ -106,6 +109,14 @@ no celular. A lista por comunidade em papel fecha o ciclo — e custa um
 `@media print` bem feito.
 
 ---
+
+## Antes de começar as telas
+
+Leia `docs/requisitos.md` no repositório da API. A elicitação com a associação
+levantou **duas questões bloqueantes** que podem mudar o escopo — em especial a
+Q-01, sobre quantas pessoas realmente vão usar o sistema. Construir a tela de
+login e o fluxo de sessão assumindo uma usuária só é seguro; construir uma tela
+de administração de usuários agora, não.
 
 ## O que falta
 

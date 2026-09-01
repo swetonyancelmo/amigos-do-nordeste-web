@@ -11,8 +11,9 @@
  * nos dois lados vira uma lista divergente em duas semanas, e o erro só aparece
  * quando a associação abre a tela. Ver ADR-0006 no repositório da API.
  *
- * Estes tipos são um espelho de `src/dominio/enums.ts` no backend. Se um deles
- * mudar lá, ajuste aqui — o TypeScript não avisa entre repositórios.
+ * Estes tipos são um espelho dos enums em `dominio/` no backend (Java/Spring).
+ * Se um deles mudar lá, ajuste aqui — não existe compilador cruzando os dois
+ * repositórios para avisar por você.
  */
 
 export type TipoComunidade = 'SITIO' | 'ASSENTAMENTO' | 'DISTRITO' | 'POVOADO' | 'BAIRRO';
