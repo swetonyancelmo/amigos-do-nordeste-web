@@ -1,5 +1,11 @@
 import Image from 'next/image';
 
+/* Dimensões reais de public/logo-amigos-do-nordeste.jpeg. Se o arquivo for
+   trocado, confira aqui: número errado reserva uma altura que não é a da
+   imagem, e a tela salta quando ela termina de carregar. */
+const LOGO_LARGURA = 648;
+const LOGO_ALTURA = 675;
+
 type Props = {
   /** Largura do logo em px. A altura acompanha a proporção do arquivo. */
   largura?: number;
@@ -42,7 +48,7 @@ export function Marca({ largura = 168, linha = null, placa = false }: Props) {
           src="/logo-amigos-do-nordeste.jpeg"
           alt="Associação Amigos do Nordeste"
           width={largura}
-          height={Math.round((largura * 694) / 649)}
+          height={Math.round((largura * LOGO_ALTURA) / LOGO_LARGURA)}
           priority
         />
       </div>

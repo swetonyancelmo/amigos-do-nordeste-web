@@ -14,11 +14,25 @@ type Props = React.InputHTMLAttributes<HTMLInputElement> & {
  * inválido já vêm ligados, e é isso que faz o leitor de tela anunciar o erro
  * junto do campo em vez de largar a mensagem solta no fim do formulário.
  */
-export function Campo({ rotulo, ajuda, erro, id, ...resto }: Props) {
+export function Campo({
+  rotulo,
+  ajuda,
+  erro,
+  id,
+  'aria-describedby': descritoPor,
+  'aria-invalid': invalido,
+  ...resto
+}: Props) {
   const idGerado = useId();
   const idCampo = id ?? idGerado;
   const idApoio = `${idCampo}-apoio`;
   const apoio = erro ?? ajuda;
+
+  /* Os dois ARIA saem do `resto` de propósito. Espalhados junto com ele, o
+     valor que este componente calcula sobrescreveria o que a tela passou —
+     e uma tela que amarrou o campo a uma instrução externa perderia a
+     amarração em silêncio. Aqui os dois convivem. */
+  const descricoes = [descritoPor, apoio ? idApoio : null].filter(Boolean).join(' ') || undefined;
 
   return (
     <div className="campo">
@@ -29,8 +43,8 @@ export function Campo({ rotulo, ajuda, erro, id, ...resto }: Props) {
         {...resto}
         id={idCampo}
         className="campo__entrada"
-        aria-invalid={erro ? true : undefined}
-        aria-describedby={apoio ? idApoio : undefined}
+        aria-invalid={erro ? true : invalido}
+        aria-describedby={descricoes}
       />
       {apoio && (
         <span id={idApoio} className={erro ? 'campo__ajuda campo__ajuda--erro' : 'campo__ajuda'}>

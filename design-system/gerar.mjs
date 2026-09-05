@@ -42,6 +42,28 @@ const cssLogin = ler('src', 'app', 'login', 'login.module.css').replace(
 const FONTE_MARCA = base64('design-system', 'nunito-latin.woff2');
 const LOGO = base64('design-system', 'logo-240.jpg');
 
+/*
+ * Dimensões lidas do próprio JPEG, no marcador SOF. Escrever largura e altura
+ * à mão aqui é como o `Marca` errou a proporção do logo na primeira versão:
+ * o número decora o atributo e ninguém confere. Lido do arquivo, não erra.
+ */
+function dimensoesJpeg(...caminho) {
+  const b = readFileSync(join(RAIZ, ...caminho));
+  for (let i = 2; i < b.length - 9; ) {
+    if (b[i] !== 0xff) { i++; continue; }
+    const marcador = b[i + 1];
+    // SOF0..SOF15, tirando DHT (C4), JPG (C8) e DAC (CC), que não são frames.
+    if (marcador >= 0xc0 && marcador <= 0xcf && ![0xc4, 0xc8, 0xcc].includes(marcador)) {
+      return { altura: b.readUInt16BE(i + 5), largura: b.readUInt16BE(i + 7) };
+    }
+    i += 2 + b.readUInt16BE(i + 2);
+  }
+  throw new Error(`não achei o marcador SOF em ${caminho.join('/')}`);
+}
+
+const LOGO_DIM = dimensoesJpeg('design-system', 'logo-240.jpg');
+const alturaLogo = (largura) => Math.round((largura * LOGO_DIM.altura) / LOGO_DIM.largura);
+
 const cssFonte = `
 @font-face {
   font-family: "Nunito";
@@ -165,7 +187,7 @@ const marcaHtml = (placa) => `
 <div class="marca">
   <div class="marca__moldura ${placa ? 'marca__moldura--placa' : ''}">
     <img class="marca__logo" src="data:image/jpeg;base64,${LOGO}"
-         alt="Associação Amigos do Nordeste" width="168" height="180">
+         alt="Associação Amigos do Nordeste" width="168" height="${alturaLogo(168)}">
   </div>
   <p class="marca__linha">Cadastro das famílias atendidas pela associação</p>
 </div>`;
@@ -236,7 +258,7 @@ const DEMO_LOGIN = `
       <div class="marca">
         <div class="marca__moldura marca__moldura--placa">
           <img class="marca__logo" src="data:image/jpeg;base64,${LOGO}"
-               alt="Associação Amigos do Nordeste" width="208" height="222">
+               alt="Associação Amigos do Nordeste" width="208" height="${alturaLogo(208)}">
         </div>
         <p class="marca__linha">Cadastro das famílias atendidas pela associação</p>
       </div>
