@@ -1,0 +1,156 @@
+/*
+ * Layout da tela de entrada. Só layout — cor, forma e tipografia vêm dos
+ * tokens do globals.css e das classes de componentes.css.
+ *
+ * A ideia: em vez do cartão branco solto no meio da tela cinza (que é o que
+ * qualquer sistema faz), a tela é dividida. À esquerda o lugar — a marca sobre
+ * o papel cor de areia, com o sol nascendo do canto. À direita o trabalho.
+ */
+
+.tela {
+  min-height: 100dvh;
+  display: grid;
+  grid-template-columns: 1fr;
+}
+
+@media (min-width: 900px) {
+  .tela {
+    grid-template-columns: 1.05fr 1fr;
+  }
+}
+
+/* ------------------------------------------------------------- identidade */
+
+.identidade {
+  position: relative;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  gap: var(--e-7);
+  padding: var(--e-7) var(--e-6);
+  background: var(--ambar-claro);
+}
+
+@media (min-width: 900px) {
+  .identidade {
+    padding: var(--e-8) var(--e-7);
+  }
+}
+
+/*
+ * No celular a identidade vira uma faixa de topo, não meia tela. A pessoa
+ * abriu o app para entrar, não para ver o logo: o campo de e-mail tem que
+ * caber na primeira dobra junto com o botão.
+ */
+@media (max-width: 899px) {
+  .identidade {
+    padding: var(--e-6) var(--e-5);
+  }
+
+  .conteudoIdentidade {
+    gap: var(--e-4);
+  }
+
+  .identidade :global(.marca__logo) {
+    width: 124px;
+  }
+
+  .identidade :global(.marca__linha) {
+    font-size: var(--t-base);
+  }
+}
+
+/*
+ * O sol nascendo no canto inferior direito do painel. Marca d'água: fraco o
+ * bastante para o texto passar por cima sem disputa, e cortado pela borda de
+ * propósito, para dar a impressão de que continua fora da tela.
+ * Decoração pura — por isso aria-hidden no componente Sol.
+ */
+.sol {
+  position: absolute;
+  right: -7%;
+  bottom: -32%;
+  width: 180px;
+  aspect-ratio: 1;
+  opacity: 0.22;
+  pointer-events: none;
+}
+
+@media (min-width: 900px) {
+  .sol {
+    bottom: -16%;
+    width: min(300px, 46%);
+  }
+}
+
+.conteudoIdentidade {
+  position: relative; /* acima do sol */
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--e-6);
+}
+
+.lugar {
+  margin: 0;
+  font-size: var(--t-apoio);
+  font-weight: 700;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--laranja-escuro);
+  text-align: center;
+}
+
+/* ----------------------------------------------------------------- acesso */
+
+.acesso {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  padding: var(--e-6) var(--e-5) var(--e-7);
+  background: var(--superficie);
+}
+
+@media (min-width: 900px) {
+  .acesso {
+    padding: var(--e-8) var(--e-7);
+    border-left: 1px solid var(--linha);
+  }
+}
+
+.formulario {
+  width: 100%;
+  max-width: 380px;
+  margin: 0 auto;
+  display: flex;
+  flex-direction: column;
+  gap: var(--e-5);
+}
+
+.titulo {
+  margin: 0;
+  font-family: var(--fonte-marca);
+  font-size: var(--t-titulo);
+  font-weight: 800;
+  letter-spacing: -0.01em;
+  color: var(--texto-forte);
+}
+
+/* Uma faixa fininha do sol acima do título, para a cor da marca entrar do
+   lado do formulário sem competir com o logo. */
+.titulo::before {
+  content: "";
+  display: block;
+  width: 56px;
+  height: 4px;
+  margin-bottom: var(--e-4);
+  border-radius: 999px;
+  background: var(--sol);
+}
+
+.campos {
+  display: flex;
+  flex-direction: column;
+  gap: var(--e-4);
+}

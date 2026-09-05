@@ -87,6 +87,18 @@ uma única usuária, criada por um comando no backend.
 As cores saíram do logo da associação e estão em `src/app/globals.css` como
 variáveis CSS. **Nenhum componente escreve hex direto** — sempre `var(--...)`.
 
+A camada de componentes fica em `src/app/componentes.css` (campo, botão, aviso,
+cartão, marca) com os componentes React em `src/componentes/`. Antes de
+estilizar uma tela nova, veja a vitrine:
+
+```bash
+pnpm design-system     # gera e abre design-system/site/index.html
+```
+
+Ela é **gerada a partir do CSS de verdade**, então não tem como divergir do
+código. O porquê e como publicar no Claude Design estão em
+`design-system/README.md`.
+
 | Token | Cor | Origem |
 |---|---|---|
 | `--laranja` | `#E54314` | raios do sol e tipografia do logo |

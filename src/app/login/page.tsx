@@ -3,10 +3,20 @@
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { api, guardarToken } from '@/lib/api';
+import { Marca } from '@/componentes/Marca';
+import { Sol } from '@/componentes/Sol';
+import { Campo } from '@/componentes/Campo';
+import { Botao } from '@/componentes/Botao';
+import { Aviso } from '@/componentes/Aviso';
+import estilos from './login.module.css';
 
 /**
  * Tela de entrada. Não existe "criar conta" aqui de propósito: o sistema tem
  * uma usuária só, criada pelo comando `pnpm usuario:criar` na instalação.
+ *
+ * Também não há "esqueci minha senha": a redefinição é feita no servidor por
+ * quem instalou. A tela não explica nenhuma das duas coisas — quem usa é uma
+ * pessoa só, que já sabe disso, e o aviso permanente só ocupava espaço.
  */
 export default function Login() {
   const router = useRouter();
@@ -31,57 +41,53 @@ export default function Login() {
   }
 
   return (
-    <main style={{ minHeight: '100dvh', display: 'grid', placeItems: 'center', padding: 24 }}>
-      <form
-        onSubmit={entrar}
-        style={{
-          width: '100%', maxWidth: 380, background: 'var(--superficie)',
-          border: '1px solid var(--linha)', borderRadius: 'var(--raio)',
-          padding: 28, display: 'flex', flexDirection: 'column', gap: 16,
-          boxShadow: 'var(--sombra)',
-        }}
-      >
-        <div>
-          <h1 style={{ margin: 0, fontSize: 20, color: 'var(--laranja)' }}>Amigos do Nordeste</h1>
-          <p style={{ margin: '4px 0 0', color: 'var(--texto-medio)', fontSize: 14 }}>
-            Cadastro de famílias
-          </p>
+    <main className={estilos.tela}>
+      <section className={estilos.identidade}>
+        <Sol className={estilos.sol} />
+        <div className={estilos.conteudoIdentidade}>
+          <Marca largura={208} placa linha="Cadastro das famílias atendidas pela associação" />
+          <p className={estilos.lugar}>Sertão do Moxotó · Pernambuco</p>
         </div>
+      </section>
 
-        <label style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
-          <span style={{ fontSize: 12, color: 'var(--texto-medio)' }}>E-mail</span>
-          <input
-            type="email" value={email} required autoComplete="username"
-            onChange={(e) => setEmail(e.target.value)} style={campo}
-          />
-        </label>
+      <section className={estilos.acesso}>
+        <form className={estilos.formulario} onSubmit={entrar}>
+          <h1 className={estilos.titulo}>Entrar</h1>
 
-        <label style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
-          <span style={{ fontSize: 12, color: 'var(--texto-medio)' }}>Senha</span>
-          <input
-            type="password" value={senha} required autoComplete="current-password"
-            onChange={(e) => setSenha(e.target.value)} style={campo}
-          />
-        </label>
+          <div className={estilos.campos}>
+            <Campo
+              rotulo="E-mail"
+              type="email"
+              value={email}
+              onChange={(e) => setEmail(e.target.value)}
+              required
+              autoComplete="username"
+              autoFocus
+              disabled={enviando}
+            />
 
-        {erro && (
-          <p role="alert" style={{ margin: 0, color: '#96382b', fontSize: 13 }}>{erro}</p>
-        )}
+            <Campo
+              rotulo="Senha"
+              type="password"
+              value={senha}
+              onChange={(e) => setSenha(e.target.value)}
+              required
+              autoComplete="current-password"
+              disabled={enviando}
+            />
+          </div>
 
-        <button type="submit" disabled={enviando} style={botao}>
-          {enviando ? 'Entrando…' : 'Entrar'}
-        </button>
-      </form>
+          {erro && (
+            <Aviso tom="erro" titulo="Não deu para entrar">
+              {erro}
+            </Aviso>
+          )}
+
+          <Botao type="submit" largo disabled={enviando}>
+            {enviando ? 'Entrando…' : 'Entrar'}
+          </Botao>
+        </form>
+      </section>
     </main>
   );
 }
-
-const campo: React.CSSProperties = {
-  padding: '10px 12px', borderRadius: 8, border: '1px solid var(--linha)',
-  fontSize: 14, fontFamily: 'inherit',
-};
-
-const botao: React.CSSProperties = {
-  padding: '11px 16px', borderRadius: 8, border: 'none', cursor: 'pointer',
-  background: 'var(--laranja)', color: '#fff', fontWeight: 600, fontSize: 14,
-};
