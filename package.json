@@ -10,6 +10,7 @@
     "start": "next start",
     "lint": "next lint",
     "typecheck": "tsc --noEmit",
+    "design-system": "node design-system/gerar.mjs",
     "test": "echo \"(sem testes ainda)\""
   },
   "dependencies": {

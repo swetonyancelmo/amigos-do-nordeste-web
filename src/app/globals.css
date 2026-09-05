@@ -4,46 +4,114 @@
  * o verde do cacto e o amarelo da abelha.
  *
  * Regra: nenhum componente escreve hex direto. Sempre var(--...).
+ *
+ * A camada de componentes (campo, botão, aviso…) fica em `componentes.css`.
+ * Se você vai estilizar algo novo, olhe lá antes de escrever CSS: quase tudo
+ * que uma tela precisa já tem classe.
  */
+@import "./componentes.css";
+
 :root {
+  /* --- Marca ------------------------------------------------------------ */
   --laranja: #e54314;
   --laranja-escuro: #c93a11;
   --ambar: #f49924;
   --verde: #119037;
+  --verde-escuro: #0c6f2a;
   --amarelo: #ffc728;
 
+  /* --- Superfícies ------------------------------------------------------ */
   --pagina: #faf6f1;
   --superficie: #ffffff;
   --laranja-claro: #fcebe3;
   --verde-claro: #e6f2e9;
   --ambar-claro: #fef3e0;
 
+  /* --- Texto e linha ---------------------------------------------------- */
   --texto-forte: #1f1b18;
   --texto-medio: #6b6259;
   --texto-suave: #9c938a;
   --linha: #e8e0d8;
+  --linha-forte: #d6cabc;
 
+  /* --- Estado ----------------------------------------------------------- */
+  --erro: #96382b;
+  --erro-claro: #fbeae6;
+
+  /*
+   * O sol do logo. É o único gradiente da identidade — use este token, não
+   * escreva um linear-gradient novo. Aparece no painel de entrada e no selo.
+   */
+  --sol: linear-gradient(155deg, var(--amarelo) -10%, var(--ambar) 38%, var(--laranja) 100%);
+
+  /* --- Espaçamento: múltiplos de 4, sempre. ----------------------------- */
+  --e-1: 4px;
+  --e-2: 8px;
+  --e-3: 12px;
+  --e-4: 16px;
+  --e-5: 24px;
+  --e-6: 32px;
+  --e-7: 48px;
+  --e-8: 64px;
+
+  /* --- Tipografia ------------------------------------------------------- */
+  --fonte-texto: system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+  /* --fonte-marca é injetada pelo next/font no layout.tsx (Nunito). */
+  --fonte-marca: var(--fonte-nunito), var(--fonte-texto);
+
+  --t-micro: 0.75rem;   /* 12px — etiqueta, legenda de rodapé */
+  --t-apoio: 0.8125rem; /* 13px — texto de apoio */
+  --t-base: 0.9375rem;  /* 15px — corpo */
+  --t-medio: 1.0625rem; /* 17px — entrada de formulário */
+  --t-titulo: 1.375rem; /* 22px — título de cartão */
+  --t-marca: 1.75rem;   /* 28px — assinatura da marca */
+
+  /* --- Forma ------------------------------------------------------------ */
+  --raio-p: 6px;
   --raio: 10px;
+  --raio-g: 18px;
+
   --sombra: 0 1px 2px rgb(31 27 24 / 6%), 0 8px 24px -12px rgb(31 27 24 / 14%);
+  --sombra-alta: 0 2px 4px rgb(31 27 24 / 6%), 0 24px 48px -20px rgb(31 27 24 / 22%);
+
+  --transicao: 140ms ease;
 }
 
-* { box-sizing: border-box; }
+* {
+  box-sizing: border-box;
+}
 
-html, body {
+html,
+body {
   margin: 0;
   padding: 0;
   background: var(--pagina);
   color: var(--texto-forte);
-  font-family: system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
-  font-size: 15px;
+  font-family: var(--fonte-texto);
+  font-size: var(--t-base);
   line-height: 1.5;
+  -webkit-font-smoothing: antialiased;
 }
 
-a { color: var(--laranja); }
+a {
+  color: var(--laranja);
+}
 
 /* Foco sempre visível: a usuária pode navegar boa parte do cadastro no teclado,
    e é isso que torna a digitação rápida. */
 :focus-visible {
   outline: 2px solid var(--laranja);
   outline-offset: 2px;
+}
+
+/* A associação trabalha em internet ruim e computador antigo. Se a pessoa
+   pediu menos movimento, ela tem menos movimento. */
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
 }

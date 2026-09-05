@@ -19,6 +19,13 @@ pnpm typecheck && pnpm lint
 
 ## Regras de código
 
+- **Monte a tela com as classes de `src/app/componentes.css`** — campo, botão,
+  aviso, cartão, marca. `style` inline só para layout de uma tela só, e mesmo
+  assim prefira um CSS Module ao lado da página. Foi `style` inline espalhado
+  que deixou a primeira tela de login sem cara nenhuma.
+- Mexeu em token ou em classe de componente? Rode `pnpm design-system` no
+  mesmo commit — a vitrine é gerada do CSS, e só fica certa se for regerada.
+  O porquê está em `design-system/README.md`.
 - Cores só por `var(--token)` do `globals.css`. Nada de hex solto no componente.
 - Opções de `<select>` vêm de `useMetadados()`, nunca de array escrito à mão.
 - `src/tipos/dominio.ts` guarda apenas tipos — sem valores, sem rótulos.

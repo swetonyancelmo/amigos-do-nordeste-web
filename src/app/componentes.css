@@ -1,0 +1,273 @@
+/*
+ * Camada de componentes — o padrão visual do sistema.
+ *
+ * Toda tela nova deve montar a interface com estas classes. Se você precisou
+ * de um estilo que não está aqui e ele vai aparecer em mais de uma tela,
+ * adicione aqui em vez de escrever `style={{...}}` no componente: foi o
+ * `style` inline espalhado que deixou a primeira versão do login sem cara
+ * nenhuma. Estilo de LAYOUT de uma tela só pode ficar no CSS Module dela.
+ *
+ * Nada de hex aqui também — só var(--token) do globals.css.
+ */
+
+/* ------------------------------------------------------------------ Marca */
+
+/*
+ * Assinatura da associação: o arquivo oficial do logo, que já traz o nome.
+ * Nada de texto repetindo "Amigos do Nordeste" ao lado — ver Marca.tsx.
+ */
+.marca {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--e-4);
+  text-align: center;
+}
+
+.marca__moldura {
+  display: flex;
+}
+
+/* O arquivo da logo é JPEG, de fundo branco opaco. Fora do branco, esse fundo
+   vira uma placa de propósito em vez de um retângulo sem explicação. */
+.marca__moldura--placa {
+  /* Padding curto de propósito: o arquivo do logo já traz margem branca
+     interna, e somar as duas dá uma placa vazia com um selo perdido dentro. */
+  padding: var(--e-3);
+  border-radius: var(--raio-g);
+  background: var(--superficie);
+  box-shadow: var(--sombra);
+}
+
+.marca__logo {
+  height: auto;
+  max-width: 100%;
+}
+
+.marca__linha {
+  margin: 0;
+  max-width: 34ch;
+  font-family: var(--fonte-marca);
+  font-size: var(--t-titulo);
+  font-weight: 700;
+  line-height: 1.25;
+  letter-spacing: -0.01em;
+  color: var(--texto-forte);
+  text-wrap: balance;
+}
+
+/* -------------------------------------------------------------- Formulário */
+
+.campo {
+  display: flex;
+  flex-direction: column;
+  gap: var(--e-2);
+}
+
+.campo__rotulo {
+  font-size: var(--t-apoio);
+  font-weight: 600;
+  color: var(--texto-forte);
+}
+
+/*
+ * 46px de altura e 17px de fonte não são capricho: o cadastro é digitado em
+ * notebook velho e às vezes em tablet, e campo pequeno erra o toque.
+ */
+.campo__entrada {
+  width: 100%;
+  min-height: 46px;
+  padding: var(--e-3) var(--e-4);
+  border: 1px solid var(--linha-forte);
+  border-radius: var(--raio);
+  background: var(--superficie);
+  color: var(--texto-forte);
+  font-family: inherit;
+  font-size: var(--t-medio);
+  transition: border-color var(--transicao), box-shadow var(--transicao);
+}
+
+.campo__entrada::placeholder {
+  color: var(--texto-suave);
+}
+
+.campo__entrada:hover:not(:disabled) {
+  border-color: var(--texto-suave);
+}
+
+.campo__entrada:focus {
+  outline: none;
+  border-color: var(--laranja);
+  box-shadow: 0 0 0 3px var(--laranja-claro);
+}
+
+.campo__entrada:disabled {
+  background: var(--pagina);
+  color: var(--texto-suave);
+  cursor: not-allowed;
+}
+
+.campo__entrada[aria-invalid="true"] {
+  border-color: var(--erro);
+}
+
+.campo__entrada[aria-invalid="true"]:focus {
+  box-shadow: 0 0 0 3px var(--erro-claro);
+}
+
+.campo__ajuda {
+  font-size: var(--t-micro);
+  color: var(--texto-medio);
+}
+
+.campo__ajuda--erro {
+  color: var(--erro);
+  font-weight: 600;
+}
+
+/* ------------------------------------------------------------------ Botão */
+
+.botao {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--e-2);
+  min-height: 46px;
+  padding: var(--e-3) var(--e-5);
+  border: 1px solid transparent;
+  border-radius: var(--raio);
+  font-family: inherit;
+  font-size: var(--t-base);
+  font-weight: 700;
+  cursor: pointer;
+  transition: background-color var(--transicao), border-color var(--transicao),
+    transform var(--transicao);
+}
+
+.botao:disabled {
+  cursor: not-allowed;
+  opacity: 0.62;
+}
+
+.botao:active:not(:disabled) {
+  transform: translateY(1px);
+}
+
+.botao--primario {
+  background: var(--laranja);
+  color: var(--superficie);
+}
+
+.botao--primario:hover:not(:disabled) {
+  background: var(--laranja-escuro);
+}
+
+.botao--secundario {
+  background: var(--superficie);
+  border-color: var(--linha-forte);
+  color: var(--texto-forte);
+}
+
+.botao--secundario:hover:not(:disabled) {
+  border-color: var(--texto-suave);
+  background: var(--pagina);
+}
+
+.botao--largo {
+  width: 100%;
+}
+
+/* ------------------------------------------------------ Avisos e mensagens */
+
+/*
+ * Bloco de recado. O verde é o do cacto e marca "isto é uma explicação do
+ * sistema"; o vermelho marca "deu errado agora". Não invente uma terceira cor
+ * de aviso sem passar pelo time.
+ */
+.aviso {
+  padding: var(--e-4);
+  border-radius: var(--raio);
+  border-left: 3px solid var(--verde);
+  background: var(--verde-claro);
+  color: var(--texto-forte);
+  font-size: var(--t-apoio);
+}
+
+.aviso__titulo {
+  margin: 0 0 var(--e-1);
+  font-size: var(--t-micro);
+  font-weight: 800;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--verde-escuro);
+}
+
+.aviso__texto {
+  margin: 0;
+  color: var(--texto-medio);
+  line-height: 1.45;
+}
+
+.aviso--erro {
+  border-left-color: var(--erro);
+  background: var(--erro-claro);
+}
+
+.aviso--erro .aviso__titulo {
+  color: var(--erro);
+}
+
+/* Texto solto de apoio, fora de um bloco de aviso. */
+.texto-apoio {
+  margin: 0;
+  font-size: var(--t-apoio);
+  line-height: 1.45;
+  color: var(--texto-medio);
+}
+
+/* ----------------------------------------------------------------- Cartão */
+
+.cartao {
+  background: var(--superficie);
+  border: 1px solid var(--linha);
+  border-radius: var(--raio-g);
+  box-shadow: var(--sombra);
+}
+
+/* --------------------------------------------------------------- Utilidade */
+
+/* Visível para leitor de tela, invisível na tela. */
+.so-leitor-de-tela {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  margin: -1px;
+  padding: 0;
+  overflow: hidden;
+  clip: rect(0 0 0 0);
+  white-space: nowrap;
+  border: 0;
+}
+
+/* ---------------------------------------------------------------- Impressão */
+
+/*
+ * A lista por comunidade sai em papel no dia da entrega. Aqui ficam só as
+ * regras gerais; cada relatório afina o resto na própria folha.
+ */
+@media print {
+  html,
+  body {
+    background: var(--superficie);
+  }
+
+  .cartao {
+    border-color: var(--linha-forte);
+    box-shadow: none;
+  }
+
+  .botao,
+  .nao-imprime {
+    display: none !important;
+  }
+}

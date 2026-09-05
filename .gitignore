@@ -3,6 +3,11 @@ node_modules/
 out/
 build/
 coverage/
+
+# Vitrine do design system: saída gerada. Cada arquivo carrega a fonte e o
+# logo em base64, então versionar isso é ~1 MB de diff a cada mexida no CSS.
+# Rode `pnpm design-system` — ou abra o link do Artifact, no README.
+design-system/site/
 *.tsbuildinfo
 next-env.d.ts
 
