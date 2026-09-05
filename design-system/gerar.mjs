@@ -253,7 +253,10 @@ const DEMO_LOGIN = `
         </div>
         <div class="campo">
           <label class="campo__rotulo" for="L2">Senha</label>
-          <input class="campo__entrada" id="L2" type="password" value="senhadeexemplo">
+          <!-- Sem value: campo de senha preenchido, mesmo com string inventada,
+               é achado de scanner de segredo (e, de fato, a tela real também
+               abre com a senha vazia). -->
+          <input class="campo__entrada" id="L2" type="password">
         </div>
       </div>
       <button class="botao botao--primario botao--largo">Entrar</button>
