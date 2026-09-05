@@ -208,14 +208,14 @@ const DEMO_BOTAO = `
 const DEMO_AVISO = `
 <div style="display:flex;flex-direction:column;gap:16px;max-width:420px">
   <div class="aviso">
-    <p class="aviso__titulo">Não existe “criar conta” aqui</p>
-    <p class="aviso__texto">O sistema tem uma usuária. A primeira conta nasce de um comando no servidor, na instalação.</p>
+    <p class="aviso__titulo">Um ponto por comunidade</p>
+    <p class="aviso__texto">O mapa marca comunidades, não famílias. O tamanho do ponto acompanha quantas famílias são atendidas ali.</p>
   </div>
   <div class="aviso aviso--erro" role="alert">
-    <p class="aviso__titulo">Não deu para entrar</p>
-    <p class="aviso__texto">E-mail ou senha não conferem.</p>
+    <p class="aviso__titulo">Não deu para salvar</p>
+    <p class="aviso__texto">A comunidade precisa estar preenchida antes de salvar a família.</p>
   </div>
-  <p class="texto-apoio"><strong>Esqueceu a senha?</strong> Não há recuperação por e-mail neste sistema — fale com quem instalou, que redefine pelo servidor.</p>
+  <p class="texto-apoio">Texto de apoio solto, para quando o recado não merece um bloco inteiro.</p>
 </div>`;
 
 const DEMO_LOGIN = `
@@ -257,13 +257,6 @@ const DEMO_LOGIN = `
         </div>
       </div>
       <button class="botao botao--primario botao--largo">Entrar</button>
-      <div class="rodape">
-        <p class="texto-apoio"><strong>Esqueceu a senha?</strong> Não há recuperação por e-mail neste sistema — fale com quem instalou, que redefine pelo servidor.</p>
-        <div class="aviso">
-          <p class="aviso__titulo">Não existe “criar conta” aqui</p>
-          <p class="aviso__texto">O sistema tem uma usuária. A primeira conta nasce de um comando no servidor, na instalação.</p>
-        </div>
-      </div>
     </form>
   </section>
 </main>`;
@@ -485,12 +478,16 @@ const SECOES = [
       <p class="nota">O verde do cacto marca <strong>regra do sistema</strong>; o vermelho marca
       <strong>algo que falhou agora</strong>. O tom <code>erro</code> já sai com
       <code>role="alert"</code>, então o leitor de tela anuncia sem precisar mover o foco.</p>
-      <p class="nota">Serve para explicar uma decisão no lugar onde a pessoa esbarra nela.
-      Sem o aviso do login, quem entra procura “criar conta”, não acha, e conclui que o sistema
-      está quebrado — quando na verdade é assim que ele foi decidido.</p>`,
-    codigo: `<Aviso titulo="Não existe “criar conta” aqui">
-  O sistema tem uma usuária. A primeira conta nasce de um
-  comando no servidor, na instalação.
+      <p class="nota">Serve para explicar uma decisão <strong>no lugar onde a pessoa esbarra
+      nela</strong> — o mapa que marca comunidade e não família, a linha nova que já vem com a
+      comunidade preenchida. Regra que surpreende na hora vira chamado; regra explicada ali
+      não vira.</p>
+      <p class="nota">O contrário também vale: o que a pessoa já sabe não merece um bloco.
+      A tela de login teve um aviso de “não existe criar conta” e ele saiu — quem usa o sistema
+      é uma pessoa só, que não precisa da explicação todo dia.</p>`,
+    codigo: `<Aviso titulo="Um ponto por comunidade">
+  O mapa marca comunidades, não famílias. O tamanho do
+  ponto acompanha quantas famílias são atendidas ali.
 </Aviso>`,
   },
   {
@@ -1093,9 +1090,9 @@ function secaoHtml(s) {
       <div>
         <h3><span class="etiqueta etiqueta--depois">Depois</span></h3>
         ${s.comparacao.depois}
-        <p class="legenda-palco">Componentes e tokens. A identidade tem lugar próprio e as regras
-        do sistema estão escritas na tela. Composição de desktop — abaixo de 900&nbsp;px a
-        identidade vira uma faixa de topo e o formulário sobe.</p>
+        <p class="legenda-palco">Componentes e tokens, e a identidade com lugar próprio.
+        Composição de desktop — abaixo de 900&nbsp;px a identidade vira uma faixa de topo
+        e o formulário sobe.</p>
       </div>
     </div>`);
   }

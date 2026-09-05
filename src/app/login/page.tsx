@@ -14,9 +14,9 @@ import estilos from './login.module.css';
  * Tela de entrada. Não existe "criar conta" aqui de propósito: o sistema tem
  * uma usuária só, criada pelo comando `pnpm usuario:criar` na instalação.
  *
- * Os dois recados do rodapé não são enfeite. Sem eles a pessoa fica procurando
- * "esqueci minha senha" e "criar conta", não acha, e conclui que o sistema
- * está quebrado — quando na verdade é assim que ele foi decidido (ADR-0002).
+ * Também não há "esqueci minha senha": a redefinição é feita no servidor por
+ * quem instalou. A tela não explica nenhuma das duas coisas — quem usa é uma
+ * pessoa só, que já sabe disso, e o aviso permanente só ocupava espaço.
  */
 export default function Login() {
   const router = useRouter();
@@ -86,18 +86,6 @@ export default function Login() {
           <Botao type="submit" largo disabled={enviando}>
             {enviando ? 'Entrando…' : 'Entrar'}
           </Botao>
-
-          <div className={estilos.rodape}>
-            <p className="texto-apoio">
-              <strong>Esqueceu a senha?</strong> Não há recuperação por e-mail neste sistema — fale
-              com quem instalou, que redefine pelo servidor.
-            </p>
-
-            <Aviso titulo="Não existe “criar conta” aqui">
-              O sistema tem uma usuária. A primeira conta nasce de um comando no servidor, na
-              instalação.
-            </Aviso>
-          </div>
         </form>
       </section>
     </main>

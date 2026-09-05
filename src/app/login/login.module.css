@@ -154,11 +154,3 @@
   flex-direction: column;
   gap: var(--e-4);
 }
-
-.rodape {
-  display: flex;
-  flex-direction: column;
-  gap: var(--e-4);
-  padding-top: var(--e-2);
-  border-top: 1px solid var(--linha);
-}
