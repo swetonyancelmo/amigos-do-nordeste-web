@@ -1,3 +1,6 @@
+import { Cabecalho } from '@/componentes/Cabecalho';
+import { Botao } from '@/componentes/Botao';
+
 /**
  * Tela 02 do Figma — lista de famílias.
  *
@@ -8,5 +11,12 @@
  *  - nada de scroll infinito: paginação simples, que funciona mal na internet ruim.
  */
 export default function Familias() {
-  return <main style={{ padding: 32 }}>Lista de famílias — a implementar.</main>;
+  return (
+    <>
+      <Cabecalho titulo="Famílias">
+        <Botao>Nova família</Botao>
+      </Cabecalho>
+      <div className="app__corpo">Lista de famílias — a implementar.</div>
+    </>
+  );
 }

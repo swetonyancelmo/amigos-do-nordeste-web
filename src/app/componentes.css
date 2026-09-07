@@ -234,6 +234,108 @@
   box-shadow: var(--sombra);
 }
 
+/* ------------------------------------------------------- Casco das telas */
+
+/*
+ * As duas colunas de toda tela logada: navegação fixa e conteúdo. Layout que
+ * se repete em toda tela, por isso mora aqui e não num CSS Module de uma
+ * tela só.
+ */
+.app {
+  display: grid;
+  grid-template-columns: 240px 1fr;
+  min-height: 100dvh;
+}
+
+.app__conteudo {
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+}
+
+.app__corpo {
+  flex: 1;
+  padding: var(--e-6);
+}
+
+/* ------------------------------------------------------------------ Navegação */
+
+.navegacao {
+  display: flex;
+  flex-direction: column;
+  gap: var(--e-6);
+  padding: var(--e-5) var(--e-4);
+  background: var(--superficie);
+  border-right: 1px solid var(--linha);
+}
+
+.navegacao__marca {
+  padding: var(--e-2) var(--e-2) 0;
+}
+
+.navegacao__links {
+  flex: 1;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  display: flex;
+  flex-direction: column;
+  gap: var(--e-1);
+}
+
+.navegacao__link {
+  display: block;
+  padding: var(--e-3) var(--e-4);
+  border-radius: var(--raio);
+  color: var(--texto-medio);
+  font-weight: 700;
+  text-decoration: none;
+  transition: background-color var(--transicao), color var(--transicao);
+}
+
+.navegacao__link:hover {
+  background: var(--pagina);
+  color: var(--texto-forte);
+}
+
+.navegacao__link[aria-current="page"] {
+  background: var(--laranja-claro);
+  color: var(--laranja-escuro);
+}
+
+.navegacao__rodape {
+  padding-top: var(--e-4);
+  border-top: 1px solid var(--linha);
+}
+
+/* -------------------------------------------------------- Cabeçalho de página */
+
+.cabecalho-pagina {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--e-4);
+  padding: var(--e-5) var(--e-6);
+  border-bottom: 1px solid var(--linha);
+  background: var(--superficie);
+}
+
+.cabecalho-pagina__titulo {
+  margin: 0;
+  font-family: var(--fonte-marca);
+  font-size: var(--t-titulo);
+  font-weight: 800;
+  letter-spacing: -0.01em;
+  color: var(--texto-forte);
+}
+
+.cabecalho-pagina__acoes {
+  display: flex;
+  gap: var(--e-3);
+  flex-wrap: wrap;
+}
+
 /* --------------------------------------------------------------- Utilidade */
 
 /* Visível para leitor de tela, invisível na tela. */
@@ -259,6 +361,16 @@
   html,
   body {
     background: var(--superficie);
+  }
+
+  /* Sem a coluna de navegação, o conteúdo ocupa a folha inteira. */
+  .app {
+    display: block;
+  }
+
+  .navegacao,
+  .cabecalho-pagina__acoes {
+    display: none !important;
   }
 
   .cartao {

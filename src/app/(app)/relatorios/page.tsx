@@ -1,12 +1,22 @@
+import { Cabecalho } from '@/componentes/Cabecalho';
+import { Botao } from '@/componentes/Botao';
+
 /**
  * Telas 04 e 05 do Figma — necessidades da comunidade.
  *
  * TODO(equipe frontend):
  *  - GET /api/relatorios/necessidades?comunidadeId=... para as barras por tamanho;
  *  - GET /api/relatorios/situacao para os cartões de vulnerabilidade;
- *  - botão Imprimir com @media print bem feito: no dia da entrega, no sítio,
- *    ninguém confere nome por nome no celular. A lista em papel fecha o ciclo.
+ *  - o botão Imprimir usa window.print(); o @media print de componentes.css
+ *    já esconde navegação e ações — falta só afinar cada relatório na folha.
  */
 export default function Relatorios() {
-  return <main style={{ padding: 32 }}>Relatórios — a implementar.</main>;
+  return (
+    <>
+      <Cabecalho titulo="Relatórios">
+        <Botao variante="secundario">Imprimir</Botao>
+      </Cabecalho>
+      <div className="app__corpo">Relatórios — a implementar.</div>
+    </>
+  );
 }
