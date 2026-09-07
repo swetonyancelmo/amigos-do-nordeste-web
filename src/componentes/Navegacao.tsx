@@ -57,6 +57,17 @@ function IconeFechar() {
   );
 }
 
+function IconePerfil() {
+  return (
+    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+         strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"
+         aria-hidden="true" focusable="false">
+      <circle cx="12" cy="8" r="4" />
+      <path d="M4 20c0-4 3.5-6 8-6s8 2 8 6" />
+    </svg>
+  );
+}
+
 const ITENS = [
   { href: '/familias', rotulo: 'Famílias', Icone: IconeCasa },
   { href: '/relatorios', rotulo: 'Relatórios', Icone: IconeRelatorio },
@@ -64,7 +75,8 @@ const ITENS = [
 
 /**
  * Navegação, fixa em toda tela logada. A usuária é uma pessoa só (ver regra
- * 5 do sistema), então não há menu de conta — só as telas e Sair.
+ * 5 do sistema) — por isso o rodapé não tem menu de conta com várias opções,
+ * só o ícone de perfil (dados da própria usuária) e Sair.
  *
  * No desktop é a barra lateral de sempre. Abaixo de 900px (ver
  * componentes.css) ela dorme fora da tela e vira um menu que desliza por
@@ -163,7 +175,15 @@ export function Navegacao() {
         </ul>
 
         <div className="navegacao__rodape">
-          <Botao variante="secundario" largo onClick={sair}>
+          <Link
+            href="/perfil"
+            className="navegacao__perfil"
+            aria-label="Perfil"
+            aria-current={pathname.startsWith('/perfil') ? 'page' : undefined}
+          >
+            <IconePerfil />
+          </Link>
+          <Botao variante="secundario" onClick={sair}>
             Sair
           </Botao>
         </div>

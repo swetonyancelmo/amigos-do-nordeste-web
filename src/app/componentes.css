@@ -348,8 +348,43 @@
 }
 
 .navegacao__rodape {
+  display: flex;
+  align-items: center;
+  gap: var(--e-2);
   padding-top: var(--e-4);
   border-top: 1px solid var(--linha);
+}
+
+.navegacao__rodape .botao {
+  flex: 1;
+}
+
+/* Ícone que leva ao perfil da usuária (dados da própria conta — nome,
+   e-mail, senha). Fica ao lado do "Sair", não dentro da lista de telas: não
+   é uma seção do produto como Famílias/Relatórios, é a conta de quem usa. */
+.navegacao__perfil {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex: 0 0 auto;
+  width: 46px;
+  height: 46px;
+  border: 1px solid var(--linha-forte);
+  border-radius: var(--raio);
+  color: var(--texto-medio);
+  transition: background-color var(--transicao), border-color var(--transicao), color var(--transicao);
+}
+
+.navegacao__perfil:hover {
+  background: var(--pagina);
+  border-color: var(--texto-suave);
+  color: var(--texto-forte);
+}
+
+.navegacao__perfil[aria-current="page"] {
+  background: var(--laranja-claro);
+  border-color: transparent;
+  color: var(--laranja-escuro);
 }
 
 /* -------------------------------------------------------- Cabeçalho de página */
@@ -477,6 +512,7 @@
     background: transparent;
     color: var(--texto-medio);
     cursor: pointer;
+    transition: background-color 3s, color 3s;
   }
 
   .navegacao__fechar:hover {
