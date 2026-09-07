@@ -1,4 +1,6 @@
-import { Cabecalho } from '@/componentes/Cabecalho';
+'use client';
+
+import { useCabecalho } from '@/componentes/ContextoCabecalho';
 import { Botao } from '@/componentes/Botao';
 
 /**
@@ -11,12 +13,7 @@ import { Botao } from '@/componentes/Botao';
  *  - nada de scroll infinito: paginação simples, que funciona mal na internet ruim.
  */
 export default function Familias() {
-  return (
-    <>
-      <Cabecalho titulo="Famílias">
-        <Botao>Nova família</Botao>
-      </Cabecalho>
-      <div className="app__corpo">Lista de famílias — a implementar.</div>
-    </>
-  );
+  useCabecalho('Famílias', <Botao>Nova família</Botao>);
+
+  return <p>Lista de famílias — a implementar.</p>;
 }

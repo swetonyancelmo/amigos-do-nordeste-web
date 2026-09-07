@@ -1,4 +1,6 @@
-import { Cabecalho } from '@/componentes/Cabecalho';
+'use client';
+
+import { useCabecalho } from '@/componentes/ContextoCabecalho';
 import { Botao } from '@/componentes/Botao';
 
 /**
@@ -11,12 +13,7 @@ import { Botao } from '@/componentes/Botao';
  *    já esconde navegação e ações — falta só afinar cada relatório na folha.
  */
 export default function Relatorios() {
-  return (
-    <>
-      <Cabecalho titulo="Relatórios">
-        <Botao variante="secundario">Imprimir</Botao>
-      </Cabecalho>
-      <div className="app__corpo">Relatórios — a implementar.</div>
-    </>
-  );
+  useCabecalho('Relatórios', <Botao variante="secundario">Imprimir</Botao>);
+
+  return <p>Relatórios — a implementar.</p>;
 }

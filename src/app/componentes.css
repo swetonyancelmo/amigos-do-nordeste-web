@@ -128,6 +128,10 @@
 /* ------------------------------------------------------------------ Botão */
 
 .botao {
+  /* O botão é 100% estilizado aqui (fundo, borda, sombra...); "auto" deixa o
+     navegador aplicar o widget nativo do sistema por cima e ignorar parte do
+     CSS, o box-shadow do hover incluso. */
+  appearance: none;
   display: inline-flex;
   align-items: center;
   justify-content: center;
@@ -140,8 +144,10 @@
   font-size: var(--t-base);
   font-weight: 700;
   cursor: pointer;
-  transition: background-color var(--transicao), border-color var(--transicao),
-    transform var(--transicao);
+  /* Hover em 3s, pedido à parte do resto da transição do sistema (--transicao,
+     140ms) — o clique (:active, logo abaixo) continua rápido, porque feedback
+     de toque não pode esperar. */
+  transition: background-color 3s, border-color 3s, box-shadow 3s, transform var(--transicao);
 }
 
 .botao:disabled {
@@ -151,6 +157,11 @@
 
 .botao:active:not(:disabled) {
   transform: translateY(1px);
+}
+
+/* Sombra que "sobe" 3px no hover — mesma cor base de --sombra/--sombra-alta. */
+.botao:hover:not(:disabled) {
+  box-shadow: 0 3px 6px rgb(31 27 24 / 18%);
 }
 
 .botao--primario {
@@ -269,8 +280,34 @@
   border-right: 1px solid var(--linha);
 }
 
+.navegacao__topo {
+  display: flex;
+  align-items: flex-start;
+  justify-content: center;
+}
+
 .navegacao__marca {
   padding: var(--e-2) var(--e-2) 0;
+}
+
+/* Faixa fina com o botão de 3 traços, só existe no mobile — ver o
+   @media abaixo. Some inteira no desktop, que já tem a barra lateral. */
+.navegacao__barra-mobile {
+  display: none;
+}
+
+.navegacao__alternador,
+.navegacao__fechar {
+  display: none;
+}
+
+/* Fundo escurecido atrás do menu aberto no mobile; fica invisível (sem
+   ocupar espaço) até o @media ligar a posição fixa. */
+.navegacao__fundo {
+  display: none;
+  border: none;
+  padding: 0;
+  cursor: pointer;
 }
 
 .navegacao__links {
@@ -284,13 +321,20 @@
 }
 
 .navegacao__link {
-  display: block;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--e-2);
   padding: var(--e-3) var(--e-4);
   border-radius: var(--raio);
   color: var(--texto-medio);
   font-weight: 700;
   text-decoration: none;
   transition: background-color var(--transicao), color var(--transicao);
+}
+
+.navegacao__link svg {
+  flex: 0 0 auto;
 }
 
 .navegacao__link:hover {
@@ -334,6 +378,115 @@
   display: flex;
   gap: var(--e-3);
   flex-wrap: wrap;
+}
+
+/*
+ * Abaixo de 900px (mesmo corte do login) a navegação lateral não cabe mais
+ * ao lado do conteúdo. Ela vira um menu que dorme fora da tela (à esquerda)
+ * e desliza por cima do conteúdo quando o botão de 3 traços é tocado — em
+ * vez de empurrar o conteúdo pra fora da primeira dobra.
+ */
+@media (max-width: 899px) {
+  .app {
+    grid-template-columns: 1fr;
+    grid-template-rows: auto 1fr;
+  }
+
+  .navegacao__barra-mobile {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: var(--e-3);
+    padding: var(--e-3) var(--e-4);
+    background: var(--superficie);
+    border-bottom: 1px solid var(--linha);
+  }
+
+  .navegacao__alternador {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 40px;
+    height: 40px;
+    padding: 0;
+    border: 1px solid var(--linha-forte);
+    border-radius: var(--raio);
+    background: var(--superficie);
+    color: var(--texto-forte);
+    cursor: pointer;
+    transition: background-color var(--transicao), border-color var(--transicao);
+  }
+
+  .navegacao__alternador:hover {
+    background: var(--pagina);
+    border-color: var(--texto-suave);
+  }
+
+  /* Fundo escurecido: cobre a tela inteira atrás do menu aberto e fecha o
+     menu ao ser tocado — a saída "clicar fora" que todo menu desse tipo
+     precisa ter. */
+  .navegacao__fundo {
+    display: block;
+    position: fixed;
+    inset: 0;
+    z-index: 40;
+    background: rgb(31 27 24 / 45%);
+  }
+
+  .navegacao {
+    position: fixed;
+    inset: 0 0 0 auto;
+    z-index: 50;
+    width: min(280px, 84vw);
+    height: 100dvh;
+    /* Um pouco de transparência aqui, diferente da barra fixa do desktop —
+       dá pra notar que ainda tem conteúdo por trás do menu. */
+    background: color-mix(in srgb, var(--superficie) 94%, transparent);
+    box-shadow: var(--sombra-alta);
+    transform: translateX(100%);
+    transition: transform 220ms ease;
+  }
+
+  .navegacao--aberta {
+    transform: translateX(0);
+  }
+
+  /* No menu deslizante a logo fica menor que na barra lateral do desktop
+     (já vem centralizada dos dois — ver .navegacao__topo acima); o "X" some
+     da fileira e vai pro canto, pra não empurrar a logo pro lado. */
+  .navegacao__topo {
+    position: relative;
+  }
+
+  .navegacao__marca {
+    width: 72px;
+  }
+
+  .navegacao__fechar {
+    position: absolute;
+    top: 0;
+    right: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 32px;
+    height: 32px;
+    padding: 0;
+    border: none;
+    border-radius: var(--raio-p);
+    background: transparent;
+    color: var(--texto-medio);
+    cursor: pointer;
+  }
+
+  .navegacao__fechar:hover {
+    background: var(--pagina);
+    color: var(--texto-forte);
+  }
+
+  .cabecalho-pagina {
+    padding: var(--e-4) var(--e-5);
+  }
 }
 
 /* --------------------------------------------------------------- Utilidade */
