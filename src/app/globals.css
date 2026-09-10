@@ -42,7 +42,12 @@
    * O sol do logo. É o único gradiente da identidade — use este token, não
    * escreva um linear-gradient novo. Aparece no painel de entrada e no selo.
    */
-  --sol: linear-gradient(155deg, var(--amarelo) -10%, var(--ambar) 38%, var(--laranja) 100%);
+  --sol: linear-gradient(
+    155deg,
+    var(--amarelo) -10%,
+    var(--ambar) 38%,
+    var(--laranja) 100%
+  );
 
   /* --- Espaçamento: múltiplos de 4, sempre. ----------------------------- */
   --e-1: 4px;
@@ -59,12 +64,12 @@
   /* --fonte-marca é injetada pelo next/font no layout.tsx (Nunito). */
   --fonte-marca: var(--fonte-nunito), var(--fonte-texto);
 
-  --t-micro: 0.75rem;   /* 12px — etiqueta, legenda de rodapé */
+  --t-micro: 0.75rem; /* 12px — etiqueta, legenda de rodapé */
   --t-apoio: 0.8125rem; /* 13px — texto de apoio */
-  --t-base: 0.9375rem;  /* 15px — corpo */
+  --t-base: 0.9375rem; /* 15px — corpo */
   --t-medio: 1.0625rem; /* 17px — entrada de formulário */
   --t-titulo: 1.375rem; /* 22px — título de cartão */
-  --t-marca: 1.75rem;   /* 28px — assinatura da marca */
+  --t-marca: 1.75rem; /* 28px — assinatura da marca */
 
   /* --- Forma ------------------------------------------------------------ */
   --raio-p: 6px;
@@ -72,7 +77,8 @@
   --raio-g: 18px;
 
   --sombra: 0 1px 2px rgb(31 27 24 / 6%), 0 8px 24px -12px rgb(31 27 24 / 14%);
-  --sombra-alta: 0 2px 4px rgb(31 27 24 / 6%), 0 24px 48px -20px rgb(31 27 24 / 22%);
+  --sombra-alta:
+    0 2px 4px rgb(31 27 24 / 6%), 0 24px 48px -20px rgb(31 27 24 / 22%);
 
   --transicao: 140ms ease;
 }
@@ -113,5 +119,43 @@ a {
     animation-duration: 0.01ms !important;
     animation-iteration-count: 1 !important;
     transition-duration: 0.01ms !important;
+  }
+}
+@media print {
+  /* Esconde navegação, botões e filtros na impressão */
+  .no-print,
+  nav,
+  header,
+  footer {
+    display: none !important;
+  }
+
+  /* Exibe o cabeçalho próprio para impressão */
+  .print-only {
+    display: block !important;
+  }
+
+  /* Ajustes gerais de página */
+  body {
+    background-color: #fff !important;
+    color: #000 !important;
+    font-size: 12pt;
+  }
+
+  .container-relatorio {
+    max-width: 100% !important;
+    padding: 0 !important;
+    margin: 0 !important;
+  }
+
+  /* Garante cores e fundos legíveis nas barras de progresso ao imprimir */
+  * {
+    -webkit-print-color-adjust: exact !important;
+    print-color-adjust: exact !important;
+  }
+
+  /* Quebra de página limpa se necessário */
+  .page-break {
+    page-break-after: always;
   }
 }

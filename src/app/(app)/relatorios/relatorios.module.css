@@ -1,0 +1,65 @@
+.container {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 24px;
+}
+
+.header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 24px;
+}
+
+.cardsGrid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  gap: 16px;
+  margin-bottom: 32px;
+}
+
+.card {
+  background: #ffffff;
+  border: 1px solid #e5e7eb;
+  border-radius: 8px;
+  padding: 16px;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+}
+
+.cardTitle {
+  font-size: 0.75rem;
+  color: #6b7280;
+  text-transform: uppercase;
+  font-weight: 600;
+}
+
+.cardValue {
+  font-size: 1.5rem;
+  font-weight: bold;
+  color: #111827;
+  margin-top: 4px;
+}
+
+.barsGrid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+  gap: 32px;
+}
+
+.barTrack {
+  width: 100%;
+  background-color: #e5e7eb;
+  height: 16px;
+  border-radius: 4px;
+  overflow: hidden;
+}
+
+.barFillRoupas {
+  background-color: #2563eb;
+  height: 100%;
+}
+
+.barFillCalcados {
+  background-color: #059669;
+  height: 100%;
+}

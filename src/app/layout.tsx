@@ -1,6 +1,6 @@
-import type { Metadata } from 'next';
-import { Nunito } from 'next/font/google';
-import './globals.css';
+import type { Metadata } from "next";
+import { Nunito } from "next/font/google";
+import "./globals.css";
 
 /**
  * O wordmark do logo é uma grotesca pesada e levemente arredondada. A Nunito é
@@ -9,18 +9,23 @@ import './globals.css';
  * hora e não dá salto de layout na internet da associação.
  */
 const nunito = Nunito({
-  subsets: ['latin'],
-  weight: ['700', '800'],
-  display: 'swap',
-  variable: '--fonte-nunito',
+  subsets: ["latin"],
+  weight: ["700", "800"],
+  display: "swap",
+  variable: "--fonte-nunito",
 });
 
 export const metadata: Metadata = {
-  title: 'Cadastro de Famílias · Amigos do Nordeste',
-  description: 'Sistema de cadastro das famílias atendidas pela Associação Amigos do Nordeste.',
+  title: "Cadastro de Famílias · Amigos do Nordeste",
+  description:
+    "Sistema de cadastro das famílias atendidas pela Associação Amigos do Nordeste.",
 };
 
-export default function RootLayout({ children }: { children: React.ReactNode }) {
+export default function RootLayout({
+  children,
+}: {
+  children: React.ReactNode;
+}) {
   return (
     <html lang="pt-BR" className={nunito.variable}>
       <body>{children}</body>
