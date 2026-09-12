@@ -227,6 +227,42 @@ const DEMO_BOTAO = `
   <button class="botao botao--primario botao--largo">Entrar</button>
 </div>`;
 
+const DEMO_ESTRUTURA = `
+<style>
+/* Mesmo caso do login: o palco costuma ter menos de 900 px e a navegação
+   cairia no menu deslizante (fora da tela, sem a faixa do topo). O que esta
+   demonstração precisa mostrar é a barra lateral, então ela é forçada. */
+.app{grid-template-columns:200px 1fr}
+.navegacao{position:static;inset:auto;width:auto;height:auto;transform:none;
+  box-shadow:none;background:var(--superficie)}
+</style>
+<div class="app" style="min-height:420px;box-shadow:var(--sombra);border-radius:var(--raio-g);overflow:hidden">
+  <nav class="navegacao" aria-label="Navegação principal">
+    <div class="navegacao__marca">
+      <img src="data:image/jpeg;base64,${LOGO}" alt="Associação Amigos do Nordeste"
+           width="104" height="${alturaLogo(104)}" style="max-width:100%;height:auto">
+    </div>
+    <ul class="navegacao__links">
+      <li><a class="navegacao__link" href="#" aria-current="page">Famílias</a></li>
+      <li><a class="navegacao__link" href="#">Relatórios</a></li>
+    </ul>
+    <div class="navegacao__rodape">
+      <button class="botao botao--secundario botao--largo">Sair</button>
+    </div>
+  </nav>
+  <div class="app__conteudo">
+    <header class="cabecalho-pagina">
+      <h1 class="cabecalho-pagina__titulo">Famílias</h1>
+      <div class="cabecalho-pagina__acoes">
+        <button class="botao botao--primario">Nova família</button>
+      </div>
+    </header>
+    <div class="app__corpo">
+      <p class="texto-apoio">O conteúdo de cada tela entra aqui.</p>
+    </div>
+  </div>
+</div>`;
+
 const DEMO_AVISO = `
 <div style="display:flex;flex-direction:column;gap:16px;max-width:420px">
   <div class="aviso">
@@ -514,6 +550,36 @@ const SECOES = [
   O mapa marca comunidades, não famílias. O tamanho do
   ponto acompanha quantas famílias são atendidas ali.
 </Aviso>`,
+  },
+  {
+    id: 'estrutura',
+    titulo: 'Estrutura da tela logada',
+    demo: palco(DEMO_ESTRUTURA, { fonte: true, fundo: 'var(--pagina)', altura: 460 }),
+    html: `
+      <p class="nota">Toda tela logada tem as mesmas duas peças: a navegação lateral,
+      fixa (<code>Navegacao</code>), e o cabeçalho da tela, que muda tela a tela
+      (<code>Cabecalho</code>) — nome à esquerda, ações à direita. O conteúdo abaixo do
+      cabeçalho é livre, cada tela monta o que precisa.</p>
+      <p class="nota">A navegação lista só o que existe: <strong>Famílias</strong> e
+      <strong>Relatórios</strong>. Não há tela de conta — a usuária é uma pessoa só —,
+      então o rodapé da navegação tem apenas <strong>Sair</strong>.</p>
+      <div class="atencao">
+        <h4>Some no papel</h4>
+        <p>No <code>@media print</code>, a navegação inteira e o bloco de ações do
+        cabeçalho somem, e o conteúdo passa a ocupar a folha inteira — é assim que um
+        relatório sai limpo na impressão.</p>
+      </div>`,
+    codigo: `// src/app/(app)/layout.tsx
+<div className="app">
+  <Navegacao />
+  <div className="app__conteudo">{children}</div>
+</div>
+
+// src/app/(app)/familias/page.tsx
+<Cabecalho titulo="Famílias">
+  <Botao>Nova família</Botao>
+</Cabecalho>
+<div className="app__corpo">...</div>`,
   },
   {
     id: 'login',
@@ -1168,6 +1234,7 @@ const pagina = `<title>Padrão de design · Cadastro de Famílias</title>
 const CARDS = [
   ['fundamentos', 'Fundamentos', 'Cores, tipografia, espaçamento e forma', ['regras', 'cores', 'tipografia', 'espacamento']],
   ['marca', 'Marca', 'Assinatura da associação e a regra da placa', ['marca']],
+  ['estrutura', 'Estrutura da tela logada', 'Navegação lateral e cabeçalho de página', ['estrutura']],
   ['formulario', 'Formulário', 'Campo em quatro estados e as duas variantes de botão', ['campo', 'botao']],
   ['avisos', 'Avisos', 'Explicação em verde, erro em vermelho', ['aviso']],
   ['login', 'Tela de login', 'Antes e depois do padrão', ['login']],
