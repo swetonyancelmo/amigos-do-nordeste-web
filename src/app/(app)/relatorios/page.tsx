@@ -9,11 +9,19 @@ import { Botao } from '@/componentes/Botao';
  * TODO(equipe frontend):
  *  - GET /api/relatorios/necessidades?comunidadeId=... para as barras por tamanho;
  *  - GET /api/relatorios/situacao para os cartões de vulnerabilidade;
- *  - o botão Imprimir usa window.print(); o @media print de componentes.css
- *    já esconde navegação e ações — falta só afinar cada relatório na folha.
+ *  - o @media print de componentes.css já esconde navegação e ações — falta
+ *    só afinar cada relatório na folha.
  */
+
+// Fora do componente: JSX estável, o cabeçalho não re-renderiza à toa.
+const ACOES = (
+  <Botao variante="secundario" onClick={() => window.print()}>
+    Imprimir
+  </Botao>
+);
+
 export default function Relatorios() {
-  useCabecalho('Relatórios', <Botao variante="secundario">Imprimir</Botao>);
+  useCabecalho('Relatórios', ACOES);
 
   return <p>Relatórios — a implementar.</p>;
 }

@@ -41,6 +41,14 @@ export function CabecalhoDaTela() {
  *
  * useLayoutEffect (não useEffect) pra trocar o título antes da tela pintar —
  * assim quem navega não vê o título da página anterior por um instante.
+ *
+ * Ao desmontar, o cabeçalho volta a vazio: uma rota que não chama o hook
+ * (404, tela de erro) não pode ficar com o título e os botões da anterior.
+ *
+ * `acoes` entra nas dependências do efeito. JSX criado inline é um objeto
+ * novo a cada render, então numa tela que re-renderiza a cada tecla (o
+ * cadastro) o cabeçalho re-renderizaria junto — nesse caso declare o JSX
+ * fora do componente ou envolva em useMemo.
  */
 export function useCabecalho(titulo: string, acoes?: ReactNode) {
   const definir = useContext(ContextoDefinir);
@@ -48,4 +56,6 @@ export function useCabecalho(titulo: string, acoes?: ReactNode) {
   useLayoutEffect(() => {
     definir({ titulo, acoes: acoes ?? null });
   }, [definir, titulo, acoes]);
+
+  useLayoutEffect(() => () => definir(VAZIO), [definir]);
 }

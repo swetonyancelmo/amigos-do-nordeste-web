@@ -228,6 +228,14 @@ const DEMO_BOTAO = `
 </div>`;
 
 const DEMO_ESTRUTURA = `
+<style>
+/* Mesmo caso do login: o palco costuma ter menos de 900 px e a navegação
+   cairia no menu deslizante (fora da tela, sem a faixa do topo). O que esta
+   demonstração precisa mostrar é a barra lateral, então ela é forçada. */
+.app{grid-template-columns:200px 1fr}
+.navegacao{position:static;inset:auto;width:auto;height:auto;transform:none;
+  box-shadow:none;background:var(--superficie)}
+</style>
 <div class="app" style="min-height:420px;box-shadow:var(--sombra);border-radius:var(--raio-g);overflow:hidden">
   <nav class="navegacao" aria-label="Navegação principal">
     <div class="navegacao__marca">

@@ -12,8 +12,11 @@ import { Botao } from '@/componentes/Botao';
  *  - os totais de cada linha vêm calculados da API, em `familia.totais`;
  *  - nada de scroll infinito: paginação simples, que funciona mal na internet ruim.
  */
+// Fora do componente: JSX estável, o cabeçalho não re-renderiza à toa.
+const ACOES = <Botao>Nova família</Botao>;
+
 export default function Familias() {
-  useCabecalho('Famílias', <Botao>Nova família</Botao>);
+  useCabecalho('Famílias', ACOES);
 
   return <p>Lista de famílias — a implementar.</p>;
 }

@@ -512,7 +512,7 @@
     background: transparent;
     color: var(--texto-medio);
     cursor: pointer;
-    transition: background-color 3s, color 3s;
+    transition: background-color var(--transicao), color var(--transicao);
   }
 
   .navegacao__fechar:hover {
@@ -557,7 +557,12 @@
     display: block;
   }
 
+  /* A folha A4 em retrato tem menos de 900px, então o @media de celular
+     acima também vale na impressão — por isso a faixa do topo e o fundo do
+     menu entram aqui junto com a barra lateral. */
   .navegacao,
+  .navegacao__barra-mobile,
+  .navegacao__fundo,
   .cabecalho-pagina__acoes {
     display: none !important;
   }

@@ -5,7 +5,11 @@ import Link from 'next/link';
 import { usePathname, useRouter } from 'next/navigation';
 import { Marca } from './Marca';
 import { Botao } from './Botao';
-import { guardarToken } from '@/lib/api';
+import { api, guardarToken } from '@/lib/api';
+
+/* Mesmo corte do @media em componentes.css — abaixo disso a barra lateral
+   vira o menu deslizante. */
+const TELA_ESTREITA = '(max-width: 899px)';
 
 /* Ícones desenhados à mão, no estilo do Sol.tsx — traço simples, sem trazer
    uma biblioteca inteira pra quatro ícones. Onde já existe rótulo ao lado,
@@ -86,11 +90,27 @@ export function Navegacao() {
   const pathname = usePathname();
   const router = useRouter();
   const [aberta, setAberta] = useState(false);
+  // Começa como desktop (é o que o servidor renderiza); acerta ao montar.
+  const [estreita, setEstreita] = useState(false);
 
   // Troca de tela fecha o menu — inclui o clique num link e o "Sair".
   useEffect(() => {
     setAberta(false);
   }, [pathname]);
+
+  // Acompanha a largura da tela. Se ela cresce com o menu aberto (tablet
+  // girado), o fundo e o "X" somem pelo CSS e o menu viraria barra lateral
+  // com o body ainda travado — por isso o menu fecha junto.
+  useEffect(() => {
+    const consulta = window.matchMedia(TELA_ESTREITA);
+    function aoMudar() {
+      setEstreita(consulta.matches);
+      if (!consulta.matches) setAberta(false);
+    }
+    aoMudar();
+    consulta.addEventListener('change', aoMudar);
+    return () => consulta.removeEventListener('change', aoMudar);
+  }, []);
 
   useEffect(() => {
     if (!aberta) return;
@@ -107,9 +127,12 @@ export function Navegacao() {
     };
   }, [aberta]);
 
-  function sair() {
-    // TODO(equipe frontend): chamar POST /auth/sair para invalidar o cookie
-    // de refresh no servidor, quando esse endpoint existir na API.
+  async function sair() {
+    // Sem isso o cookie de refresh continua válido e a próxima chamada à API
+    // (um "voltar" do navegador, por exemplo) logaria a usuária de novo em
+    // silêncio. Se a API ainda não tiver o endpoint, o erro é ignorado e a
+    // sessão local é encerrada mesmo assim.
+    await api.post('/auth/sair').catch(() => {});
     guardarToken(null);
     router.push('/login');
   }
@@ -138,9 +161,12 @@ export function Navegacao() {
         />
       )}
 
+      {/* Fechado no mobile, o menu só está fora da tela — `inert` tira ele do
+          Tab e do leitor de tela, senão o foco ia parar em botão invisível. */}
       <nav
         className={aberta ? 'navegacao navegacao--aberta' : 'navegacao'}
         aria-label="Navegação principal"
+        inert={estreita && !aberta}
       >
         <div className="navegacao__topo">
           <div className="navegacao__marca">
