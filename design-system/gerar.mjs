@@ -227,6 +227,42 @@ const DEMO_BOTAO = `
   <button class="botao botao--primario botao--largo">Entrar</button>
 </div>`;
 
+const DEMO_ESTRUTURA = `
+<style>
+/* Mesmo caso do login: o palco costuma ter menos de 900 px e a navegação
+   cairia no menu deslizante (fora da tela, sem a faixa do topo). O que esta
+   demonstração precisa mostrar é a barra lateral, então ela é forçada. */
+.app{grid-template-columns:200px 1fr}
+.navegacao{position:static;inset:auto;width:auto;height:auto;transform:none;
+  box-shadow:none;background:var(--superficie)}
+</style>
+<div class="app" style="min-height:420px;box-shadow:var(--sombra);border-radius:var(--raio-g);overflow:hidden">
+  <nav class="navegacao" aria-label="Navegação principal">
+    <div class="navegacao__marca">
+      <img src="data:image/jpeg;base64,${LOGO}" alt="Associação Amigos do Nordeste"
+           width="104" height="${alturaLogo(104)}" style="max-width:100%;height:auto">
+    </div>
+    <ul class="navegacao__links">
+      <li><a class="navegacao__link" href="#" aria-current="page">Famílias</a></li>
+      <li><a class="navegacao__link" href="#">Relatórios</a></li>
+    </ul>
+    <div class="navegacao__rodape">
+      <button class="botao botao--secundario botao--largo">Sair</button>
+    </div>
+  </nav>
+  <div class="app__conteudo">
+    <header class="cabecalho-pagina">
+      <h1 class="cabecalho-pagina__titulo">Famílias</h1>
+      <div class="cabecalho-pagina__acoes">
+        <button class="botao botao--primario">Nova família</button>
+      </div>
+    </header>
+    <div class="app__corpo">
+      <p class="texto-apoio">O conteúdo de cada tela entra aqui.</p>
+    </div>
+  </div>
+</div>`;
+
 const DEMO_AVISO = `
 <div style="display:flex;flex-direction:column;gap:16px;max-width:420px">
   <div class="aviso">
@@ -566,59 +602,34 @@ const SECOES = [
 </Aviso>`,
   },
   {
-    id: 'next',
-    titulo: 'Criando uma página no Next',
+    id: 'estrutura',
+    titulo: 'Estrutura da tela logada',
+    demo: palco(DEMO_ESTRUTURA, { fonte: true, fundo: 'var(--pagina)', altura: 460 }),
     html: `
-      <p class="chamada">A página nova deve parecer parte do sistema antes mesmo de alguém ler o código.
-      Use esta sequência como checklist para decidir a estrutura e o componente certo.</p>
-      <div class="guia-next">
-        <article>
-          <span class="guia-numero">01</span>
-          <h3>Defina a rota</h3>
-          <p>Crie <code>src/app/minha-rota/page.tsx</code>. Prefira uma rota por tarefa da pessoa, como
-          <code>/familias</code> ou <code>/comunidades</code>, em vez de uma tela que faz tudo.</p>
-        </article>
-        <article>
-          <span class="guia-numero">02</span>
-          <h3>Separe servidor e interação</h3>
-          <p>Deixe <code>page.tsx</code> como Server Component para buscar dados. Use
-          <code>'use client'</code> apenas no componente que precisa de estado, formulário ou evento.</p>
-        </article>
-        <article>
-          <span class="guia-numero">03</span>
-          <h3>Monte com os padrões</h3>
-          <p>Use <code>Campo</code> para entrada, <code>Botao</code> para ação,
-          <code>Aviso</code> para regra ou erro e <code>Cartao</code> para agrupar conteúdo relacionado.
-          Não replique classes ou invente hex.</p>
-        </article>
-        <article>
-          <span class="guia-numero">04</span>
-          <h3>Trate os estados</h3>
-          <p>Planeje carregando, vazio, erro e sucesso junto com o estado normal. No App Router,
-          use <code>loading.tsx</code> e <code>error.tsx</code> quando a rota depender de dados.</p>
-        </article>
-      </div>
-      <div class="mapa-elementos">
-        <h3>Qual elemento usar?</h3>
-        <div class="mapa-linha"><strong>Entrada de dado</strong><span><code>Campo</code> + label visível + ajuda/erro ligado ao campo.</span></div>
-        <div class="mapa-linha"><strong>Ação principal</strong><span><code>Botao variante="primario"</code>, uma ação dominante por tela.</span></div>
-        <div class="mapa-linha"><strong>Explicação contextual</strong><span><code>Aviso</code> perto do ponto de dúvida; não esconda regra importante em tooltip.</span></div>
-        <div class="mapa-linha"><strong>Lista ou resumo</strong><span><code>Cartao</code> para cada grupo; use espaço e títulos para facilitar a varredura.</span></div>
-      </div>
-      <pre class="codigo"><code>${escapar(`import { Campo } from '@/app/componentes/Campo';
-import { Botao } from '@/app/componentes/Botao';
+      <p class="nota">Toda tela logada tem as mesmas duas peças: a navegação lateral,
+      fixa (<code>Navegacao</code>), e o cabeçalho da tela, que muda tela a tela
+      (<code>Cabecalho</code>) — nome à esquerda, ações à direita. O conteúdo abaixo do
+      cabeçalho é livre, cada tela monta o que precisa.</p>
+      <p class="nota">A navegação lista só o que existe: <strong>Famílias</strong> e
+      <strong>Relatórios</strong>. Não há tela de conta — a usuária é uma pessoa só —,
+      então o rodapé da navegação tem apenas <strong>Sair</strong>.</p>
+      <div class="atencao">
+        <h4>Some no papel</h4>
+        <p>No <code>@media print</code>, a navegação inteira e o bloco de ações do
+        cabeçalho somem, e o conteúdo passa a ocupar a folha inteira — é assim que um
+        relatório sai limpo na impressão.</p>
+      </div>`,
+    codigo: `// src/app/(app)/layout.tsx
+<div className="app">
+  <Navegacao />
+  <div className="app__conteudo">{children}</div>
+</div>
 
-export default function NovaFamiliaPage() {
-  return (
-    <main className={styles.pagina}>
-      <h1 className="titulo">Nova família</h1>
-      <form className={styles.formulario}>
-        <Campo rotulo="Nome da responsável" />
-        <Botao type="submit">Salvar família</Botao>
-      </form>
-    </main>
-  );
-}`)}</code></pre>`,
+// src/app/(app)/familias/page.tsx
+<Cabecalho titulo="Famílias">
+  <Botao>Nova família</Botao>
+</Cabecalho>
+<div className="app__corpo">...</div>`,
   },
   {
     id: 'login',
@@ -1397,6 +1408,7 @@ const pagina = `<title>Padrão de design · Cadastro de Famílias</title>
 const CARDS = [
   ['fundamentos', 'Fundamentos', 'Cores, tipografia, espaçamento e forma', ['regras', 'cores', 'tipografia', 'espacamento']],
   ['marca', 'Marca', 'Assinatura da associação e a regra da placa', ['marca']],
+  ['estrutura', 'Estrutura da tela logada', 'Navegação lateral e cabeçalho de página', ['estrutura']],
   ['formulario', 'Formulário', 'Campo em quatro estados e as duas variantes de botão', ['campo', 'botao']],
   ['avisos', 'Avisos', 'Explicação em verde, erro em vermelho', ['aviso']],
   ['login', 'Tela de login', 'Antes e depois do padrão', ['login']],
