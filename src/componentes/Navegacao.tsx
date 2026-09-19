@@ -62,6 +62,18 @@ function IconeFechar() {
   );
 }
 
+/* Avatar padrão de quem ainda não tem foto cadastrada. */
+function IconeAvatar() {
+  return (
+    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+         strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"
+         aria-hidden="true" focusable="false">
+      <circle cx="12" cy="8" r="4" />
+      <path d="M4 20c0-4 3.5-6 8-6s8 2 8 6" />
+    </svg>
+  );
+}
+
 const ITENS = [
   { href: '/familias', rotulo: 'Famílias', Icone: IconeCasa },
   { href: '/relatorios', rotulo: 'Relatórios', Icone: IconeRelatorio },
@@ -212,10 +224,20 @@ export function Navegacao() {
             className="navegacao__perfil"
             aria-current={pathname.startsWith('/perfil') ? 'page' : undefined}
           >
-            {online && <span className="navegacao__status" aria-hidden="true" />}
+            <span className="navegacao__perfil-avatar">
+              {usuario?.fotoUrl ? (
+                // eslint-disable-next-line @next/next/no-img-element -- foto vinda da API, não um asset do projeto
+                <img src={usuario.fotoUrl} alt="" />
+              ) : (
+                <IconeAvatar />
+              )}
+            </span>
             <span className="navegacao__perfil-texto">
-              <span className="navegacao__perfil-nome">{usuario?.nome ?? 'Dona da associação'}</span>
-              <span className="navegacao__perfil-legenda">Único acesso</span>
+              <span className="navegacao__perfil-nome">{usuario?.nome ?? 'Usuária'}</span>
+              <span className="navegacao__perfil-legenda">
+                {online && <span className="navegacao__status" aria-hidden="true" />}
+                Ativo
+              </span>
             </span>
           </Link>
           <Botao variante="secundario" largo onClick={sair}>

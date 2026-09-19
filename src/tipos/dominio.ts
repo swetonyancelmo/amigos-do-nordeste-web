@@ -105,6 +105,7 @@ export interface Opcao {
 export interface Usuario {
   nome: string;
   email: string;
+  fotoUrl: string | null;
 }
 
 /** O formato de `GET /api/metadados`. */
