@@ -349,42 +349,63 @@
 
 .navegacao__rodape {
   display: flex;
-  align-items: center;
+  flex-direction: column;
   gap: var(--e-2);
   padding-top: var(--e-4);
   border-top: 1px solid var(--linha);
 }
 
-.navegacao__rodape .botao {
-  flex: 1;
-}
-
-/* Ícone que leva ao perfil da usuária (dados da própria conta — nome,
-   e-mail, senha). Fica ao lado do "Sair", não dentro da lista de telas: não
+/* Cartão que leva ao perfil da usuária (dados da própria conta — nome,
+   e-mail, senha). Fica acima do "Sair", não dentro da lista de telas: não
    é uma seção do produto como Famílias/Relatórios, é a conta de quem usa. */
 .navegacao__perfil {
   display: flex;
   align-items: center;
-  justify-content: center;
-  flex: 0 0 auto;
-  width: 46px;
-  height: 46px;
-  border: 1px solid var(--linha-forte);
+  gap: var(--e-2);
+  padding: var(--e-2) var(--e-3);
+  border: 1px solid transparent;
   border-radius: var(--raio);
+  background: var(--pagina);
   color: var(--texto-medio);
+  text-decoration: none;
   transition: background-color var(--transicao), border-color var(--transicao), color var(--transicao);
 }
 
 .navegacao__perfil:hover {
-  background: var(--pagina);
-  border-color: var(--texto-suave);
+  border-color: var(--linha-forte);
   color: var(--texto-forte);
 }
 
 .navegacao__perfil[aria-current="page"] {
   background: var(--laranja-claro);
-  border-color: transparent;
   color: var(--laranja-escuro);
+}
+
+/* Verde acesa = navegador com conexão. Some (não fica cinza) quando a
+   usuária perde a conexão — a associação trabalha com internet instável. */
+.navegacao__status {
+  flex: 0 0 auto;
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: var(--verde);
+}
+
+.navegacao__perfil-texto {
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+}
+
+.navegacao__perfil-nome {
+  font-size: var(--t-apoio);
+  font-weight: 700;
+  color: var(--texto-forte);
+}
+
+.navegacao__perfil-legenda {
+  font-size: var(--t-micro);
+  color: var(--texto-suave);
 }
 
 /* -------------------------------------------------------- Cabeçalho de página */
@@ -474,9 +495,7 @@
     z-index: 50;
     width: min(280px, 84vw);
     height: 100dvh;
-    /* Um pouco de transparência aqui, diferente da barra fixa do desktop —
-       dá pra notar que ainda tem conteúdo por trás do menu. */
-    background: color-mix(in srgb, var(--superficie) 94%, transparent);
+    background: var(--superficie);
     box-shadow: var(--sombra-alta);
     transform: translateX(100%);
     transition: transform 220ms ease;

@@ -6,6 +6,7 @@ import { usePathname, useRouter } from 'next/navigation';
 import { Marca } from './Marca';
 import { Botao } from './Botao';
 import { api, guardarToken } from '@/lib/api';
+import { useUsuario } from '@/lib/usuario';
 
 /* Mesmo corte do @media em componentes.css — abaixo disso a barra lateral
    vira o menu deslizante. */
@@ -61,17 +62,6 @@ function IconeFechar() {
   );
 }
 
-function IconePerfil() {
-  return (
-    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor"
-         strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"
-         aria-hidden="true" focusable="false">
-      <circle cx="12" cy="8" r="4" />
-      <path d="M4 20c0-4 3.5-6 8-6s8 2 8 6" />
-    </svg>
-  );
-}
-
 const ITENS = [
   { href: '/familias', rotulo: 'Famílias', Icone: IconeCasa },
   { href: '/relatorios', rotulo: 'Relatórios', Icone: IconeRelatorio },
@@ -92,6 +82,8 @@ export function Navegacao() {
   const [aberta, setAberta] = useState(false);
   // Começa como desktop (é o que o servidor renderiza); acerta ao montar.
   const [estreita, setEstreita] = useState(false);
+  const [online, setOnline] = useState(true);
+  const { usuario } = useUsuario();
 
   // Troca de tela fecha o menu — inclui o clique num link e o "Sair".
   useEffect(() => {
@@ -110,6 +102,20 @@ export function Navegacao() {
     aoMudar();
     consulta.addEventListener('change', aoMudar);
     return () => consulta.removeEventListener('change', aoMudar);
+  }, []);
+
+  // A bolinha verde reflete a conexão do navegador, não uma sessão remota —
+  // não existe endpoint de presença (regra 6 do CLAUDE.md, usuária única).
+  useEffect(() => {
+    setOnline(navigator.onLine);
+    function aoFicarOnline() { setOnline(true); }
+    function aoFicarOffline() { setOnline(false); }
+    window.addEventListener('online', aoFicarOnline);
+    window.addEventListener('offline', aoFicarOffline);
+    return () => {
+      window.removeEventListener('online', aoFicarOnline);
+      window.removeEventListener('offline', aoFicarOffline);
+    };
   }, []);
 
   useEffect(() => {
@@ -204,12 +210,15 @@ export function Navegacao() {
           <Link
             href="/perfil"
             className="navegacao__perfil"
-            aria-label="Perfil"
             aria-current={pathname.startsWith('/perfil') ? 'page' : undefined}
           >
-            <IconePerfil />
+            {online && <span className="navegacao__status" aria-hidden="true" />}
+            <span className="navegacao__perfil-texto">
+              <span className="navegacao__perfil-nome">{usuario?.nome ?? 'Dona da associação'}</span>
+              <span className="navegacao__perfil-legenda">Único acesso</span>
+            </span>
           </Link>
-          <Botao variante="secundario" onClick={sair}>
+          <Botao variante="secundario" largo onClick={sair}>
             Sair
           </Botao>
         </div>

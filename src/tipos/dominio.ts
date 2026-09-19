@@ -101,6 +101,12 @@ export interface Opcao {
   rotulo: string;
 }
 
+/** O formato de `GET /api/usuario` — a conta da usuária única (ver regra 5). */
+export interface Usuario {
+  nome: string;
+  email: string;
+}
+
 /** O formato de `GET /api/metadados`. */
 export interface Metadados {
   tipoComunidade: Opcao[];
