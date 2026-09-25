@@ -1,4 +1,5 @@
 import { useEffect, useRef } from 'react';
+import { createPortal } from 'react-dom';
 
 type Props = {
   aberto: boolean;
@@ -27,43 +28,59 @@ export function Modal({ aberto, titulo, onFechar, children }: Props) {
   }, [aberto, onFechar]);
 
   if (!aberto) return null;
+  if (typeof document === 'undefined') return null;
 
-  return (
+  return createPortal(
+    (
     <div
       role="presentation"
       onClick={onFechar}
       style={{
         position: 'fixed',
-        inset: 0,
+        top: 0,
+        left: 0,
+        right: 0,
+        bottom: 0,
         background: 'rgba(31, 27, 24, 0.28)',
         display: 'flex',
         alignItems: 'center',
         justifyContent: 'center',
         padding: 20,
+        boxSizing: 'border-box',
+        overflowY: 'auto',
         zIndex: 1000,
       }}
     >
       <div
         ref={ref}
+        className="modal__painel"
         role="dialog"
         aria-modal="true"
         aria-labelledby="modal-titulo"
         onClick={(event) => event.stopPropagation()}
         style={{
-          width: 'min(760px, 100%)',
-          maxHeight: '90vh',
+          width: 'min(760px, calc(100vw - 40px))',
+          maxWidth: 'calc(100vw - 40px)',
+          minWidth: 0,
+          boxSizing: 'border-box',
+          margin: 'auto',
+          maxHeight: '90dvh',
           overflow: 'auto',
           background: 'var(--superficie)',
           border: '1px solid var(--linha)',
-          borderRadius: 'var(--raio-g)',
           boxShadow: 'var(--sombra)',
           padding: 24,
           color: 'var(--texto-forte)',
         }}
       >
         <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 12, marginBottom: 20 }}>
-          <h2 id="modal-titulo" style={{ margin: 0, fontSize: '1.4rem', fontFamily: 'var(--fonte-marca)', color: 'var(--texto-forte)' }}>
-            {titulo}
+          <h2 id="modal-titulo" style={{ display: 'inline-flex', alignItems: 'center', gap: 10, margin: 0, fontSize: '1.4rem', fontFamily: 'var(--fonte-marca)', color: 'var(--texto-forte)' }}>
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="var(--laranja)" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true" focusable="false">
+              <circle cx="9" cy="8" r="3" />
+              <path d="M3.5 20c.5-3.4 2.3-5 5.5-5s5 1.6 5.5 5" />
+              <path d="M17 11v6M14 14h6" />
+            </svg>
+            <span>{titulo}</span>
           </h2>
 
           <button
@@ -88,6 +105,8 @@ export function Modal({ aberto, titulo, onFechar, children }: Props) {
 
         {children}
       </div>
-    </div>
+      </div>
+    ),
+    document.body,
   );
 }

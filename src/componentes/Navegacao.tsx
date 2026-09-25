@@ -40,6 +40,19 @@ function IconeRelatorio() {
   );
 }
 
+function IconePessoas() {
+  return (
+    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+         strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"
+         aria-hidden="true" focusable="false">
+      <circle cx="9" cy="8" r="3" />
+      <path d="M3.5 19c.5-3.3 2.3-5 5.5-5s5 1.7 5.5 5" />
+      <path d="M16 5.5a3 3 0 0 1 0 5.8" />
+      <path d="M16 14c2.4.2 3.9 1.8 4.5 5" />
+    </svg>
+  );
+}
+
 function IconeMenu() {
   return (
     <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor"
@@ -74,6 +87,7 @@ function IconePerfil() {
 
 const ITENS = [
   { href: '/familias', rotulo: 'Famílias', Icone: IconeCasa },
+  { href: '/pessoas', rotulo: 'Pessoas', Icone: IconePessoas },
   { href: '/relatorios', rotulo: 'Relatórios', Icone: IconeRelatorio },
 ];
 

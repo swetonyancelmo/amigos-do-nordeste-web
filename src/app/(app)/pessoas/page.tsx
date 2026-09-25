@@ -1,10 +1,23 @@
 'use client';
 
-import { useState } from 'react';
+import { useMemo, useState } from 'react';
 import { Botao } from '@/componentes/Botao';
+import { useCabecalho } from '@/componentes/ContextoCabecalho';
 import { ListaPessoas } from '@/componentes/pessoas/ListaPessoas';
 import { ModalPessoa, type PessoaFormulario } from '@/componentes/pessoas/ModalPessoa';
 import styles from './pessoas.module.css';
+
+function IconeFiltro({ tipo }: { tipo: 'busca' | 'comunidade' | 'status' }) {
+  return (
+    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+         strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"
+         aria-hidden="true" focusable="false">
+      {tipo === 'busca' && <><circle cx="10.5" cy="10.5" r="6.5" /><path d="m16 16 5 5" /></>}
+      {tipo === 'comunidade' && <><path d="m3 11 9-7 9 7" /><path d="M5 10v9h14v-9M9 19v-5h6v5" /></>}
+      {tipo === 'status' && <><circle cx="12" cy="12" r="8" /><path d="M12 8v4l3 2" /></>}
+    </svg>
+  );
+}
 
 const pessoasIniciais: PessoaFormulario[] = [
   {
@@ -46,6 +59,12 @@ const pessoasIniciais: PessoaFormulario[] = [
 export default function PessoasPage() {
   const [aberto, setAberto] = useState(false);
   const [lista, setLista] = useState<PessoaFormulario[]>(pessoasIniciais);
+  const acoes = useMemo(
+    () => <Botao onClick={() => setAberto(true)}>Nova pessoa</Botao>,
+    [],
+  );
+
+  useCabecalho('Pessoas', acoes);
 
   function handleSalvar(pessoa: PessoaFormulario) {
     setLista((atual) => [pessoa, ...atual]);
@@ -53,41 +72,58 @@ export default function PessoasPage() {
   }
 
   return (
-    <main className={styles.pagina}>
-      <section className="cartao" style={{ padding: 24 }}>
-        <header className={styles.cabecalho}>
-          <div>
-            <p className={styles.chamada}>Cadastro social</p>
-            <h1 className={styles.titulo}>Pessoas atendidas</h1>
-          </div>
-
-          <Botao onClick={() => setAberto(true)}>Nova pessoa</Botao>
-        </header>
-
+    <main className={`${styles.pagina} pagina-pessoas`}>
+      <section className={styles.conteudo}>
         <div className={styles.toolbar}>
           <div className={styles.busca}>
-            <label className="campo__rotulo" htmlFor="buscar-pessoa">
+            <label className={styles.filtroRotulo} htmlFor="buscar-pessoa">
+              <IconeFiltro tipo="busca" />
               Buscar por nome
             </label>
-            <input id="buscar-pessoa" className="campo__entrada" placeholder="Digite o nome" />
+            <input id="buscar-pessoa" className={styles.filtroEntrada} placeholder="Digite o nome" />
           </div>
 
           <div className={styles.filtrosInline}>
-            <select className="campo__entrada" defaultValue="">
+            <label className={styles.filtroCampo}>
+              <span className={styles.filtroRotulo}><IconeFiltro tipo="comunidade" /> Comunidade</span>
+              <select className={`${styles.filtroEntrada} ${styles.select}`} defaultValue="">
               <option value="">Todas as comunidades</option>
               <option value="jeritaco">Jeritacó</option>
               <option value="mulungu">Mulungu</option>
-            </select>
+              </select>
+            </label>
 
-            <select className="campo__entrada" defaultValue="">
+            <label className={styles.filtroCampo}>
+              <span className={styles.filtroRotulo}><IconeFiltro tipo="status" /> Status</span>
+              <select className={`${styles.filtroEntrada} ${styles.select}`} defaultValue="">
               <option value="">Todos os status</option>
               <option value="incompleto">Cadastro incompleto</option>
               <option value="completo">Completo</option>
-            </select>
+              </select>
+            </label>
           </div>
         </div>
 
         <ListaPessoas pessoas={lista} />
+
+        <nav className={styles.paginacao} aria-label="Paginação da lista de pessoas">
+          <span className={styles.contadorPagina}>Página 1 de 1</span>
+
+          <div className={styles.controlesPagina}>
+            <button type="button" className={styles.botaoPagina} disabled aria-label="Página anterior">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+                <path d="m15 18-6-6 6-6" />
+              </svg>
+              Anterior
+            </button>
+            <button type="button" className={styles.botaoPagina} disabled aria-label="Próxima página">
+              Próxima
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+                <path d="m9 18 6-6-6-6" />
+              </svg>
+            </button>
+          </div>
+        </nav>
       </section>
 
       <ModalPessoa

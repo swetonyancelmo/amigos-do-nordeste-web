@@ -245,6 +245,10 @@
   box-shadow: var(--sombra);
 }
 
+.modal__painel {
+  border-radius: var(--raio-g);
+}
+
 /* ------------------------------------------------------- Casco das telas */
 
 /*
@@ -256,6 +260,8 @@
   display: grid;
   grid-template-columns: 240px 1fr;
   min-height: 100dvh;
+  overflow: clip;
+  transform: translateZ(0);
 }
 
 .app__conteudo {
@@ -266,7 +272,9 @@
 
 .app__corpo {
   flex: 1;
+  min-width: 0;
   padding: var(--e-6);
+  overflow-x: clip;
 }
 
 /* ------------------------------------------------------------------ Navegação */
@@ -522,6 +530,22 @@
 
   .cabecalho-pagina {
     padding: var(--e-4) var(--e-5);
+  }
+
+  .modal__painel {
+    border-radius: var(--raio);
+  }
+
+  .app__conteudo:has(.pagina-pessoas) {
+    min-height: 0;
+  }
+
+  .app__corpo:has(.pagina-pessoas) {
+    flex: 0 0 auto;
+  }
+
+  .app:has(.pagina-pessoas) {
+    min-height: 0;
   }
 }
 
