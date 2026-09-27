@@ -3,7 +3,8 @@
 import type { ChangeEvent, FormEvent } from 'react';
 import { useState } from 'react';
 import { Botao } from '@/componentes/Botao';
-import { ModalFonteRenda } from '@/componentes/fonte-renda/ModalFonteRenda';
+import { ModalFonteRenda, type FonteRendaFormulario } from '@/componentes/fonte-renda/ModalFonteRenda';
+import { useMetadados } from '@/lib/metadados';
 import styles from '@/app/(app)/pessoas/pessoas.module.css';
 
 type IconeCampo =
@@ -58,6 +59,7 @@ export type PessoaFormulario = {
   familia: string;
   comunidade: string;
   cadastroIncompleto: boolean;
+  fontesRenda: FonteRendaFormulario[];
 };
 
 type Props = {
@@ -74,16 +76,18 @@ const valoresIniciais: PessoaFormulario = {
   parentesco: 'FILHA',
   estuda: false,
   serie: '',
-  tamanhoRoupa: 'M',
+  tamanhoRoupa: '',
   numeroCalcado: '',
   gestante: false,
   observacoes: '',
   familia: 'Família da Joana',
   comunidade: 'Jeritacó',
   cadastroIncompleto: false,
+  fontesRenda: [],
 };
 
 export function PessoaForm({ onSalvar, onFechar, valorInicial }: Props) {
+  const { metadados } = useMetadados();
   const [form, setForm] = useState<PessoaFormulario>({
     ...valoresIniciais,
     ...valorInicial,
@@ -97,6 +101,20 @@ export function PessoaForm({ onSalvar, onFechar, valorInicial }: Props) {
       ...atual,
       [chave]: valor,
       cadastroIncompleto: !valor && chave === 'nome' ? true : atual.cadastroIncompleto,
+      // Homem não pode ficar marcado como gestante ao trocar o sexo.
+      gestante: chave === 'sexo' && valor === 'M' ? false : atual.gestante,
+    }));
+  }
+
+  function adicionarFonteRenda(fonte: FonteRendaFormulario) {
+    setForm((atual) => ({ ...atual, fontesRenda: [...atual.fontesRenda, fonte] }));
+    setModalFonteRendaAberta(false);
+  }
+
+  function removerFonteRenda(indice: number) {
+    setForm((atual) => ({
+      ...atual,
+      fontesRenda: atual.fontesRenda.filter((_, i) => i !== indice),
     }));
   }
 
@@ -206,11 +224,10 @@ export function PessoaForm({ onSalvar, onFechar, valorInicial }: Props) {
             value={form.tamanhoRoupa}
             onChange={(event: ChangeEvent<HTMLSelectElement>) => alterarCampo('tamanhoRoupa', event.target.value)}
           >
-            <option value="RN">RN</option>
-            <option value="P">P</option>
-            <option value="M">M</option>
-            <option value="G">G</option>
-            <option value="GG">GG</option>
+            <option value="">Selecione</option>
+            {metadados?.tamanhoRoupa.map((opcao) => (
+              <option key={opcao.valor} value={opcao.valor}>{opcao.rotulo}</option>
+            ))}
           </select>
         </div>
       </div>
@@ -218,17 +235,22 @@ export function PessoaForm({ onSalvar, onFechar, valorInicial }: Props) {
       <div className={styles.linhaDoisColunas}>
         <div className={styles.campo}>
           <RotuloCampo htmlFor="numero-calcado" label="Número do calçado" icon="calcado" />
-          <input
+          <select
             id="numero-calcado"
-            className={styles.campo__entrada}
+            className={`${styles.campo__entrada} ${styles.campo__select}`}
             value={form.numeroCalcado}
-            onChange={(event: ChangeEvent<HTMLInputElement>) => alterarCampo('numeroCalcado', event.target.value)}
-            placeholder="Ex.: 31"
-          />
+            onChange={(event: ChangeEvent<HTMLSelectElement>) => alterarCampo('numeroCalcado', event.target.value)}
+          >
+            <option value="">Selecione</option>
+            {metadados?.numeroCalcado.map((opcao) => (
+              <option key={opcao.valor} value={opcao.valor}>{opcao.rotulo}</option>
+            ))}
+          </select>
         </div>
 
         <div className={styles.campo}>
           <RotuloCampo htmlFor="comunidade-pessoa" label="Comunidade" icon="comunidade" />
+          {/* TODO: lista fixa até existir endpoint de comunidades na API (não faz parte de GET /api/metadados). */}
           <select
             id="comunidade-pessoa"
             className={`${styles.campo__entrada} ${styles.campo__select}`}
@@ -275,11 +297,9 @@ export function PessoaForm({ onSalvar, onFechar, valorInicial }: Props) {
             onChange={(event: ChangeEvent<HTMLSelectElement>) => alterarCampo('serie', event.target.value)}
           >
             <option value="">Selecione</option>
-            <option value="PRE">Pré</option>
-            <option value="FUNDAMENTAL_1">Fundamental 1</option>
-            <option value="FUNDAMENTAL_2">Fundamental 2</option>
-            <option value="MEDIO">Médio</option>
-            <option value="SUPERIOR">Superior</option>
+            {metadados?.serie.map((opcao) => (
+              <option key={opcao.valor} value={opcao.valor}>{opcao.rotulo}</option>
+            ))}
           </select>
         </div>
       )}
@@ -295,7 +315,17 @@ export function PessoaForm({ onSalvar, onFechar, valorInicial }: Props) {
         />
       </div>
 
-      <div className={styles.rodapeFormulario}>
+      <div className={styles.secaoFormulario}>
+        {form.fontesRenda.map((fonte, indice) => (
+          <div key={indice} className={styles.linhaRenda}>
+            <span>{metadados?.tipoFonteRenda.find((o) => o.valor === fonte.tipo)?.rotulo ?? fonte.tipo}</span>
+            <span>{metadados?.faixaRenda.find((o) => o.valor === fonte.faixa)?.rotulo ?? fonte.faixa ?? '—'}</span>
+            <button type="button" className={styles.botaoRemover} onClick={() => removerFonteRenda(indice)}>
+              Remover
+            </button>
+          </div>
+        ))}
+
         <button type="button" className={styles.botaoAdicionar} onClick={() => setModalFonteRendaAberta(true)}>
           Adicionar fonte de renda
         </button>
@@ -314,7 +344,7 @@ export function PessoaForm({ onSalvar, onFechar, valorInicial }: Props) {
     <ModalFonteRenda
       aberto={modalFonteRendaAberta}
       onFechar={() => setModalFonteRendaAberta(false)}
-      onSalvar={() => setModalFonteRendaAberta(false)}
+      onSalvar={adicionarFonteRenda}
     />
     </>
   );

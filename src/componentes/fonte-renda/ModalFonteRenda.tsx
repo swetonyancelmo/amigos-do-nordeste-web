@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from 'react';
 import { Modal } from '@/componentes/Modal';
+import { useMetadados } from '@/lib/metadados';
 import type { FaixaRenda, TipoFonteRenda } from '@/tipos/dominio';
 import styles from '@/app/(app)/pessoas/pessoas.module.css';
 
@@ -10,8 +11,8 @@ type PessoaOpcao = {
   nome: string;
 };
 
-type FonteRendaFormulario = {
-  tipo: TipoFonteRenda;
+export type FonteRendaFormulario = {
+  tipo: TipoFonteRenda | '';
   pessoaIndice: number | null;
   faixa: FaixaRenda | '';
   observacao: string;
@@ -31,7 +32,7 @@ const pessoasPadrao: PessoaOpcao[] = [
 ];
 
 const valoresIniciais: FonteRendaFormulario = {
-  tipo: 'TRABALHO_INFORMAL',
+  tipo: '',
   pessoaIndice: null,
   faixa: '',
   observacao: '',
@@ -66,6 +67,7 @@ export function ModalFonteRenda({
   onSalvar,
   pessoas = pessoasPadrao,
 }: Props) {
+  const { metadados } = useMetadados();
   const [form, setForm] = useState<FonteRendaFormulario>(valoresIniciais);
 
   useEffect(() => {
@@ -118,17 +120,12 @@ export function ModalFonteRenda({
               className={`${styles.campo__entrada} ${styles.campo__select}`}
               value={form.tipo}
               onChange={(event) => alterarCampo('tipo', event.target.value as TipoFonteRenda)}
+              required
             >
-              <option value="TRABALHO_INFORMAL">Trabalho informal</option>
-              <option value="TRABALHO_FIXO">Trabalho fixo</option>
-              <option value="TRABALHO_SAZONAL">Trabalho sazonal</option>
-              <option value="APOSENTADORIA">Aposentadoria</option>
-              <option value="BPC">BPC</option>
-              <option value="PENSAO">Pensão</option>
-              <option value="BOLSA_FAMILIA">Bolsa Família</option>
-              <option value="AUXILIO_DOENCA">Auxílio doença</option>
-              <option value="NENHUMA">Nenhuma</option>
-              <option value="OUTRA">Outra</option>
+              <option value="">Selecione</option>
+              {metadados?.tipoFonteRenda.map((opcao) => (
+                <option key={opcao.valor} value={opcao.valor}>{opcao.rotulo}</option>
+              ))}
             </select>
           </div>
 
@@ -141,10 +138,9 @@ export function ModalFonteRenda({
               onChange={(event) => alterarCampo('faixa', event.target.value as FaixaRenda | '')}
             >
               <option value="">Selecione</option>
-              <option value="SEM_RENDA_FIXA">Sem renda fixa</option>
-              <option value="ATE_1_SM">Até 1 salário mínimo</option>
-              <option value="DE_1_A_2_SM">De 1 a 2 salários mínimos</option>
-              <option value="MAIS_DE_2_SM">Mais de 2 salários mínimos</option>
+              {metadados?.faixaRenda.map((opcao) => (
+                <option key={opcao.valor} value={opcao.valor}>{opcao.rotulo}</option>
+              ))}
             </select>
           </div>
         </div>

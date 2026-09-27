@@ -36,6 +36,7 @@ const pessoasIniciais: PessoaFormulario[] = [
     familia: 'Família da Joana',
     comunidade: 'Jeritacó',
     cadastroIncompleto: false,
+    fontesRenda: [],
   },
   {
     id: 'p-2',
@@ -53,6 +54,7 @@ const pessoasIniciais: PessoaFormulario[] = [
     familia: 'Família da Joana',
     comunidade: 'Jeritacó',
     cadastroIncompleto: true,
+    fontesRenda: [],
   },
 ];
 

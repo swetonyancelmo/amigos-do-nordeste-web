@@ -1,4 +1,4 @@
-import { useEffect, useRef } from 'react';
+import { useEffect, useId, useRef } from 'react';
 import { createPortal } from 'react-dom';
 
 type Props = {
@@ -8,8 +8,14 @@ type Props = {
   children: React.ReactNode;
 };
 
+// Modais podem abrir um dentro do outro (ex.: fonte de renda dentro de
+// pessoa). O contador garante que o scroll da página só volta quando o
+// último modal fecha.
+let modaisAbertos = 0;
+
 export function Modal({ aberto, titulo, onFechar, children }: Props) {
   const ref = useRef<HTMLDivElement | null>(null);
+  const idTitulo = useId();
 
   useEffect(() => {
     if (!aberto) return;
@@ -18,11 +24,13 @@ export function Modal({ aberto, titulo, onFechar, children }: Props) {
       if (event.key === 'Escape') onFechar();
     };
 
+    modaisAbertos += 1;
     document.body.style.overflow = 'hidden';
     document.addEventListener('keydown', onKeyDown);
 
     return () => {
-      document.body.style.overflow = '';
+      modaisAbertos -= 1;
+      if (modaisAbertos === 0) document.body.style.overflow = '';
       document.removeEventListener('keydown', onKeyDown);
     };
   }, [aberto, onFechar]);
@@ -41,7 +49,7 @@ export function Modal({ aberto, titulo, onFechar, children }: Props) {
         left: 0,
         right: 0,
         bottom: 0,
-        background: 'rgba(31, 27, 24, 0.28)',
+        background: 'var(--sobreposicao)',
         display: 'flex',
         alignItems: 'center',
         justifyContent: 'center',
@@ -56,7 +64,7 @@ export function Modal({ aberto, titulo, onFechar, children }: Props) {
         className="modal__painel"
         role="dialog"
         aria-modal="true"
-        aria-labelledby="modal-titulo"
+        aria-labelledby={idTitulo}
         onClick={(event) => event.stopPropagation()}
         style={{
           width: 'min(760px, calc(100vw - 40px))',
@@ -74,7 +82,7 @@ export function Modal({ aberto, titulo, onFechar, children }: Props) {
         }}
       >
         <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 12, marginBottom: 20 }}>
-          <h2 id="modal-titulo" style={{ display: 'inline-flex', alignItems: 'center', gap: 10, margin: 0, fontSize: '1.4rem', fontFamily: 'var(--fonte-marca)', color: 'var(--texto-forte)' }}>
+          <h2 id={idTitulo} style={{ display: 'inline-flex', alignItems: 'center', gap: 10, margin: 0, fontSize: '1.4rem', fontFamily: 'var(--fonte-marca)', color: 'var(--texto-forte)' }}>
             <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="var(--laranja)" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true" focusable="false">
               <circle cx="9" cy="8" r="3" />
               <path d="M3.5 20c.5-3.4 2.3-5 5.5-5s5 1.6 5.5 5" />
