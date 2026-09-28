@@ -276,6 +276,35 @@ const DEMO_AVISO = `
   <p class="texto-apoio">Texto de apoio solto, para quando o recado não merece um bloco inteiro.</p>
 </div>`;
 
+const DEMO_FAMILIAS = `
+<div class="demo-app-shell">
+  <header class="demo-app-header">
+    <div>
+      <span class="demo-kicker">Cadastro de famílias</span>
+      <h1>Famílias atendidas</h1>
+    </div>
+    <button class="botao botao--secundario">Sair</button>
+  </header>
+  <div class="demo-app-toolbar">
+    <label class="demo-search">
+      <span class="demo-visually-hidden">Buscar pelo nome da responsável</span>
+      <input class="campo__entrada" placeholder="Buscar pelo nome da responsável" value="Maria José">
+    </label>
+    <button class="botao botao--primario">Nova família</button>
+  </div>
+  <div class="demo-summary">
+    <div><strong>128</strong><span>famílias</span></div>
+    <div><strong>14</strong><span>comunidades</span></div>
+    <div><strong>42</strong><span>crianças</span></div>
+  </div>
+  <div class="demo-table" role="table" aria-label="Famílias encontradas">
+    <div class="demo-row demo-row--header" role="row"><span>Responsável</span><span>Comunidade</span><span>Atendimentos</span></div>
+    <div class="demo-row" role="row"><strong>Maria José da Silva</strong><span>Herdade de Baixo</span><span>3</span></div>
+    <div class="demo-row" role="row"><strong>Maria José Santos</strong><span>Serra Verde</span><span>5</span></div>
+  </div>
+  <nav class="demo-pagination" aria-label="Paginação"><span>1–2 de 2 resultados</span><button class="botao botao--secundario" disabled>Anterior</button><button class="botao botao--secundario" disabled>Próxima</button></nav>
+</div>`;
+
 const DEMO_LOGIN = `
 <style>${cssLogin}
 /* O palco é mais estreito que 900 px, então a media query do módulo não
@@ -452,7 +481,28 @@ const SECOES = [
       o que chega perto do wordmark do logo no que é livre. <strong>system-ui</strong> no corpo e nos
       campos, porque carrega na hora e não dá salto de layout na internet da associação.
       Nada de uma terceira família.</p>
-      ${escalaDeTipo()}`,
+      ${escalaDeTipo()}
+      <div class="guia-tipo">
+        <div>
+          <h3>Como escolher</h3>
+          <p><code>--t-marca</code> é assinatura e nome de produto. <code>--t-titulo</code> abre uma tela
+          ou cartão. <code>--t-medio</code> é para o conteúdo que a pessoa digita. O corpo usa
+          <code>--t-base</code>; ajuda e legenda usam <code>--t-apoio</code> ou <code>--t-micro</code>.</p>
+        </div>
+        <div>
+          <h3>Leitura e ritmo</h3>
+          <p>Mantenha frases curtas, largura próxima de 60–66 caracteres e line-height entre 1.45 e 1.6.
+          Use peso 700/800 só para hierarquia; não transforme todo texto em destaque. Nunca crie um
+          tamanho novo antes de verificar se um token existente resolve.</p>
+        </div>
+      </div>
+      <div class="amostra-letras" aria-label="Exemplo de hierarquia tipográfica">
+        <span class="letras-marca">Acolher</span>
+        <span class="letras-titulo">Necessidades da comunidade</span>
+        <span class="letras-corpo">A busca é pelo nome da responsável.</span>
+        <span class="letras-apoio">A linha nova herda esta comunidade.</span>
+        <span class="letras-micro">CAMPO OBRIGATÓRIO</span>
+      </div>`,
   },
   {
     id: 'espacamento',
@@ -594,6 +644,32 @@ const SECOES = [
       antes: palco(DEMO_LOGIN_ANTES, { fundo: 'var(--pagina)', altura: 380 }),
       depois: palco(DEMO_LOGIN, { fonte: true, altura: 620 }),
     },
+  },
+  {
+    id: 'pos-login',
+    titulo: 'Depois do login',
+    demo: palco(DEMO_FAMILIAS, { altura: 620 }),
+    html: `
+      <p class="nota">Depois de autenticar, a pessoa chega à tarefa principal: encontrar e cadastrar famílias.
+      Esta composição parte dos requisitos da rota <code>/familias</code>: busca pelo nome da responsável,
+      totais calculados pela API e paginação simples.</p>
+      <div class="atencao">
+        <h4>O que cada parte resolve</h4>
+        <p>O cabeçalho identifica a tarefa e deixa <code>Sair</code> secundário. A barra de trabalho junta
+        busca e ação principal. Os totais ajudam a entender o conjunto antes da lista. A tabela mostra
+        apenas o necessário para decidir o próximo clique, sem scroll infinito.</p>
+      </div>
+      <p class="nota">Quando a implementação real começar, troque os dados de exemplo por dados do servidor,
+      mantenha o componente de <code>Campo</code> na busca e trate os estados de carregamento, vazio e erro.</p>`,
+    codigo: `<main className={styles.pagina}>
+  <Cabecalho titulo="Famílias atendidas" acao="Sair" />
+  <div className={styles.ferramentas}>
+    <Campo rotulo="Buscar pelo nome da responsável" />
+    <Botao>Nova família</Botao>
+  </div>
+  <ListaFamilias familias={familias} />
+  <Paginacao pagina={pagina} total={total} />
+</main>`,
   },
 ];
 
@@ -937,6 +1013,58 @@ code, .hex, pre {
   line-height: 1.25;
 }
 
+.guia-tipo {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 24px;
+  margin-top: 28px;
+  padding: 20px;
+  border: 1px solid var(--doc-linha);
+  border-radius: 10px;
+  background: var(--doc-superficie);
+}
+
+.guia-tipo p { margin: 0; color: var(--doc-suave); font-size: 0.9375rem; }
+
+.amostra-letras {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  margin-top: 28px;
+  padding: 24px;
+  border-left: 3px solid var(--doc-acento);
+  background: var(--doc-codigo-fundo);
+}
+
+.letras-marca, .letras-titulo { font-family: "Nunito", system-ui, sans-serif; font-weight: 800; }
+.letras-marca { font-size: 1.75rem; }
+.letras-titulo { font-size: 1.375rem; }
+.letras-corpo { font-size: 0.9375rem; }
+.letras-apoio { color: var(--doc-suave); font-size: 0.8125rem; }
+.letras-micro { color: var(--doc-suave); font-size: 0.75rem; font-weight: 700; letter-spacing: 0.06em; }
+
+/* --------------------------------------------------------------- Next.js */
+
+.guia-next {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 1px;
+  margin-top: 24px;
+  overflow: hidden;
+  border: 1px solid var(--doc-linha);
+  border-radius: 10px;
+  background: var(--doc-linha);
+}
+
+.guia-next article { min-height: 190px; padding: 20px; background: var(--doc-superficie); }
+.guia-numero { display: block; margin-bottom: 14px; color: var(--doc-acento); font-family: "Nunito", system-ui, sans-serif; font-size: 0.8125rem; font-weight: 800; letter-spacing: 0.08em; }
+.guia-next p { margin: 0; color: var(--doc-suave); font-size: 0.9375rem; }
+
+.mapa-elementos { margin-top: 28px; padding: 20px; border-radius: 10px; background: var(--ambar-claro); }
+.mapa-elementos h3 { margin-bottom: 14px; }
+.mapa-linha { display: grid; grid-template-columns: minmax(130px, 0.35fr) 1fr; gap: 16px; padding: 12px 0; border-top: 1px solid rgb(214 169 94 / 35%); }
+.mapa-linha span { color: var(--doc-suave); }
+
 /* ------------------------------------------------------------- espaçamento */
 
 .espacos li {
@@ -1021,6 +1149,43 @@ code, .hex, pre {
   color: var(--doc-suave);
 }
 
+/* ------------------------------------------------------------ demo pos-login */
+
+.demo-app-shell {
+  max-width: 820px;
+  margin: 0 auto;
+  color: var(--texto-forte);
+}
+
+.demo-app-header, .demo-app-toolbar, .demo-pagination {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+}
+
+.demo-app-header {
+  padding-bottom: 20px;
+  border-bottom: 1px solid var(--linha);
+}
+
+.demo-app-header h1 { margin: 2px 0 0; font-family: var(--fonte-marca); font-size: var(--t-titulo); }
+.demo-kicker, .demo-row--header, .demo-summary span { color: var(--texto-medio); font-size: var(--t-apoio); }
+.demo-kicker { font-weight: 700; }
+.demo-app-toolbar { margin: 20px 0; }
+.demo-search { flex: 1; }
+.demo-search .campo__entrada { font-size: var(--t-base); }
+.demo-summary { display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px; margin-bottom: 20px; }
+.demo-summary div { display: flex; flex-direction: column; padding: 14px; border: 1px solid var(--linha); border-radius: var(--raio); background: var(--superficie); }
+.demo-summary strong { font-family: var(--fonte-marca); font-size: var(--t-titulo); }
+.demo-table { overflow: hidden; border: 1px solid var(--linha); border-radius: var(--raio); background: var(--superficie); }
+.demo-row { display: grid; grid-template-columns: 1.3fr 1fr 0.65fr; gap: 16px; align-items: center; padding: 14px 16px; border-top: 1px solid var(--linha); font-size: var(--t-apoio); }
+.demo-row:first-child { border-top: 0; }
+.demo-row--header { border-top: 0; background: var(--pagina); font-weight: 700; }
+.demo-pagination { justify-content: flex-end; margin-top: 16px; font-size: var(--t-micro); color: var(--texto-medio); }
+.demo-pagination .botao { min-height: 36px; padding: 8px 12px; font-size: var(--t-micro); }
+.demo-visually-hidden { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; }
+
 .codigo {
   margin: 20px 0 0;
   padding: 16px 18px;
@@ -1104,6 +1269,15 @@ a { color: var(--doc-acento); }
 
 @media (prefers-reduced-motion: reduce) {
   * { animation-duration: 0.01ms !important; transition-duration: 0.01ms !important; }
+}
+
+@media (max-width: 680px) {
+  .guia-tipo, .guia-next { grid-template-columns: 1fr; }
+  .mapa-linha { grid-template-columns: 1fr; gap: 4px; }
+  .demo-app-toolbar, .demo-pagination { align-items: stretch; flex-direction: column; }
+  .demo-search, .demo-app-toolbar .botao { width: 100%; }
+  .demo-row { grid-template-columns: 1fr 1fr; gap: 8px; }
+  .demo-row strong { grid-column: 1 / -1; }
 }
 `;
 
@@ -1238,6 +1412,8 @@ const CARDS = [
   ['formulario', 'Formulário', 'Campo em quatro estados e as duas variantes de botão', ['campo', 'botao']],
   ['avisos', 'Avisos', 'Explicação em verde, erro em vermelho', ['aviso']],
   ['login', 'Tela de login', 'Antes e depois do padrão', ['login']],
+  ['pos-login', 'Depois do login', 'A primeira tarefa: encontrar famílias', ['pos-login']],
+  ['next', 'Criando páginas', 'Roteamento, componentes e estados no Next.js', ['next']],
 ];
 
 function cardHtml(nome, subtitulo, ids) {

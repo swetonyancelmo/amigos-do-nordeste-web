@@ -38,6 +38,9 @@
   --erro: #96382b;
   --erro-claro: #fbeae6;
 
+  /* Fundo escurecido atrás de modal, na mesma cor de --texto-forte. */
+  --sobreposicao: rgb(31 27 24 / 28%);
+
   /*
    * O sol do logo. É o único gradiente da identidade — use este token, não
    * escreva um linear-gradient novo. Aparece no painel de entrada e no selo.
