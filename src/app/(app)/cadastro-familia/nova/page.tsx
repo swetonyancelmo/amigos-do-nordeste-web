@@ -6,6 +6,25 @@ import "@/app/globals.css";
 // @ts-ignore
 import "@/app/componentes.css";
 
+import {
+  MapPin,
+  Building2,
+  User,
+  Phone,
+  FileText,
+  Compass,
+  Users,
+  GraduationCap,
+  Shirt,
+  Footprints,
+  Droplets,
+  Home,
+  DollarSign,
+  Plus,
+  X,
+  Menu,
+} from "lucide-react";
+
 interface Membro {
   id: string;
   nome: string;
@@ -78,7 +97,7 @@ export default function NovaFamiliaPage() {
     const novosMembros = [...membros];
     novosMembros[index] = {
       ...novosMembros[index],
-      [field]: field === "idade" ? Number(value) : value,
+      [field]: field === "idade" || field === "calcado" ? Number(value) : value,
     };
     setMembros(novosMembros);
   };
@@ -153,22 +172,6 @@ export default function NovaFamiliaPage() {
       totaisCalculados: { totalPessoas, ate12Anos, de13a59Anos, mais60Anos },
     };
 
-    const [sidebarAberta, setSidebarAberta] = useState(false);
-
-    return (
-      <div
-        style={{
-          maxWidth: "1200px",
-          margin: "0 auto",
-          display: "flex",
-          flexDirection: "row",
-          minHeight: "100vh",
-          backgroundColor: "#f5f3ef",
-          position: "relative",
-        }}
-      ></div>
-    );
-
     try {
       const res = await fetch("/api/familias", {
         method: "POST",
@@ -204,6 +207,17 @@ export default function NovaFamiliaPage() {
       .btn-menu-mobile,
       .sidebar-overlay {
         display: none !important;
+      }
+
+      /* Estilo dos rótulos com ícones */
+      .label-com-icone {
+        display: flex;
+        align-items: center;
+        gap: 6px;
+        font-size: 0.8rem;
+        color: #4b5563;
+        font-weight: 600;
+        margin-bottom: 4px;
       }
 
       /* ===================================================
@@ -425,7 +439,7 @@ export default function NovaFamiliaPage() {
                   <p
                     style={{ fontSize: "0.75rem", color: "#9ca3af", margin: 0 }}
                   >
-                    cadastro de famílias
+                    Cadastro de famílias
                   </p>
                 </div>
               </div>
@@ -442,7 +456,7 @@ export default function NovaFamiliaPage() {
                   color: "#6b7280",
                 }}
               >
-                ✕
+                <X size={20} color="#FFA500" />
               </button>
             </div>
 
@@ -507,7 +521,7 @@ export default function NovaFamiliaPage() {
                 Dona da associação
               </p>
               <p style={{ fontSize: "0.7rem", color: "#9ca3af", margin: 0 }}>
-                único acesso
+                Único acesso
               </p>
             </div>
           </div>
@@ -536,7 +550,7 @@ export default function NovaFamiliaPage() {
                 fontSize: "1.1rem",
               }}
             >
-              ☰
+              <Menu size={20} color="#FFA500" />
             </button>
             <div>
               <h1
@@ -544,11 +558,12 @@ export default function NovaFamiliaPage() {
                   fontSize: "1.5rem",
                   fontWeight: "bold",
                   color: "#111827",
+                  margin: 0,
                 }}
               >
                 Nova família
               </h1>
-              <p style={{ fontSize: "0.875rem", color: "#6b7280" }}>
+              <p style={{ fontSize: "0.875rem", color: "#6b7280", margin: 0 }}>
                 Famílias › Nova
               </p>
             </div>
@@ -565,18 +580,19 @@ export default function NovaFamiliaPage() {
           >
             <h3
               style={{
-                fontSize: "0.75rem",
+                fontSize: "0.85rem",
                 color: "#c2410c",
                 fontWeight: "bold",
-                marginBottom: "12px",
+                marginBottom: "16px",
               }}
             >
-              DADOS DA FAMÍLIA
+              Dados da família
             </h3>
             <div className="grid-2">
               <div>
-                <label style={{ fontSize: "0.75rem", color: "#6b7280" }}>
-                  MUNICÍPIO
+                <label className="label-com-icone">
+                  <Building2 size={16} color="#FFA500" />
+                  Município
                 </label>
                 <input
                   value={municipio}
@@ -584,15 +600,16 @@ export default function NovaFamiliaPage() {
                   placeholder="Ibimirim-PE"
                   style={{
                     width: "100%",
-                    padding: "8px",
-                    borderRadius: "4px",
+                    padding: "8px 12px",
+                    borderRadius: "6px",
                     border: "1px solid #d1d5db",
                   }}
                 />
               </div>
               <div>
-                <label style={{ fontSize: "0.75rem", color: "#6b7280" }}>
-                  COMUNIDADE
+                <label className="label-com-icone">
+                  <MapPin size={16} color="#FFA500" />
+                  Comunidade
                 </label>
                 <input
                   value={comunidade}
@@ -600,31 +617,33 @@ export default function NovaFamiliaPage() {
                   placeholder="Jeritacó"
                   style={{
                     width: "100%",
-                    padding: "8px",
-                    borderRadius: "4px",
+                    padding: "8px 12px",
+                    borderRadius: "6px",
                     border: "1px solid #d1d5db",
                   }}
                 />
               </div>
               <div>
-                <label style={{ fontSize: "0.75rem", color: "#6b7280" }}>
-                  RESPONSÁVEL
+                <label className="label-com-icone">
+                  <User size={16} color="#FFA500" />
+                  Responsável
                 </label>
                 <input
                   value={responsavel}
                   onChange={(e) => setResponsavel(e.target.value)}
-                  placeholder="Maria Rizeuda da Silva"
+                  placeholder="Maria josefa da Silva"
                   style={{
                     width: "100%",
-                    padding: "8px",
-                    borderRadius: "4px",
+                    padding: "8px 12px",
+                    borderRadius: "6px",
                     border: "1px solid #d1d5db",
                   }}
                 />
               </div>
               <div>
-                <label style={{ fontSize: "0.75rem", color: "#6b7280" }}>
-                  TELEFONE
+                <label className="label-com-icone">
+                  <Phone size={16} color="#FFA500" />
+                  Telefone
                 </label>
                 <input
                   value={telefone}
@@ -632,15 +651,16 @@ export default function NovaFamiliaPage() {
                   placeholder="(81) 9 9999-9999"
                   style={{
                     width: "100%",
-                    padding: "8px",
-                    borderRadius: "4px",
+                    padding: "8px 12px",
+                    borderRadius: "6px",
                     border: "1px solid #d1d5db",
                   }}
                 />
               </div>
               <div>
-                <label style={{ fontSize: "0.75rem", color: "#6b7280" }}>
-                  CPF DA RESPONSÁVEL (OPCIONAL)
+                <label className="label-com-icone">
+                  <FileText size={16} color="#FFA500" />
+                  Cpf da responsável (opcional)
                 </label>
                 <input
                   value={cpf}
@@ -648,15 +668,16 @@ export default function NovaFamiliaPage() {
                   placeholder="000.000.000-00"
                   style={{
                     width: "100%",
-                    padding: "8px",
-                    borderRadius: "4px",
+                    padding: "8px 12px",
+                    borderRadius: "6px",
                     border: "1px solid #d1d5db",
                   }}
                 />
               </div>
               <div>
-                <label style={{ fontSize: "0.75rem", color: "#6b7280" }}>
-                  PONTO DE REFERÊNCIA
+                <label className="label-com-icone">
+                  <Compass size={16} color="#FFA500" />
+                  Ponto de referência
                 </label>
                 <input
                   value={pontoReferencia}
@@ -664,8 +685,8 @@ export default function NovaFamiliaPage() {
                   placeholder="Perto da igreja, subindo a ladeira"
                   style={{
                     width: "100%",
-                    padding: "8px",
-                    borderRadius: "4px",
+                    padding: "8px 12px",
+                    borderRadius: "6px",
                     border: "1px solid #d1d5db",
                   }}
                 />
@@ -694,27 +715,30 @@ export default function NovaFamiliaPage() {
             >
               <h3
                 style={{
-                  fontSize: "0.75rem",
+                  fontSize: "0.85rem",
                   color: "#c2410c",
                   fontWeight: "bold",
                   margin: 0,
                 }}
               >
-                MEMBROS DA FAMÍLIA
+                Membros da família
               </h3>
               <button
                 onClick={adicionarMembro}
                 style={{
                   color: "#ea580c",
                   border: "1px solid #fdba74",
-                  padding: "4px 12px",
-                  borderRadius: "4px",
+                  padding: "6px 12px",
+                  borderRadius: "6px",
                   background: "#fff",
                   cursor: "pointer",
                   fontSize: "0.875rem",
+                  display: "flex",
+                  alignItems: "center",
+                  gap: "4px",
                 }}
               >
-                + Adicionar membro
+                <Plus size={16} color="#FFA500" /> Adicionar membro
               </button>
             </div>
 
@@ -740,22 +764,15 @@ export default function NovaFamiliaPage() {
                       marginBottom: "12px",
                     }}
                   >
-                    MEMBRO #{index + 1}
+                    Membro #{index + 1}
                   </p>
 
                   <div className="grid-2-colunas">
                     {/* Coluna da Esquerda */}
                     <div className="coluna-inputs">
                       <div>
-                        <label
-                          style={{
-                            display: "block",
-                            fontSize: "0.75rem",
-                            color: "#6b7280",
-                            marginBottom: "4px",
-                          }}
-                        >
-                          NOME DO MEMBRO
+                        <label className="label-com-icone">
+                          <User size={15} color="#FFA500" /> Nome do membro
                         </label>
                         <input
                           type="text"
@@ -766,23 +783,16 @@ export default function NovaFamiliaPage() {
                           placeholder="Digite o nome"
                           style={{
                             width: "100%",
-                            padding: "8px",
-                            borderRadius: "4px",
+                            padding: "8px 12px",
+                            borderRadius: "6px",
                             border: "1px solid #d1d5db",
                           }}
                         />
                       </div>
 
                       <div>
-                        <label
-                          style={{
-                            display: "block",
-                            fontSize: "0.75rem",
-                            color: "#6b7280",
-                            marginBottom: "4px",
-                          }}
-                        >
-                          SEXO
+                        <label className="label-com-icone">
+                          <Users size={15} color="#FFA500" /> Sexo
                         </label>
                         <input
                           type="text"
@@ -793,23 +803,16 @@ export default function NovaFamiliaPage() {
                           placeholder="M ou F"
                           style={{
                             width: "100%",
-                            padding: "8px",
-                            borderRadius: "4px",
+                            padding: "8px 12px",
+                            borderRadius: "6px",
                             border: "1px solid #d1d5db",
                           }}
                         />
                       </div>
 
                       <div>
-                        <label
-                          style={{
-                            display: "block",
-                            fontSize: "0.75rem",
-                            color: "#6b7280",
-                            marginBottom: "4px",
-                          }}
-                        >
-                          IDADE
+                        <label className="label-com-icone">
+                          <User size={15} color="#FFA500" /> Idade
                         </label>
                         <input
                           type="number"
@@ -820,8 +823,8 @@ export default function NovaFamiliaPage() {
                           placeholder="Ex: 8"
                           style={{
                             width: "100%",
-                            padding: "8px",
-                            borderRadius: "4px",
+                            padding: "8px 12px",
+                            borderRadius: "6px",
                             border: "1px solid #d1d5db",
                           }}
                         />
@@ -831,15 +834,8 @@ export default function NovaFamiliaPage() {
                     {/* Coluna da Direita */}
                     <div className="coluna-inputs">
                       <div>
-                        <label
-                          style={{
-                            display: "block",
-                            fontSize: "0.75rem",
-                            color: "#6b7280",
-                            marginBottom: "4px",
-                          }}
-                        >
-                          SÉRIE
+                        <label className="label-com-icone">
+                          <GraduationCap size={15} color="#FFA500" /> Série
                         </label>
                         <input
                           type="text"
@@ -850,23 +846,16 @@ export default function NovaFamiliaPage() {
                           placeholder="Ex: 8º Ano"
                           style={{
                             width: "100%",
-                            padding: "8px",
-                            borderRadius: "4px",
+                            padding: "8px 12px",
+                            borderRadius: "6px",
                             border: "1px solid #d1d5db",
                           }}
                         />
                       </div>
 
                       <div>
-                        <label
-                          style={{
-                            display: "block",
-                            fontSize: "0.75rem",
-                            color: "#6b7280",
-                            marginBottom: "4px",
-                          }}
-                        >
-                          ROUPA
+                        <label className="label-com-icone">
+                          <Shirt size={15} color="#FFA500" /> Roupa
                         </label>
                         <input
                           type="text"
@@ -877,23 +866,16 @@ export default function NovaFamiliaPage() {
                           placeholder="Ex: M"
                           style={{
                             width: "100%",
-                            padding: "8px",
-                            borderRadius: "4px",
+                            padding: "8px 12px",
+                            borderRadius: "6px",
                             border: "1px solid #d1d5db",
                           }}
                         />
                       </div>
 
                       <div>
-                        <label
-                          style={{
-                            display: "block",
-                            fontSize: "0.75rem",
-                            color: "#6b7280",
-                            marginBottom: "4px",
-                          }}
-                        >
-                          CALÇADO
+                        <label className="label-com-icone">
+                          <Footprints size={15} color="#FFA500" /> Calçado
                         </label>
                         <input
                           type="text"
@@ -904,8 +886,8 @@ export default function NovaFamiliaPage() {
                           placeholder="Ex: 35"
                           style={{
                             width: "100%",
-                            padding: "8px",
-                            borderRadius: "4px",
+                            padding: "8px 12px",
+                            borderRadius: "6px",
                             border: "1px solid #d1d5db",
                           }}
                         />
@@ -928,33 +910,32 @@ export default function NovaFamiliaPage() {
           >
             <h3
               style={{
-                fontSize: "0.75rem",
+                fontSize: "0.85rem",
                 color: "#c2410c",
                 fontWeight: "bold",
+                margin: 0,
               }}
             >
-              MORADIA
+              Moradia
             </h3>
             <p
               style={{
                 fontSize: "0.75rem",
                 color: "#9ca3af",
-                marginBottom: "12px",
+                marginBottom: "16px",
               }}
             >
               Categorias iguais às da Ficha de Cadastro Domiciliar do e-SUS
             </p>
 
             <div style={{ marginBottom: "16px" }}>
-              <p
-                style={{
-                  fontSize: "0.75rem",
-                  color: "#6b7280",
-                  marginBottom: "8px",
-                }}
+              <label
+                className="label-com-icone"
+                style={{ marginBottom: "8px" }}
               >
-                ABASTECIMENTO DE ÁGUA — MARQUE QUANTAS FOREM NESCESSARIO
-              </p>
+                <Droplets size={16} color="#FFA500" />
+                Abastecimento de água — Marque quantas forem necessárias
+              </label>
               <div style={{ display: "flex", gap: "8px", flexWrap: "wrap" }}>
                 {[
                   "Rede encanada até o domicílio",
@@ -990,16 +971,17 @@ export default function NovaFamiliaPage() {
 
             <div className="grid-3">
               <div>
-                <label style={{ fontSize: "0.75rem", color: "#6b7280" }}>
-                  TEM BANHEIRO?
+                <label className="label-com-icone">
+                  <Home size={16} color="#FFA500" />
+                  Tem banheiro?
                 </label>
                 <select
                   value={temBanheiro}
                   onChange={(e) => setTemBanheiro(e.target.value)}
                   style={{
                     width: "100%",
-                    padding: "8px",
-                    borderRadius: "4px",
+                    padding: "8px 12px",
+                    borderRadius: "6px",
                     border: "1px solid #d1d5db",
                   }}
                 >
@@ -1008,16 +990,17 @@ export default function NovaFamiliaPage() {
                 </select>
               </div>
               <div>
-                <label style={{ fontSize: "0.75rem", color: "#6b7280" }}>
-                  ESCOAMENTO DO BANHEIRO
+                <label className="label-com-icone">
+                  <Droplets size={16} color="#FFA500" />
+                  Escoamento do banheiro
                 </label>
                 <select
                   value={escoamento}
                   onChange={(e) => setEscoamento(e.target.value)}
                   style={{
                     width: "100%",
-                    padding: "8px",
-                    borderRadius: "4px",
+                    padding: "8px 12px",
+                    borderRadius: "6px",
                     border: "1px solid #d1d5db",
                   }}
                 >
@@ -1027,16 +1010,17 @@ export default function NovaFamiliaPage() {
                 </select>
               </div>
               <div>
-                <label style={{ fontSize: "0.75rem", color: "#6b7280" }}>
-                  TRATAMENTO DA ÁGUA
+                <label className="label-com-icone">
+                  <Droplets size={16} color="#FFA500" />
+                  Tratamento da água
                 </label>
                 <select
                   value={tratamentoAgua}
                   onChange={(e) => setTratamentoAgua(e.target.value)}
                   style={{
                     width: "100%",
-                    padding: "8px",
-                    borderRadius: "4px",
+                    padding: "8px 12px",
+                    borderRadius: "6px",
                     border: "1px solid #d1d5db",
                   }}
                 >
@@ -1070,14 +1054,15 @@ export default function NovaFamiliaPage() {
               <div>
                 <h3
                   style={{
-                    fontSize: "0.75rem",
+                    fontSize: "0.85rem",
                     color: "#c2410c",
                     fontWeight: "bold",
+                    margin: 0,
                   }}
                 >
-                  FONTES DE RENDA
+                  Fontes de renda
                 </h3>
-                <p style={{ fontSize: "0.75rem", color: "#9ca3af" }}>
+                <p style={{ fontSize: "0.75rem", color: "#9ca3af", margin: 0 }}>
                   Uma linha por fonte. Quem recebe é opcional.
                 </p>
               </div>
@@ -1086,13 +1071,17 @@ export default function NovaFamiliaPage() {
                 style={{
                   color: "#ea580c",
                   border: "1px solid #fdba74",
-                  padding: "4px 12px",
-                  borderRadius: "4px",
+                  padding: "6px 12px",
+                  borderRadius: "6px",
                   background: "#fff",
                   cursor: "pointer",
+                  display: "flex",
+                  alignItems: "center",
+                  gap: "4px",
+                  fontSize: "0.875rem",
                 }}
               >
-                + Adicionar fonte
+                <Plus size={16} color="#FFA500" /> Adicionar fonte
               </button>
             </div>
 
@@ -1110,18 +1099,30 @@ export default function NovaFamiliaPage() {
                   <tr
                     style={{
                       background: "#f9fafb",
-                      textTransform: "uppercase",
-                      fontSize: "0.7rem",
+                      fontSize: "0.75rem",
                       color: "#6b7280",
                     }}
                   >
-                    <th style={{ padding: "8px", textAlign: "left" }}>Tipo</th>
                     <th style={{ padding: "8px", textAlign: "left" }}>
-                      Quem recebe (Opcional)
+                      <span className="label-com-icone">
+                        <DollarSign size={14} color="#FFA500" /> Tipo
+                      </span>
                     </th>
-                    <th style={{ padding: "8px", textAlign: "left" }}>Faixa</th>
                     <th style={{ padding: "8px", textAlign: "left" }}>
-                      Observação
+                      <span className="label-com-icone">
+                        <User size={14} color="#FFA500" /> Quem recebe
+                        (opcional)
+                      </span>
+                    </th>
+                    <th style={{ padding: "8px", textAlign: "left" }}>
+                      <span className="label-com-icone">
+                        <DollarSign size={14} color="#FFA500" /> Faixa
+                      </span>
+                    </th>
+                    <th style={{ padding: "8px", textAlign: "left" }}>
+                      <span className="label-com-icone">
+                        <FileText size={14} color="#FFA500" /> Observação
+                      </span>
                     </th>
                   </tr>
                 </thead>
@@ -1141,8 +1142,8 @@ export default function NovaFamiliaPage() {
                           placeholder="Ex: Salário"
                           style={{
                             width: "100%",
-                            padding: "8px",
-                            borderRadius: "4px",
+                            padding: "8px 12px",
+                            borderRadius: "6px",
                             border: "1px solid #d1d5db",
                           }}
                         />
@@ -1161,8 +1162,8 @@ export default function NovaFamiliaPage() {
                           placeholder="Ex: Maria"
                           style={{
                             width: "100%",
-                            padding: "8px",
-                            borderRadius: "4px",
+                            padding: "8px 12px",
+                            borderRadius: "6px",
                             border: "1px solid #d1d5db",
                           }}
                         />
@@ -1174,11 +1175,11 @@ export default function NovaFamiliaPage() {
                           onChange={(e) =>
                             handleRendaChange(index, "faixa", e.target.value)
                           }
-                          placeholder="Ex: Até 1 Salário"
+                          placeholder="Ex: Até 1 salário"
                           style={{
                             width: "100%",
-                            padding: "8px",
-                            borderRadius: "4px",
+                            padding: "8px 12px",
+                            borderRadius: "6px",
                             border: "1px solid #d1d5db",
                           }}
                         />
@@ -1197,8 +1198,8 @@ export default function NovaFamiliaPage() {
                           placeholder="Observações..."
                           style={{
                             width: "100%",
-                            padding: "8px",
-                            borderRadius: "4px",
+                            padding: "8px 12px",
+                            borderRadius: "6px",
                             border: "1px solid #d1d5db",
                           }}
                         />
@@ -1231,7 +1232,9 @@ export default function NovaFamiliaPage() {
                 >
                   {totalPessoas}
                 </span>
-                <p style={{ fontSize: "0.7rem", color: "#6b7280" }}>pessoas</p>
+                <p style={{ fontSize: "0.7rem", color: "#6b7280", margin: 0 }}>
+                  pessoas
+                </p>
               </div>
               <div>
                 <span
@@ -1243,7 +1246,7 @@ export default function NovaFamiliaPage() {
                 >
                   {ate12Anos}
                 </span>
-                <p style={{ fontSize: "0.7rem", color: "#6b7280" }}>
+                <p style={{ fontSize: "0.7rem", color: "#6b7280", margin: 0 }}>
                   até 12 anos
                 </p>
               </div>
@@ -1257,7 +1260,9 @@ export default function NovaFamiliaPage() {
                 >
                   {de13a59Anos}
                 </span>
-                <p style={{ fontSize: "0.7rem", color: "#6b7280" }}>13 a 59</p>
+                <p style={{ fontSize: "0.7rem", color: "#6b7280", margin: 0 }}>
+                  13 a 59 anos
+                </p>
               </div>
               <div>
                 <span
@@ -1269,8 +1274,8 @@ export default function NovaFamiliaPage() {
                 >
                   {mais60Anos}
                 </span>
-                <p style={{ fontSize: "0.7rem", color: "#6b7280" }}>
-                  60 ou mais
+                <p style={{ fontSize: "0.7rem", color: "#6b7280", margin: 0 }}>
+                  60 anos ou mais
                 </p>
               </div>
             </div>
@@ -1280,7 +1285,7 @@ export default function NovaFamiliaPage() {
                 type="button"
                 style={{
                   padding: "8px 16px",
-                  borderRadius: "4px",
+                  borderRadius: "6px",
                   border: "1px solid #d1d5db",
                   background: "#fff",
                   cursor: "pointer",
@@ -1293,7 +1298,7 @@ export default function NovaFamiliaPage() {
                 disabled={salvando}
                 style={{
                   padding: "8px 16px",
-                  borderRadius: "4px",
+                  borderRadius: "6px",
                   border: "none",
                   background: "#ea580c",
                   color: "#fff",
