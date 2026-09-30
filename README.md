@@ -7,10 +7,10 @@ Next.js 15 (App Router) · React 19 · TypeScript
 
 | | |
 |---|---|
-| Backend | `cadastro-familias-api` — *(colar a URL do repositório aqui)* |
+| Backend | [`cadastro-familias-api`](https://github.com/swetonyancelmo/amigos-do-nordeste-api) — Java 21 + Spring Boot 3.4 |
+| App de campo | [`cadastro-familias-app`](https://github.com/swetonyancelmo/amigos-do-nordeste-app) — os envios dele chegam aqui como pré-cadastros |
 | Protótipo (Figma) | https://www.figma.com/design/dEZbIRWGGdOQEsvAtsmFxQ |
 | Especificação, requisitos e ADRs | no repositório da API, em `docs/` |
-| Backend | Java 21 + Spring Boot 3.4 |
 
 ---
 
@@ -38,11 +38,16 @@ tipografia, que ainda vão mudar.
 
 | Frame | Rota | Situação |
 |---|---|---|
+| Login | `/login` | pronta, integrada à API |
+| Casco logado (navegação, cabeçalho, menu mobile) | `(app)/layout.tsx` | pronto |
 | 01 · Dashboard | `/painel` | a fazer |
 | 02 · Lista de famílias | `/familias` | esqueleto |
-| 03 · Cadastro da família | `/familias/nova` | a fazer |
-| 04 · Necessidades da comunidade | `/relatorios` | esqueleto |
-| 05 · Mobile | mesma rota, responsiva | a fazer |
+| 03 · Cadastro da família | `/familias/novo` | a fazer (guia em `.claude/contextos/guia-cadastro-familia.md`) |
+| — · Pessoas | `/pessoas` | interface pronta, com dados de exemplo locais; falta ligar à API |
+| 04 · Necessidades da comunidade | `/relatorios` | esqueleto, com botão de imprimir |
+| — · Perfil | `/perfil` | esqueleto |
+| — · Chamados (pré-cadastros do app) | — | a fazer |
+| 05 · Mobile | mesma rota, responsiva | em andamento |
 
 ---
 
@@ -132,8 +137,22 @@ de administração de usuários agora, não.
 
 ## O que falta
 
-Marcado com `TODO(equipe frontend)` no código. Os maiores: as cinco telas, o
-mapa com Leaflet mais a malha municipal do IBGE, e a folha de impressão.
+Marcado com `TODO(equipe frontend)` no código. Os maiores: dashboard, lista e
+cadastro de famílias, relatórios, perfil, a tela de chamados (aprovar ou
+devolver o que a agente enviou pelo app), o mapa com Leaflet mais a malha
+municipal do IBGE, e a folha de impressão.
+
+Pendências de integração já conhecidas:
+
+- `src/lib/api.ts` ainda não tem `put` e `delete`. A API edita com `PUT` e
+  remove pessoa com `DELETE`.
+- `src/tipos/dominio.ts` está atrás dos enums da API (abastecimento de água,
+  tipo de comunidade). Confira no `GET /api/metadados` e acerte os tipos.
+- A tela de pessoas usa dados de exemplo, e o formulário tem parentesco e
+  comunidade escritos à mão. Comunidade já pode vir de `GET /api/comunidades`.
+  Parentesco precisa entrar em `/api/metadados` na API.
+- A API ainda não tem a rota do mapa (`/api/relatorios/mapa`) nem rota de
+  perfil. A troca de senha é `POST /api/auth/trocar-senha`.
 
 O mapa mostra **um ponto por comunidade**, com o tamanho proporcional ao número
 de famílias — nunca um pino por família. O porquê está na ADR-0005, no
