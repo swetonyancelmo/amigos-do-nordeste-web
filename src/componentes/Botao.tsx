@@ -1,11 +1,13 @@
 type Props = React.ButtonHTMLAttributes<HTMLButtonElement> & {
-  variante?: 'primario' | 'secundario';
+  variante?: 'primario' | 'secundario' | 'sucesso';
   largo?: boolean;
 };
 
 /**
- * Botão do sistema. Só existem duas variantes de propósito: `primario` para a
- * ação principal da tela (uma por tela) e `secundario` para o resto.
+ * Botão do sistema. `primario` é a ação principal da tela (uma por tela) e
+ * `secundario` é o resto. `sucesso` existe só para a decisão que cria um
+ * registro novo e não pode ser confundida com a que devolve (chamados): o
+ * verde do cacto, não uma terceira cor nova.
  */
 export function Botao({ variante = 'primario', largo = false, className, ...resto }: Props) {
   const classes = ['botao', `botao--${variante}`];

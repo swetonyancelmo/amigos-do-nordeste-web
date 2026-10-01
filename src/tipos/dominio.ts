@@ -46,7 +46,7 @@ export type TratamentoAgua =
 export type TipoFonteRenda =
   | 'BOLSA_FAMILIA' | 'APOSENTADORIA' | 'BPC' | 'TRABALHO_SAZONAL'
   | 'TRABALHO_FIXO' | 'TRABALHO_INFORMAL' | 'AUXILIO_DOENCA'
-  | 'PENSAO' | 'NENHUMA' | 'OUTRA';
+  | 'PENSAO' | 'OUTRA';
 
 export type FaixaRenda =
   | 'SEM_RENDA_FIXA' | 'ATE_1_SALARIO' | 'DE_1_A_2_SALARIOS' | 'MAIS_DE_2_SALARIOS';
@@ -144,12 +144,15 @@ export interface Pessoa {
   observacoes: string | null;
 }
 
-/** `FonteRendaResponse`. `pessoaId` null = renda da família (ex.: Bolsa Família). */
+/**
+ * `FonteRendaResponse`: de onde vem o dinheiro, não quanto. `pessoaId` null =
+ * renda da família (ex.: Bolsa Família). Quanto entra na casa é a
+ * `faixaRenda` da própria família (ADR-0003, V14).
+ */
 export interface FonteRenda {
   id: string;
   tipo: TipoFonteRenda;
   pessoaId: string | null;
-  faixa: FaixaRenda | null;
   observacao: string | null;
 }
 
@@ -181,6 +184,8 @@ interface CamposFamilia {
   escoamentoSanitario: EscoamentoSanitario | null;
   tratamentoAgua: TratamentoAgua | null;
   abastecimentoAgua: AbastecimentoAgua[];
+  /** Renda da casa somando todas as fontes. */
+  faixaRenda: FaixaRenda | null;
   pessoas: Pessoa[];
   fontesRenda: FonteRenda[];
   observacoes: string | null;
@@ -289,7 +294,6 @@ export interface ComplementoPessoa {
 export interface FonteRendaNova {
   tipo: TipoFonteRenda;
   pessoaIndice: number | null;
-  faixa: FaixaRenda | null;
   observacao: string | null;
 }
 
@@ -302,6 +306,8 @@ export interface AprovarPreCadastro {
   escoamentoSanitario?: EscoamentoSanitario | null;
   tratamentoAgua?: TratamentoAgua | null;
   abastecimentoAgua?: AbastecimentoAgua[];
+  /** Renda da casa somando todas as fontes; as fontes dizem só de onde vem. */
+  faixaRenda?: FaixaRenda | null;
   fontesRenda?: FonteRendaNova[];
   pessoas?: ComplementoPessoa[];
   observacoes?: string | null;

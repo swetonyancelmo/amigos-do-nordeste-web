@@ -7,7 +7,6 @@ import { useCabecalho } from '@/componentes/ContextoCabecalho';
 import { Aviso } from '@/componentes/Aviso';
 import { Botao } from '@/componentes/Botao';
 import { Campo } from '@/componentes/Campo';
-import { Modal } from '@/componentes/Modal';
 import { Selecao } from '@/componentes/Selecao';
 import { api } from '@/lib/api';
 import { data, dataHora } from '@/lib/datas';
@@ -37,10 +36,10 @@ type FormPessoa = {
   gestante: TresEstados;
 };
 
+/** De onde vem o dinheiro. Quanto entra é a faixa da família, não da fonte (ADR-0003). */
 type FormFonte = {
   tipo: TipoFonteRenda | '';
   pessoaIndice: string;
-  faixa: FaixaRenda | '';
 };
 
 const PESSOA_VAZIA: FormPessoa = {
@@ -54,12 +53,17 @@ const PESSOA_VAZIA: FormPessoa = {
  * calçado. Sem roupa e calçado a família fica fora do relatório de
  * necessidades, por isso os campos estão à mão, mas nenhum é obrigatório.
  *
+ * Duas colunas: a da esquerda é o cadastro (o que veio do campo, só leitura,
+ * e o que falta completar); a da direita é a decisão — aprovar, devolver, e
+ * o aviso de duplicata quando existe. É deliberado ficar sempre visível em
+ * vez de morar num modal: aprovar ou devolver é a única coisa que esta tela
+ * existe para fazer.
+ *
  * Aprovar cria a família pelo mesmo caminho do cadastro do painel. Devolver
  * manda de volta para a agente com o motivo, que ela lê no app.
  */
 export default function RevisaoChamado() {
   const { id } = useParams<{ id: string }>();
-  useCabecalho('Chamado');
   const { metadados } = useMetadados();
 
   const [detalhe, setDetalhe] = useState<PreCadastroDetalhe | null>(null);
@@ -73,14 +77,16 @@ export default function RevisaoChamado() {
   const [tratamento, setTratamento] = useState<TratamentoAgua | ''>('');
   const [abastecimento, setAbastecimento] = useState<AbastecimentoAgua[]>([]);
   const [observacoes, setObservacoes] = useState('');
+  const [faixaRenda, setFaixaRenda] = useState<FaixaRenda | ''>('');
   const [pessoas, setPessoas] = useState<FormPessoa[]>([]);
   const [fontes, setFontes] = useState<FormFonte[]>([]);
 
   const [enviando, setEnviando] = useState(false);
   const [erroAcao, setErroAcao] = useState<string | null>(null);
   const [aprovada, setAprovada] = useState<FamiliaGravada | null>(null);
-  const [devolvendo, setDevolvendo] = useState(false);
   const [motivo, setMotivo] = useState('');
+
+  useCabecalho(detalhe?.responsavelNome ?? 'Chamado');
 
   const carregar = useCallback(() => {
     setErroCarga(null);
@@ -149,11 +155,11 @@ export default function RevisaoChamado() {
       escoamentoSanitario: ouNulo(escoamento),
       tratamentoAgua: ouNulo(tratamento),
       abastecimentoAgua: abastecimento,
+      faixaRenda: ouNulo(faixaRenda),
       pessoas: complementos,
       fontesRenda: fontes.map((f) => ({
         tipo: f.tipo as TipoFonteRenda,
         pessoaIndice: f.pessoaIndice === '' ? null : Number(f.pessoaIndice),
-        faixa: ouNulo(f.faixa),
         observacao: null,
       })),
       observacoes: observacoes.trim() || null,
@@ -176,11 +182,9 @@ export default function RevisaoChamado() {
     setEnviando(true);
     try {
       await api.post(`/pre-cadastros/${id}/devolver`, { motivo: motivo.trim() });
-      setDevolvendo(false);
       setMotivo('');
       await carregar();
     } catch (e) {
-      setDevolvendo(false);
       setErroAcao(e instanceof Error ? e.message : 'Não foi possível devolver.');
     } finally {
       setEnviando(false);
@@ -190,8 +194,8 @@ export default function RevisaoChamado() {
   if (erroCarga) {
     return (
       <section className={estilos.pagina}>
+        <Link className={estilos.link} href="/chamados">← Voltar para os chamados</Link>
         <Aviso tom="erro" titulo="Não deu para abrir o chamado">{erroCarga}</Aviso>
-        <Link className={estilos.link} href="/chamados">Voltar para os chamados</Link>
       </section>
     );
   }
@@ -201,39 +205,21 @@ export default function RevisaoChamado() {
   }
 
   const pendente = detalhe.situacao === 'PENDENTE';
-  const rotuloSituacao = metadados?.situacaoPreCadastro.find((o) => o.valor === detalhe.situacao)?.rotulo
-    ?? detalhe.situacao;
+  const comunidadeColetada = detalhe.comunidadeNome
+    ? detalhe.comunidadeNome + (!detalhe.comunidadeId ? ' (não reconhecida)' : '')
+    : '—';
 
   return (
     <section className={estilos.pagina}>
-      <Link className={estilos.link} href="/chamados">← Voltar para os chamados</Link>
-
-      <div className={`cartao ${estilos.secao}`}>
-        <h2 className={estilos.secaoTitulo}>O que a agente coletou</h2>
-        <dl className={estilos.dados}>
-          <div><dt>Responsável</dt><dd>{detalhe.responsavelNome}</dd></div>
-          <div><dt>Telefone</dt><dd>{detalhe.telefone ?? '—'}</dd></div>
-          <div>
-            <dt>Comunidade</dt>
-            <dd>{detalhe.comunidadeNome ?? '—'}{!detalhe.comunidadeId && ' (não reconhecida)'}</dd>
-          </div>
-          <div><dt>Ponto de referência</dt><dd>{detalhe.pontoReferencia ?? '—'}</dd></div>
-          <div><dt>Agente</dt><dd>{detalhe.agenteNome}</dd></div>
-          <div><dt>Cadastrado no celular</dt><dd>{dataHora(detalhe.criadoEm)}</dd></div>
-          <div><dt>Recebido</dt><dd>{dataHora(detalhe.recebidoEm)}</dd></div>
-          <div><dt>Situação</dt><dd>{rotuloSituacao}</dd></div>
-        </dl>
-
-        {detalhe.possivelDuplicata && (
-          <Aviso titulo="Possível duplicata">
-            Já existe a família de {detalhe.possivelDuplicata.nome} nesta comunidade
-            {detalhe.possivelDuplicata.motivo === 'TELEFONE_IGUAL'
-              ? ', com o mesmo telefone.'
-              : ', com o nome da responsável parecido.'}
-            {' '}Confira antes de aprovar: se for a mesma, devolva explicando.
-          </Aviso>
-        )}
+      <div className={estilos.cabecalhoChamado}>
+        <Link className={estilos.link} href="/chamados">← Voltar para os chamados</Link>
+        <h1 className={estilos.tituloChamado}>{detalhe.responsavelNome ?? 'Sem nome'}</h1>
+        <p className="texto-apoio">
+          enviado por {detalhe.agenteNome} · {dataHora(detalhe.recebidoEm)}
+        </p>
       </div>
+
+      {erroAcao && <Aviso tom="erro" titulo="Não deu certo">{erroAcao}</Aviso>}
 
       {aprovada && (
         <Aviso titulo="Família criada">
@@ -252,228 +238,252 @@ export default function RevisaoChamado() {
         <Aviso titulo="Aprovado">Este chamado já virou família em {dataHora(detalhe.avaliadoEm)}.</Aviso>
       )}
 
-      {erroAcao && <Aviso tom="erro" titulo="Não deu certo">{erroAcao}</Aviso>}
-
-      {pendente ? (
-        <>
+      <div className={pendente ? estilos.revisao : estilos.colunaPrincipal}>
+        <div className={estilos.colunaPrincipal}>
           <div className={`cartao ${estilos.secao}`}>
-            <h2 className={estilos.secaoTitulo}>Família</h2>
+            <h2 className={estilos.secaoTitulo}>O que a agente coletou</h2>
             <div className={estilos.grade}>
-              <Selecao
-                rotulo="Comunidade"
-                opcoes={opcoesComunidade}
-                vazio="Escolha a comunidade"
-                value={comunidadeId}
-                onChange={(e) => setComunidadeId(e.target.value)}
-                erro={!comunidadeId ? 'Obrigatória para aprovar' : undefined}
-              />
-              <Campo
-                rotulo="CPF da responsável"
-                inputMode="numeric"
-                maxLength={14}
-                placeholder="Opcional"
-                value={cpf}
-                onChange={(e) => setCpf(e.target.value)}
-              />
-              <Selecao
-                rotulo="Tem banheiro?"
-                opcoes={SIM_NAO}
-                vazio="Não informado"
-                value={temBanheiro}
-                onChange={(e) => setTemBanheiro(e.target.value as TresEstados)}
-              />
-              <Selecao
-                rotulo="Escoamento sanitário"
-                opcoes={metadados?.escoamentoSanitario}
-                vazio="Não informado"
-                value={escoamento}
-                onChange={(e) => setEscoamento(e.target.value as EscoamentoSanitario | '')}
-              />
-              <Selecao
-                rotulo="Tratamento da água"
-                opcoes={metadados?.tratamentoAgua}
-                vazio="Não informado"
-                value={tratamento}
-                onChange={(e) => setTratamento(e.target.value as TratamentoAgua | '')}
-              />
-            </div>
-
-            <fieldset className={estilos.opcoesMarcar}>
-              <legend>Abastecimento de água (pode marcar mais de um)</legend>
-              {metadados?.abastecimentoAgua.map((o) => (
-                <label key={o.valor} className={estilos.marcar}>
-                  <input
-                    type="checkbox"
-                    checked={abastecimento.includes(o.valor as AbastecimentoAgua)}
-                    onChange={() => alternarAbastecimento(o.valor as AbastecimentoAgua)}
-                  />
-                  {o.rotulo}
-                </label>
-              ))}
-            </fieldset>
-
-            <div className="campo">
-              <label className="campo__rotulo" htmlFor="observacoes-chamado">Observações</label>
-              <textarea
-                id="observacoes-chamado"
-                className={`campo__entrada ${estilos.textoLongo}`}
-                value={observacoes}
-                onChange={(e) => setObservacoes(e.target.value)}
-              />
+              <Campo rotulo="Responsável" value={detalhe.responsavelNome ?? ''} disabled />
+              <Campo rotulo="Telefone" value={detalhe.telefone ?? '—'} disabled />
+              <Campo rotulo="Comunidade" value={comunidadeColetada} disabled />
+              <Campo rotulo="Ponto de referência" value={detalhe.pontoReferencia ?? '—'} disabled />
             </div>
           </div>
 
-          <div className={`cartao ${estilos.secao}`}>
-            <h2 className={estilos.secaoTitulo}>Pessoas</h2>
-            {detalhe.pessoas.length === 0 && <p className="texto-apoio">A agente não incluiu pessoas.</p>}
-            {detalhe.pessoas.map((p) => {
-              const form = pessoas[p.indice] ?? PESSOA_VAZIA;
-              return (
-                <div key={p.indice} className={estilos.pessoa}>
-                  <div className={estilos.pessoaCabecalho}>
-                    <p className={estilos.pessoaNome}>{nomeDaPessoa(p)}</p>
-                    <span className="texto-apoio">{descreverPessoa(p, metadados?.sexo)}</span>
-                  </div>
-                  <div className={estilos.grade}>
-                    <Selecao
-                      rotulo="Parentesco"
-                      opcoes={metadados?.parentesco}
-                      vazio="Não informado"
-                      value={form.parentesco}
-                      onChange={(e) => mudarPessoa(p.indice, { parentesco: e.target.value as Parentesco | '' })}
-                    />
-                    <Selecao
-                      rotulo="Estuda?"
-                      opcoes={SIM_NAO}
-                      vazio="Não informado"
-                      value={form.estuda}
-                      onChange={(e) => mudarPessoa(p.indice, { estuda: e.target.value as TresEstados })}
-                    />
-                    {form.estuda === 'true' && (
+          {pendente && (
+            <div className={`cartao ${estilos.secao}`}>
+              <h2 className={estilos.secaoTitulo}>Pessoas</h2>
+              {detalhe.pessoas.length === 0 && <p className="texto-apoio">A agente não incluiu pessoas.</p>}
+              {detalhe.pessoas.map((p) => {
+                const form = pessoas[p.indice] ?? PESSOA_VAZIA;
+                return (
+                  <div key={p.indice} className={estilos.pessoa}>
+                    <div className={estilos.pessoaCabecalho}>
+                      <p className={estilos.pessoaNome}>{nomeDaPessoa(p)}</p>
+                      <span className="texto-apoio">{descreverPessoa(p, metadados?.sexo)}</span>
+                    </div>
+                    <div className={estilos.grade}>
                       <Selecao
-                        rotulo="Série"
-                        opcoes={metadados?.serie}
-                        vazio="Não informada"
-                        value={form.serie}
-                        onChange={(e) => mudarPessoa(p.indice, { serie: e.target.value as Serie | '' })}
+                        rotulo="Parentesco"
+                        opcoes={metadados?.parentesco}
+                        vazio="Não informado"
+                        value={form.parentesco}
+                        onChange={(e) => mudarPessoa(p.indice, { parentesco: e.target.value as Parentesco | '' })}
                       />
-                    )}
-                    <Selecao
-                      rotulo="Tamanho de roupa"
-                      opcoes={metadados?.tamanhoRoupa}
-                      vazio="Não informado"
-                      value={form.tamanhoRoupa}
-                      onChange={(e) => mudarPessoa(p.indice, { tamanhoRoupa: e.target.value as TamanhoRoupa | '' })}
-                    />
-                    <Selecao
-                      rotulo="Número do calçado"
-                      opcoes={metadados?.numeroCalcado}
-                      vazio="Não informado"
-                      value={form.numeroCalcado}
-                      onChange={(e) => mudarPessoa(p.indice, { numeroCalcado: e.target.value })}
-                    />
-                    {p.sexo !== 'MASCULINO' && (
                       <Selecao
-                        rotulo="Gestante?"
+                        rotulo="Estuda?"
                         opcoes={SIM_NAO}
                         vazio="Não informado"
-                        value={form.gestante}
-                        onChange={(e) => mudarPessoa(p.indice, { gestante: e.target.value as TresEstados })}
+                        value={form.estuda}
+                        onChange={(e) => mudarPessoa(p.indice, { estuda: e.target.value as TresEstados })}
                       />
-                    )}
+                      {form.estuda === 'true' && (
+                        <Selecao
+                          rotulo="Série"
+                          opcoes={metadados?.serie}
+                          vazio="Não informada"
+                          value={form.serie}
+                          onChange={(e) => mudarPessoa(p.indice, { serie: e.target.value as Serie | '' })}
+                        />
+                      )}
+                      <Selecao
+                        rotulo="Tamanho de roupa"
+                        opcoes={metadados?.tamanhoRoupa}
+                        vazio="Não informado"
+                        value={form.tamanhoRoupa}
+                        onChange={(e) => mudarPessoa(p.indice, { tamanhoRoupa: e.target.value as TamanhoRoupa | '' })}
+                      />
+                      <Selecao
+                        rotulo="Número do calçado"
+                        opcoes={metadados?.numeroCalcado}
+                        vazio="Não informado"
+                        value={form.numeroCalcado}
+                        onChange={(e) => mudarPessoa(p.indice, { numeroCalcado: e.target.value })}
+                      />
+                      {p.sexo !== 'MASCULINO' && (
+                        <Selecao
+                          rotulo="Gestante?"
+                          opcoes={SIM_NAO}
+                          vazio="Não informado"
+                          value={form.gestante}
+                          onChange={(e) => mudarPessoa(p.indice, { gestante: e.target.value as TresEstados })}
+                        />
+                      )}
+                    </div>
                   </div>
-                </div>
-              );
-            })}
-          </div>
+                );
+              })}
+            </div>
+          )}
 
-          <div className={`cartao ${estilos.secao}`}>
-            <h2 className={estilos.secaoTitulo}>Fontes de renda</h2>
-            {fontes.length === 0 && <p className="texto-apoio">Nenhuma fonte de renda informada.</p>}
-            {fontes.map((f, i) => (
-              <div key={i} className={estilos.linhaRenda}>
+          {pendente && (
+            <div className={`cartao ${estilos.secao}`}>
+              <h2 className={estilos.secaoTitulo}>Completar o cadastro</h2>
+              <div className={estilos.grade}>
                 <Selecao
-                  rotulo="Tipo"
-                  opcoes={metadados?.tipoFonteRenda}
-                  vazio="Escolha o tipo"
-                  value={f.tipo}
-                  onChange={(e) => mudarFonte(i, { tipo: e.target.value as TipoFonteRenda | '' })}
+                  rotulo="Comunidade"
+                  opcoes={opcoesComunidade}
+                  vazio="Escolha a comunidade"
+                  value={comunidadeId}
+                  onChange={(e) => setComunidadeId(e.target.value)}
+                  erro={!comunidadeId ? 'Obrigatória para aprovar' : undefined}
+                />
+                <Campo
+                  rotulo="CPF da responsável"
+                  inputMode="numeric"
+                  maxLength={14}
+                  placeholder="Opcional"
+                  value={cpf}
+                  onChange={(e) => setCpf(e.target.value)}
                 />
                 <Selecao
-                  rotulo="Quem recebe"
-                  opcoes={opcoesPessoa}
-                  vazio="A família"
-                  value={f.pessoaIndice}
-                  onChange={(e) => mudarFonte(i, { pessoaIndice: e.target.value })}
+                  rotulo="Tem banheiro?"
+                  opcoes={SIM_NAO}
+                  vazio="Não informado"
+                  value={temBanheiro}
+                  onChange={(e) => setTemBanheiro(e.target.value as TresEstados)}
                 />
                 <Selecao
-                  rotulo="Faixa"
-                  opcoes={metadados?.faixaRenda}
-                  vazio="Não informada"
-                  value={f.faixa}
-                  onChange={(e) => mudarFonte(i, { faixa: e.target.value as FaixaRenda | '' })}
+                  rotulo="Escoamento sanitário"
+                  opcoes={metadados?.escoamentoSanitario}
+                  vazio="Não informado"
+                  value={escoamento}
+                  onChange={(e) => setEscoamento(e.target.value as EscoamentoSanitario | '')}
                 />
+                <Selecao
+                  rotulo="Tratamento da água"
+                  opcoes={metadados?.tratamentoAgua}
+                  vazio="Não informado"
+                  value={tratamento}
+                  onChange={(e) => setTratamento(e.target.value as TratamentoAgua | '')}
+                />
+              </div>
+
+              <fieldset className={estilos.opcoesMarcar}>
+                <legend>Abastecimento de água (pode marcar mais de um)</legend>
+                {metadados?.abastecimentoAgua.map((o) => (
+                  <label key={o.valor} className={estilos.marcar}>
+                    <input
+                      type="checkbox"
+                      checked={abastecimento.includes(o.valor as AbastecimentoAgua)}
+                      onChange={() => alternarAbastecimento(o.valor as AbastecimentoAgua)}
+                    />
+                    {o.rotulo}
+                  </label>
+                ))}
+              </fieldset>
+
+              <div className="campo">
+                <label className="campo__rotulo" htmlFor="observacoes-chamado">Observações</label>
+                <textarea
+                  id="observacoes-chamado"
+                  className={`campo__entrada ${estilos.textoLongo}`}
+                  value={observacoes}
+                  onChange={(e) => setObservacoes(e.target.value)}
+                />
+              </div>
+            </div>
+          )}
+
+          {pendente && (
+            <div className={`cartao ${estilos.secao}`}>
+              <h2 className={estilos.secaoTitulo}>Renda da família</h2>
+              <Selecao
+                rotulo="Quanto entra na casa por mês, somando tudo"
+                opcoes={metadados?.faixaRenda}
+                vazio="Não informada"
+                value={faixaRenda}
+                onChange={(e) => setFaixaRenda(e.target.value as FaixaRenda | '')}
+              />
+
+              <p className={estilos.subtitulo}>De onde vem</p>
+              {fontes.length === 0 && <p className="texto-apoio">Nenhuma fonte de renda informada.</p>}
+              {fontes.map((f, i) => (
+                <div key={i} className={estilos.linhaRenda}>
+                  <Selecao
+                    rotulo="Tipo"
+                    opcoes={metadados?.tipoFonteRenda}
+                    vazio="Escolha o tipo"
+                    value={f.tipo}
+                    onChange={(e) => mudarFonte(i, { tipo: e.target.value as TipoFonteRenda | '' })}
+                  />
+                  <Selecao
+                    rotulo="Quem recebe"
+                    opcoes={opcoesPessoa}
+                    vazio="A família"
+                    value={f.pessoaIndice}
+                    onChange={(e) => mudarFonte(i, { pessoaIndice: e.target.value })}
+                  />
+                  <Botao
+                    type="button"
+                    variante="secundario"
+                    onClick={() => setFontes((atual) => atual.filter((_, j) => j !== i))}
+                  >
+                    Remover
+                  </Botao>
+                </div>
+              ))}
+              <div>
                 <Botao
                   type="button"
                   variante="secundario"
-                  onClick={() => setFontes((atual) => atual.filter((_, j) => j !== i))}
+                  onClick={() => setFontes((atual) => [...atual, { tipo: '', pessoaIndice: '' }])}
                 >
-                  Remover
+                  Adicionar fonte de renda
                 </Botao>
               </div>
-            ))}
-            <div>
+            </div>
+          )}
+        </div>
+
+        {pendente && (
+          <div className={estilos.colunaLateral}>
+            {detalhe.possivelDuplicata && (
+              <Aviso titulo="Possível duplicata">
+                Já existe a família de {detalhe.possivelDuplicata.nome} nesta comunidade
+                {detalhe.possivelDuplicata.motivo === 'TELEFONE_IGUAL'
+                  ? ', com o mesmo telefone.'
+                  : ', com o nome da responsável parecido.'}
+                {' '}Confira antes de aprovar: se for a mesma, devolva explicando.
+              </Aviso>
+            )}
+
+            <div className={`cartao ${estilos.secao}`}>
+              <h2 className={estilos.secaoTitulo}>Decisão</h2>
+              <Botao type="button" variante="sucesso" largo disabled={enviando} onClick={aprovar}>
+                {enviando ? 'Enviando…' : 'Aprovar e criar família'}
+              </Botao>
               <Botao
                 type="button"
                 variante="secundario"
-                onClick={() => setFontes((atual) => [...atual, { tipo: '', pessoaIndice: '', faixa: '' }])}
+                largo
+                disabled={enviando || motivo.trim() === ''}
+                onClick={devolver}
               >
-                Adicionar fonte de renda
+                Devolver para a agente
               </Botao>
+              <div className="campo">
+                <label className="campo__rotulo" htmlFor="motivo-devolucao">
+                  Motivo da devolução
+                </label>
+                <textarea
+                  id="motivo-devolucao"
+                  className={`campo__entrada ${estilos.textoLongo}`}
+                  placeholder="O que ela precisa corrigir?"
+                  value={motivo}
+                  onChange={(e) => setMotivo(e.target.value)}
+                />
+                <span className="campo__ajuda">A agente lê exatamente este texto no celular.</span>
+              </div>
             </div>
-          </div>
 
-          <div className={estilos.acoes}>
-            <Botao type="button" variante="secundario" disabled={enviando} onClick={() => setDevolvendo(true)}>
-              Devolver para a agente
-            </Botao>
-            <Botao type="button" disabled={enviando} onClick={aprovar}>
-              {enviando ? 'Enviando…' : 'Aprovar e criar família'}
-            </Botao>
+            <Aviso titulo="O que acontece ao aprovar">
+              A família entra na base e passa a contar nos relatórios e no mapa. Antes disso, ela não
+              aparece em lugar nenhum.
+            </Aviso>
           </div>
-        </>
-      ) : null}
-
-      <Modal aberto={devolvendo} titulo="Devolver para a agente" onFechar={() => setDevolvendo(false)}>
-        <form
-          className={estilos.secao}
-          onSubmit={(e) => {
-            e.preventDefault();
-            void devolver();
-          }}
-        >
-          <div className="campo">
-            <label className="campo__rotulo" htmlFor="motivo-devolucao">
-              O que ela precisa corrigir?
-            </label>
-            <textarea
-              id="motivo-devolucao"
-              className={`campo__entrada ${estilos.textoLongo}`}
-              value={motivo}
-              onChange={(e) => setMotivo(e.target.value)}
-              required
-              autoFocus
-            />
-            <span className="campo__ajuda">A agente lê exatamente este texto no celular.</span>
-          </div>
-          <div className={estilos.acoes}>
-            <Botao type="button" variante="secundario" onClick={() => setDevolvendo(false)}>Cancelar</Botao>
-            <Botao type="submit" disabled={enviando || motivo.trim() === ''}>
-              {enviando ? 'Enviando…' : 'Devolver'}
-            </Botao>
-          </div>
-        </form>
-      </Modal>
+        )}
+      </div>
     </section>
   );
 }

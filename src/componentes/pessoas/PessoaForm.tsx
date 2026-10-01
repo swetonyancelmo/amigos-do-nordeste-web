@@ -316,7 +316,6 @@ export function PessoaForm({ onSalvar, onFechar, valorInicial }: Props) {
         {form.fontesRenda.map((fonte, indice) => (
           <div key={indice} className={styles.linhaRenda}>
             <span>{metadados?.tipoFonteRenda.find((o) => o.valor === fonte.tipo)?.rotulo ?? fonte.tipo}</span>
-            <span>{metadados?.faixaRenda.find((o) => o.valor === fonte.faixa)?.rotulo ?? fonte.faixa ?? '—'}</span>
             <button type="button" className={styles.botaoRemover} onClick={() => removerFonteRenda(indice)}>
               Remover
             </button>
