@@ -62,8 +62,9 @@ export const api = {
   get: <T>(caminho: string) => chamar<T>(caminho),
   post: <T>(caminho: string, corpo?: unknown) =>
     chamar<T>(caminho, { method: 'POST', body: JSON.stringify(corpo ?? {}) }),
-  patch: <T>(caminho: string, corpo: unknown) =>
-    chamar<T>(caminho, { method: 'PATCH', body: JSON.stringify(corpo) }),
+  put: <T>(caminho: string, corpo: unknown) =>
+    chamar<T>(caminho, { method: 'PUT', body: JSON.stringify(corpo) }),
+  delete: <T = void>(caminho: string) => chamar<T>(caminho, { method: 'DELETE' }),
 };
 
 export { ErroApi };
