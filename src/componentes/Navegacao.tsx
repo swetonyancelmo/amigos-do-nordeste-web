@@ -12,7 +12,7 @@ import { api, guardarToken } from '@/lib/api';
 const TELA_ESTREITA = '(max-width: 899px)';
 
 /* Ícones desenhados à mão, no estilo do Sol.tsx — traço simples, sem trazer
-   uma biblioteca inteira pra quatro ícones. Onde já existe rótulo ao lado,
+   uma biblioteca inteira pra cinco ícones. Onde já existe rótulo ao lado,
    o ícone é decorativo (aria-hidden); os dois botões sem rótulo (abrir e
    fechar o menu) levam aria-label no <button>. */
 
@@ -23,6 +23,17 @@ function IconeCasa() {
          aria-hidden="true" focusable="false">
       <path d="M4 11.5 12 4l8 7.5" />
       <path d="M6 10v9a1 1 0 0 0 1 1h3v-6h4v6h3a1 1 0 0 0 1-1v-9" />
+    </svg>
+  );
+}
+
+function IconeChamados() {
+  return (
+    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+         strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"
+         aria-hidden="true" focusable="false">
+      <path d="M4 13h4l1.5 3h5L16 13h4" />
+      <path d="M5.5 6.5 4 13v5a1 1 0 0 0 1 1h14a1 1 0 0 0 1-1v-5l-1.5-6.5A1 1 0 0 0 17.5 6h-11a1 1 0 0 0-1 .5Z" />
     </svg>
   );
 }
@@ -87,6 +98,7 @@ function IconePerfil() {
 
 const ITENS = [
   { href: '/familias', rotulo: 'Famílias', Icone: IconeCasa },
+  { href: '/chamados', rotulo: 'Chamados', Icone: IconeChamados },
   { href: '/pessoas', rotulo: 'Pessoas', Icone: IconePessoas },
   { href: '/relatorios', rotulo: 'Relatórios', Icone: IconeRelatorio },
 ];

@@ -93,6 +93,7 @@ export interface Metadados {
   serie: Opcao[];
   tamanhoRoupa: Opcao[];
   numeroCalcado: Opcao[];
+  situacaoPreCadastro: Opcao[];
 }
 
 /* ------------------------------------------------------- comunidade e município */

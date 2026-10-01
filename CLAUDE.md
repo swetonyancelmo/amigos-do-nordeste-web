@@ -20,16 +20,18 @@ src/app/
   page.tsx                 redireciona para /login
   login/                   tela de entrada (POST /api/auth/login)
   (app)/layout.tsx         casco logado: <Navegacao> + cabeçalho via ContextoCabecalho
+  (app)/chamados/          fila de pré-cadastros do app; [id] revisa, aprova ou devolve
   (app)/familias/          esqueleto (TODO)
   (app)/pessoas/           UI pronta, mas com DADOS MOCK locais, sem chamar a API
   (app)/relatorios/        esqueleto (TODO); botão Imprimir já existe
   (app)/perfil/            esqueleto (TODO)
-src/componentes/           Botao, Campo, Aviso, Modal, Marca, Sol, Cabecalho,
-                           ContextoCabecalho (useCabecalho), Navegacao,
+src/componentes/           Botao, Campo, Selecao, Aviso, Modal, Marca, Sol, Cabecalho,
+                           ContextoCabecalho (useCabecalho), Navegacao, GuardaSessao,
                            pessoas/{ListaPessoas,ModalPessoa,PessoaForm},
                            fonte-renda/ModalFonteRenda
 src/lib/api.ts             cliente HTTP (token em memória, renovação automática em 401)
 src/lib/metadados.ts       useMetadados(): GET /api/metadados com cache por sessão
+src/lib/datas.ts           data e data/hora para a tela (fuso America/Recife)
 src/tipos/dominio.ts       só tipos, espelhando os enums/DTOs do backend
 design-system/             gerador da vitrine (pnpm design-system)
 .claude/contextos/guia-cadastro-familia.md   guia longo da tela de cadastro de família
@@ -74,7 +76,7 @@ Swagger: `http://localhost:3333/swagger-ui.html`. Rotas que interessam ao painel
 `semBanheiro`, `incluirInativas`, `pagina`, `porPagina`; ficha em `/{id}` com
 `totais` calculados), `/api/pessoas`, `/api/familias/{id}/pessoas`,
 `/api/comunidades`, `/api/municipios`, `/api/pre-cadastros` (fila de chamados:
-listar, `/{id}/aprovar`, `/{id}/devolver`), `/api/relatorios/necessidades`,
+listar, ficha em `/{id}`, `/{id}/aprovar`, `/{id}/devolver`), `/api/relatorios/necessidades`,
 `/api/relatorios/situacao`, `/api/auth/trocar-senha`.
 
 **Divergências conhecidas que precisam de correção:**
