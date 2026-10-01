@@ -5,6 +5,7 @@ import { useState } from 'react';
 import { Botao } from '@/componentes/Botao';
 import { ModalFonteRenda, type FonteRendaFormulario } from '@/componentes/fonte-renda/ModalFonteRenda';
 import { useMetadados } from '@/lib/metadados';
+import type { Sexo } from '@/tipos/dominio';
 import styles from '@/app/(app)/pessoas/pessoas.module.css';
 
 type IconeCampo =
@@ -46,7 +47,7 @@ function RotuloCampo({ htmlFor, label, icon }: { htmlFor: string; label: string;
 export type PessoaFormulario = {
   id?: string;
   nome: string;
-  sexo: 'F' | 'M';
+  sexo: Sexo;
   dataNascimento: string;
   idadeEstimada: string;
   parentesco: string;
@@ -70,7 +71,7 @@ type Props = {
 
 const valoresIniciais: PessoaFormulario = {
   nome: '',
-  sexo: 'F',
+  sexo: 'FEMININO',
   dataNascimento: '',
   idadeEstimada: '',
   parentesco: 'FILHA',
@@ -102,7 +103,7 @@ export function PessoaForm({ onSalvar, onFechar, valorInicial }: Props) {
       [chave]: valor,
       cadastroIncompleto: !valor && chave === 'nome' ? true : atual.cadastroIncompleto,
       // Homem não pode ficar marcado como gestante ao trocar o sexo.
-      gestante: chave === 'sexo' && valor === 'M' ? false : atual.gestante,
+      gestante: chave === 'sexo' && valor === 'MASCULINO' ? false : atual.gestante,
     }));
   }
 
@@ -167,8 +168,9 @@ export function PessoaForm({ onSalvar, onFechar, valorInicial }: Props) {
             value={form.sexo}
             onChange={(event: ChangeEvent<HTMLSelectElement>) => alterarCampo('sexo', event.target.value)}
           >
-            <option value="F">Feminino</option>
-            <option value="M">Masculino</option>
+            {metadados?.sexo.map((opcao) => (
+              <option key={opcao.valor} value={opcao.valor}>{opcao.rotulo}</option>
+            ))}
           </select>
         </div>
 
@@ -281,7 +283,7 @@ export function PessoaForm({ onSalvar, onFechar, valorInicial }: Props) {
             type="checkbox"
             checked={form.gestante}
             onChange={(event: ChangeEvent<HTMLInputElement>) => alterarCampo('gestante', event.target.checked)}
-            disabled={form.sexo === 'M'}
+            disabled={form.sexo === 'MASCULINO'}
           />
           <span className={styles.checkboxTexto}><IconeFormulario nome="gestante" /> Gestante</span>
         </label>

@@ -17,7 +17,7 @@
  */
 
 export type TipoComunidade = 'SITIO' | 'ASSENTAMENTO' | 'DISTRITO' | 'POVOADO' | 'BAIRRO';
-export type Sexo = 'F' | 'M';
+export type Sexo = 'FEMININO' | 'MASCULINO';
 
 export type AbastecimentoAgua =
   | 'REDE_ENCANADA' | 'POCO_OU_NASCENTE' | 'CISTERNA' | 'CARRO_PIPA' | 'OUTRO';

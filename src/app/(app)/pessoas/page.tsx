@@ -23,7 +23,7 @@ const pessoasIniciais: PessoaFormulario[] = [
   {
     id: 'p-1',
     nome: 'Maria da Silva',
-    sexo: 'F',
+    sexo: 'FEMININO',
     dataNascimento: '2014-05-11',
     idadeEstimada: '',
     parentesco: 'FILHA',
@@ -41,7 +41,7 @@ const pessoasIniciais: PessoaFormulario[] = [
   {
     id: 'p-2',
     nome: 'João Pereira',
-    sexo: 'M',
+    sexo: 'MASCULINO',
     dataNascimento: '',
     idadeEstimada: '11',
     parentesco: 'FILHO',
