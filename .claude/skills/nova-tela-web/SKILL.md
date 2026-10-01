@@ -48,6 +48,7 @@ cabeçalho re-renderiza a cada tecla.
 |---|---|
 | botão | `<Botao variante="primario" \| "secundario" largo>`: um primário por tela |
 | campo de texto | `<Campo rotulo ajuda erro …inputProps>`: já liga `id`, `aria-describedby` e o estado de inválido |
+| lista fechada | `<Selecao rotulo opcoes={metadados?.x} vazio="Não informado">`: mesmo visual do `Campo`, opções da API |
 | recado ou erro | `<Aviso tom="explicacao" \| "erro" titulo>`: só onde a pessoa esbarra na regra; aviso permanente vira ruído |
 | diálogo | `<Modal aberto titulo onFechar>`: Esc fecha e aceita modal dentro de modal |
 | bloco com borda | classe `cartao` |

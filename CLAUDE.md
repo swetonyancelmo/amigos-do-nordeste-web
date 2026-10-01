@@ -79,29 +79,14 @@ Swagger: `http://localhost:3333/swagger-ui.html`. Rotas que interessam ao painel
 listar, ficha em `/{id}`, `/{id}/aprovar`, `/{id}/devolver`), `/api/relatorios/necessidades`,
 `/api/relatorios/situacao`, `/api/auth/trocar-senha`.
 
-**Divergências conhecidas que precisam de correção:**
+**O que ainda falta ou diverge (01/10/2026):**
 
-- `src/lib/api.ts` só expõe `get`, `post` e `patch`, mas a API usa **`PUT`**
-  (famílias, pessoas, comunidades, municípios) e **`DELETE`** (pessoas) e não
-  tem nenhum `PATCH`. Acrescente `put`/`delete` ao usar essas rotas.
-- `src/tipos/dominio.ts` está desatualizado em relação aos enums Java: por
-  exemplo, `AbastecimentoAgua` (API: `REDE_PUBLICA`, `POCO_NASCENTE_NO_DOMICILIO`,
-  `CAPTACAO_DIRETA_RIO`, `POCO_COLETIVO`, `CHAFARIZ`…) e `TipoComunidade` (API
-  tem `COMUNIDADE_QUILOMBOLA`, `VILA`, `OUTRO`). A fonte da verdade são os
-  enums em `cadastro-familias-api/src/main/java/.../enums/` e o que
-  `/api/metadados` devolve.
-- O mock de `(app)/pessoas/page.tsx` usa `serie: 'FUNDAMENTAL_1'`, que não
-  existe. A série válida vai de `PRE` e `ANO_1`…`ANO_9` até `ENSINO_MEDIO` e
-  `NAO_SE_APLICA`.
-- `PessoaForm.tsx` tem **parentesco** e **comunidade** escritos à mão.
-  Parentesco é enum na API mas ainda não está em `/api/metadados` (peça lá).
-  Comunidade deve vir de `GET /api/comunidades`, que já existe.
-- Rotas citadas no código que **não existem** na API: `GET /api/relatorios/mapa`
-  e `GET/PATCH /api/usuario` (perfil). Troca de senha é
-  `POST /api/auth/trocar-senha`. O comentário do login fala em
-  `pnpm usuario:criar`, mas isso é resquício da época NestJS.
-- Não há proteção de rota: as páginas de `(app)` renderizam sem sessão, e o
-  token some ao recarregar a página até a primeira chamada renovar pelo cookie.
+- `PessoaForm.tsx` tem **comunidade** escrita à mão (lista fictícia); deve vir de
+  `GET /api/comunidades`. A tela `/pessoas` continua com dados mock.
+- A API ainda não tem rota de mapa (`/api/relatorios/mapa`) nem de perfil
+  (`/api/usuario`). Troca de senha é `POST /api/auth/trocar-senha`.
+- `src/tipos/dominio.ts` foi alinhado com os enums e DTOs Java nesta data. Ao
+  mudar algo na API, ajuste aqui no mesmo PR (skill `mudanca-de-contrato`).
 
 As decisões de arquitetura (ADRs) e os requisitos estão no repositório da API,
 em `docs/`. Leia antes de mudar autenticação, modelo de dados ou mapa.

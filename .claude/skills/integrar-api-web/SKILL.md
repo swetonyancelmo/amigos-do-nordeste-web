@@ -18,16 +18,13 @@ description: Liga uma tela do painel Next.js a uma rota da API Spring Boot do ca
 
 ## Cliente HTTP (`src/lib/api.ts`)
 
-- Prefixa `/api`, envia `credentials: 'include'` e o `Authorization` com o
-  token em memória. Em `401`, renova uma vez via cookie e repete a chamada.
-- Hoje expõe só `get`, `post` e `patch`. A API usa **`PUT`** para editar e
-  **`DELETE`** para remover pessoa, e não tem `PATCH`. Se precisar, acrescente
-  seguindo o mesmo formato:
-  ```ts
-  put: <T>(caminho: string, corpo: unknown) =>
-    chamar<T>(caminho, { method: 'PUT', body: JSON.stringify(corpo) }),
-  delete: <T = void>(caminho: string) => chamar<T>(caminho, { method: 'DELETE' }),
-  ```
+- Chama `/api/...` na **própria origem** (o `rewrites` do `next.config.mjs`
+  repassa para a API em `API_URL`), envia `credentials: 'include'` e o
+  `Authorization` com o token em memória. Em `401`, renova uma vez via cookie e
+  repete a chamada; se nem a renovação passa, a `GuardaSessao` manda para o login.
+- Expõe `get`, `post`, `put` e `delete` (a API edita com `PUT` e não tem `PATCH`).
+- Sem resposta do servidor (rede, API fora do ar) vira `ErroApi` com status 0 e
+  mensagem em português.
 - **Nunca** guarde o token em `localStorage`, `sessionStorage` ou cookie
   legível (ADR-0002). O refresh é cookie `httpOnly` que o JS nem vê.
 - Erros chegam como `ErroApi` com `status` e a mensagem em português da API
@@ -38,17 +35,9 @@ description: Liga uma tela do painel Next.js a uma rota da API Spring Boot do ca
 
 - Só `type`/`interface`, **nunca valores ou rótulos**.
 - Espelham os records e enums Java. Ao usar um tipo, confira se ele bate com o
-  Java. Alguns estão desatualizados (`AbastecimentoAgua`, `TipoComunidade`).
-  Ao corrigir, siga a skill
-  `mudanca-de-contrato`, se a pasta que agrupa os repositórios estiver
-  disponível.
-- Página da API:
-  ```ts
-  export interface Pagina<T> {
-    itens: T[]; pagina: number; porPagina: number; total: number; totalPaginas: number;
-  }
-  ```
-  (a página começa em 0).
+  Java; mudou lá, siga a skill `mudanca-de-contrato`.
+- Página da API: `Pagina<T>` (`itens`, `pagina` a partir de 0, `porPagina`,
+  `total`, `totalPaginas`).
 - IDs são UUID em string; datas `AAAA-MM-DD`; data e hora vêm em ISO com fuso.
 
 ## Listas fechadas
@@ -56,9 +45,9 @@ description: Liga uma tela do painel Next.js a uma rota da API Spring Boot do ca
 `const { metadados, carregando, erro } = useMetadados();`. As chaves são as de
 `MetadadosResponse` (`tipoComunidade`, `sexo`, `abastecimentoAgua`,
 `escoamentoSanitario`, `tratamentoAgua`, `tipoFonteRenda`, `faixaRenda`,
-`serie`, `tamanhoRoupa`, `numeroCalcado`), cada uma com `{ valor, rotulo }`.
-Envie `valor` para a API e mostre `rotulo`. `Parentesco` ainda não está lá:
-peça na API em vez de fixar outra lista.
+`serie`, `tamanhoRoupa`, `numeroCalcado`, `parentesco`, `situacaoPreCadastro`),
+cada uma com `{ valor, rotulo }`. Envie `valor` para a API e mostre `rotulo`;
+para montar o select, use `<Selecao opcoes={metadados?.x}>`.
 
 ## Padrão de carregamento numa tela
 
@@ -80,10 +69,8 @@ os vazios.
 
 ## Sessão
 
-O token some ao recarregar a página (está em memória). A primeira chamada
-recebe `401`, renova pelo cookie e segue. Se a renovação falha, redirecione
-para `/login`. Ainda não há guarda de rota no grupo `(app)`; se a tarefa for
-essa, faça a guarda tentando `POST /api/auth/renovar` ao montar o layout.
+O token some ao recarregar a página (está em memória). A `GuardaSessao` do
+layout `(app)` renova pelo cookie ao montar; sem sessão, manda para `/login`.
 
 ## Verificar
 
