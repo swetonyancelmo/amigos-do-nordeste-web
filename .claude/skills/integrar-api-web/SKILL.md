@@ -38,8 +38,8 @@ description: Liga uma tela do painel Next.js a uma rota da API Spring Boot do ca
 
 - Só `type`/`interface`, **nunca valores ou rótulos**.
 - Espelham os records e enums Java. Ao usar um tipo, confira se ele bate com o
-  Java. Alguns estão desatualizados (`AbastecimentoAgua`, `TipoComunidade`,
-  `Sexo` é `FEMININO`/`MASCULINO` na API). Ao corrigir, siga a skill
+  Java. Alguns estão desatualizados (`AbastecimentoAgua`, `TipoComunidade`).
+  Ao corrigir, siga a skill
   `mudanca-de-contrato`, se a pasta que agrupa os repositórios estiver
   disponível.
 - Página da API:
