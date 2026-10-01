@@ -1,6 +1,10 @@
 /**
  * Cliente da API.
  *
+ * Toda chamada vai para `/api/...` na própria origem do painel; o Next repassa
+ * para a API (rewrites em next.config.mjs, ADR-0004). É isso que deixa o
+ * cookie de renovação funcionar com a API em outro domínio.
+ *
  * Decisões que valem manter (ver docs/decisoes/ADR-0002):
  *  - o access token vive EM MEMÓRIA, nunca em localStorage. Se um XSS acontecer,
  *    não há token parado no disco do navegador para ser roubado;
@@ -8,8 +12,6 @@
  *    por isso todo fetch vai com `credentials: 'include'`;
  *  - quando a API responde 401, tentamos renovar uma vez e repetir a chamada.
  */
-const URL_API = process.env.NEXT_PUBLIC_API_URL ?? 'http://localhost:3333';
-
 let accessToken: string | null = null;
 export const guardarToken = (t: string | null) => { accessToken = t; };
 
@@ -20,7 +22,7 @@ class ErroApi extends Error {
 }
 
 async function chamar<T>(caminho: string, init: RequestInit = {}, jaRenovou = false): Promise<T> {
-  const resposta = await fetch(`${URL_API}/api${caminho}`, {
+  const resposta = await fetch(`/api${caminho}`, {
     ...init,
     credentials: 'include',
     headers: {

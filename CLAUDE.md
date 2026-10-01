@@ -51,6 +51,10 @@ as ações ficam numa constante fora do componente para o JSX ser estável.
 4. **Access token em memória**, refresh em cookie `httpOnly`. Nunca guarde token
    em `localStorage`. Todo `fetch` vai com `credentials: 'include'`, e isso já
    está em `src/lib/api.ts`.
+   O navegador chama sempre `/api/...` na própria origem; o `rewrites` do
+   `next.config.mjs` repassa para a API (`API_URL`). Não chame a API por URL
+   absoluta: o cookie de renovação deixa de viajar quando ela está em outro
+   domínio (ADR-0004).
 5. **Não existe tela de cadastro de usuário** nem "esqueci a senha". O painel
    tem uma usuária só; a conta nasce do perfil `criar-usuario` da API.
 6. **Mapa é por comunidade**, nunca por família (ADR-0005).
@@ -103,7 +107,7 @@ em `docs/`. Leia antes de mudar autenticação, modelo de dados ou mapa.
 ## Comandos
 
 ```bash
-cp .env.example .env.local     # NEXT_PUBLIC_API_URL=http://localhost:3333
+cp .env.example .env.local     # API_URL=http://localhost:3333 (lida pelo Next, que repassa /api/*)
 pnpm dev                       # http://localhost:3000 (a API precisa estar de pé)
 pnpm typecheck && pnpm lint    # antes do PR; o CI também roda pnpm build
 pnpm design-system             # regenera design-system/site/
