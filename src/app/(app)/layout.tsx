@@ -1,3 +1,4 @@
+import { GuardaSessao } from '@/componentes/GuardaSessao';
 import { Navegacao } from '@/componentes/Navegacao';
 import { ProvedorCabecalho, CabecalhoDaTela } from '@/componentes/ContextoCabecalho';
 
@@ -6,17 +7,21 @@ import { ProvedorCabecalho, CabecalhoDaTela } from '@/componentes/ContextoCabeca
  * à direita. Diferente da navegação (sempre a mesma), o cabeçalho muda de
  * tela pra tela — cada página informa o título e os botões através do
  * `useCabecalho`; quem efetivamente desenha o cabeçalho é este layout.
+ *
+ * Nada aqui renderiza sem sessão: a `GuardaSessao` manda para o login.
  */
 export default function LayoutApp({ children }: { children: React.ReactNode }) {
   return (
-    <ProvedorCabecalho>
-      <div className="app">
-        <Navegacao />
-        <div className="app__conteudo">
-          <CabecalhoDaTela />
-          <div className="app__corpo">{children}</div>
+    <GuardaSessao>
+      <ProvedorCabecalho>
+        <div className="app">
+          <Navegacao />
+          <div className="app__conteudo">
+            <CabecalhoDaTela />
+            <div className="app__corpo">{children}</div>
+          </div>
         </div>
-      </div>
-    </ProvedorCabecalho>
+      </ProvedorCabecalho>
+    </GuardaSessao>
   );
 }
