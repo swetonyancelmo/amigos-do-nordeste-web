@@ -108,3 +108,8 @@ pnpm dev                       # http://localhost:3000 (a API precisa estar de p
 pnpm typecheck && pnpm lint    # antes do PR; o CI também roda pnpm build
 pnpm design-system             # regenera design-system/site/
 ```
+
+## Skills
+
+Em `.claude/skills/`: `nova-tela-web`, `integrar-api-web` e `preparar-pr-web`.
+Para subir a API, use a skill `rodar-api-local` do repositório da API.
