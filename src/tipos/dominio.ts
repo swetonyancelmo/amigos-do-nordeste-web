@@ -30,7 +30,8 @@ export type TratamentoAgua = 'FILTRADA' | 'FERVIDA' | 'CLORADA' | 'MINERAL' | 'S
 
 export type TipoFonteRenda =
   | 'BOLSA_FAMILIA' | 'APOSENTADORIA' | 'BPC' | 'TRABALHO_SAZONAL'
-  | 'TRABALHO_FIXO' | 'PENSAO' | 'NENHUMA' | 'OUTRA';
+  | 'TRABALHO_FIXO' | 'TRABALHO_INFORMAL' | 'AUXILIO_DOENCA'
+  | 'PENSAO' | 'NENHUMA' | 'OUTRA';
 
 export type FaixaRenda = 'SEM_RENDA_FIXA' | 'ATE_1_SM' | 'DE_1_A_2_SM' | 'MAIS_DE_2_SM';
 export type TamanhoRoupa = 'PP' | 'P' | 'M' | 'G' | 'GG';
@@ -59,6 +60,7 @@ export interface Pessoa {
   tamanhoRoupa: TamanhoRoupa | null;
   numeroCalcado: string | null;
   gestante: boolean;
+  fontesRenda?: FonteRenda[];
 }
 
 export interface FonteRenda {
