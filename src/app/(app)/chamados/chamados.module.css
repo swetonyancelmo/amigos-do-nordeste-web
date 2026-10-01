@@ -7,7 +7,7 @@
 .filtros {
   display: flex;
   flex-wrap: wrap;
-  align-items: end;
+  align-items: flex-end;
   gap: var(--e-4);
 }
 
