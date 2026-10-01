@@ -74,15 +74,15 @@ const valoresIniciais: PessoaFormulario = {
   sexo: 'FEMININO',
   dataNascimento: '',
   idadeEstimada: '',
-  parentesco: 'FILHA',
+  parentesco: '',
   estuda: false,
   serie: '',
   tamanhoRoupa: '',
   numeroCalcado: '',
   gestante: false,
   observacoes: '',
-  familia: 'Família da Joana',
-  comunidade: 'Jeritacó',
+  familia: 'Família de Teste',
+  comunidade: 'Sítio de Teste',
   cadastroIncompleto: false,
   fontesRenda: [],
 };
@@ -142,7 +142,7 @@ export function PessoaForm({ onSalvar, onFechar, valorInicial }: Props) {
             className={styles.campo__entrada}
             value={form.nome}
             onChange={(event: ChangeEvent<HTMLInputElement>) => alterarCampo('nome', event.target.value)}
-            placeholder="Ex.: Maria da Silva"
+            placeholder="Ex.: Pessoa de Teste"
             required
           />
         </div>
@@ -154,7 +154,7 @@ export function PessoaForm({ onSalvar, onFechar, valorInicial }: Props) {
             className={styles.campo__entrada}
             value={form.familia}
             onChange={(event: ChangeEvent<HTMLInputElement>) => alterarCampo('familia', event.target.value)}
-            placeholder="Ex.: Família da Joana"
+            placeholder="Ex.: Família de Teste"
           />
         </div>
       </div>
@@ -208,13 +208,10 @@ export function PessoaForm({ onSalvar, onFechar, valorInicial }: Props) {
             value={form.parentesco}
             onChange={(event: ChangeEvent<HTMLSelectElement>) => alterarCampo('parentesco', event.target.value)}
           >
-            <option value="RESPONSAVEL">Responsável</option>
-            <option value="CONJUGE">Cônjuge</option>
-            <option value="FILHA">Filha</option>
-            <option value="FILHO">Filho</option>
-            <option value="NETA">Neta</option>
-            <option value="NETO">Neto</option>
-            <option value="OUTRO">Outro</option>
+            <option value="">Selecione</option>
+            {metadados?.parentesco.map((opcao) => (
+              <option key={opcao.valor} value={opcao.valor}>{opcao.rotulo}</option>
+            ))}
           </select>
         </div>
 
@@ -260,10 +257,8 @@ export function PessoaForm({ onSalvar, onFechar, valorInicial }: Props) {
             onChange={(event: ChangeEvent<HTMLSelectElement>) => alterarCampo('comunidade', event.target.value)}
           >
             <option value="">Selecione a comunidade</option>
-            <option value="Jeritacó">Jeritacó</option>
-            <option value="Mulungu">Mulungu</option>
-            <option value="Pindorama">Pindorama</option>
-            <option value="Morro da Esperança">Morro da Esperança</option>
+            <option value="Sítio de Teste">Sítio de Teste</option>
+            <option value="Povoado de Teste">Povoado de Teste</option>
           </select>
         </div>
       </div>

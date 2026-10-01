@@ -26,9 +26,9 @@ type Props = {
 };
 
 const pessoasPadrao: PessoaOpcao[] = [
-  { id: 'p-1', nome: 'Maria da Silva' },
-  { id: 'p-2', nome: 'João Pereira' },
-  { id: 'p-3', nome: 'Ana Souza' },
+  { id: 'p-1', nome: 'Criança de Teste' },
+  { id: 'p-2', nome: 'Outra Pessoa de Teste' },
+  { id: 'p-3', nome: 'Responsável de Teste' },
 ];
 
 const valoresIniciais: FonteRendaFormulario = {

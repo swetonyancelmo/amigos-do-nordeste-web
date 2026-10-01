@@ -22,37 +22,37 @@ function IconeFiltro({ tipo }: { tipo: 'busca' | 'comunidade' | 'status' }) {
 const pessoasIniciais: PessoaFormulario[] = [
   {
     id: 'p-1',
-    nome: 'Maria da Silva',
+    nome: 'Criança de Teste',
     sexo: 'FEMININO',
     dataNascimento: '2014-05-11',
     idadeEstimada: '',
-    parentesco: 'FILHA',
+    parentesco: 'FILHO',
     estuda: true,
-    serie: 'FUNDAMENTAL_1',
-    tamanhoRoupa: 'M',
-    numeroCalcado: '31',
+    serie: 'ANO_7',
+    tamanhoRoupa: 'INFANTIL_12',
+    numeroCalcado: '32/33',
     gestante: false,
     observacoes: 'Participa do acompanhamento escolar da comunidade.',
-    familia: 'Família da Joana',
-    comunidade: 'Jeritacó',
+    familia: 'Família de Teste',
+    comunidade: 'Sítio de Teste',
     cadastroIncompleto: false,
     fontesRenda: [],
   },
   {
     id: 'p-2',
-    nome: 'João Pereira',
+    nome: 'Outra Pessoa de Teste',
     sexo: 'MASCULINO',
     dataNascimento: '',
     idadeEstimada: '11',
     parentesco: 'FILHO',
     estuda: false,
     serie: '',
-    tamanhoRoupa: 'G',
-    numeroCalcado: '33',
+    tamanhoRoupa: 'INFANTIL_10',
+    numeroCalcado: '32/33',
     gestante: false,
     observacoes: 'Falta confirmar a data de nascimento com a responsável.',
-    familia: 'Família da Joana',
-    comunidade: 'Jeritacó',
+    familia: 'Família de Teste',
+    comunidade: 'Sítio de Teste',
     cadastroIncompleto: true,
     fontesRenda: [],
   },
@@ -90,8 +90,8 @@ export default function PessoasPage() {
               <span className={styles.filtroRotulo}><IconeFiltro tipo="comunidade" /> Comunidade</span>
               <select className={`${styles.filtroEntrada} ${styles.select}`} defaultValue="">
               <option value="">Todas as comunidades</option>
-              <option value="jeritaco">Jeritacó</option>
-              <option value="mulungu">Mulungu</option>
+              <option value="sitio-de-teste">Sítio de Teste</option>
+              <option value="povoado-de-teste">Povoado de Teste</option>
               </select>
             </label>
 
