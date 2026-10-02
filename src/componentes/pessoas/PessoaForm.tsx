@@ -156,7 +156,7 @@ export function PessoaForm({ pessoa, onSalvo, onFechar }: Props) {
   // disparar uma requisição por tecla.
   useEffect(() => {
     const termo = busca.trim();
-    if (pessoa || familia || termo.length < 2) {
+    if (familia || termo.length < 2) {
       setResultados(null);
       return;
     }
@@ -168,7 +168,7 @@ export function PessoaForm({ pessoa, onSalvo, onFechar }: Props) {
         .catch((e) => { if (ativo) setErro(mensagem(e)); });
     }, 300);
     return () => { ativo = false; clearTimeout(espera); };
-  }, [busca, familia, pessoa]);
+  }, [busca, familia]);
 
   function alterarCampo<K extends keyof Formulario>(chave: K, valor: Formulario[K]) {
     setForm((atual) => ({
@@ -194,6 +194,11 @@ export function PessoaForm({ pessoa, onSalvo, onFechar }: Props) {
     try {
       const corpo = montarCorpo(form, pessoa);
       if (pessoa) {
+        // Mudar a família é uma ação à parte (POST /mover): o PUT não a
+        // altera, porque mudar a comunidade de alguém é mudar a família.
+        if (familia.id !== pessoa.familia.id) {
+          await api.post(`/pessoas/${pessoa.id}/mover`, { familiaId: familia.id });
+        }
         await api.put<PessoaDetalhe>(`/pessoas/${pessoa.id}`, corpo);
       } else {
         await api.post<PessoaDetalhe>(`/familias/${familia.id}/pessoas`, corpo);
@@ -242,12 +247,9 @@ export function PessoaForm({ pessoa, onSalvo, onFechar }: Props) {
           {familia ? (
             <div className={styles.linhaRenda}>
               <span>Família de {familia.responsavelNome} · {familia.comunidadeNome}</span>
-              {/* Mudar a família de alguém é mudar a família, não a pessoa: só na criação. */}
-              {!pessoa && (
-                <button type="button" className={styles.botaoRemover} onClick={() => { setFamilia(null); setBusca(''); }}>
-                  Trocar
-                </button>
-              )}
+              <button type="button" className={styles.botaoRemover} onClick={() => { setFamilia(null); setBusca(''); }}>
+                Trocar
+              </button>
             </div>
           ) : (
             <input
@@ -264,6 +266,11 @@ export function PessoaForm({ pessoa, onSalvo, onFechar }: Props) {
 
       {!familia && resultados && (
         <div className={styles.secaoFormulario} aria-live="polite">
+          {pessoa && (
+            <p className="texto-apoio">
+              Fonte de renda ligada a ela fica com a família de origem.
+            </p>
+          )}
           {resultados.length === 0 && <p className="texto-apoio">Nenhuma família ativa com esse responsável.</p>}
           {resultados.map((f) => (
             <div key={f.id} className={styles.linhaRenda}>
