@@ -1,7 +1,7 @@
-"use client";
+'use client';
 
-import { useCabecalho } from "@/componentes/ContextoCabecalho";
-import { Botao } from "@/componentes/Botao";
+import { useCabecalho } from '@/componentes/ContextoCabecalho';
+import { Botao } from '@/componentes/Botao';
 
 /**
  * Telas 04 e 05 do Figma — necessidades da comunidade.
@@ -21,7 +21,7 @@ const ACOES = (
 );
 
 export default function Relatorios() {
-  useCabecalho("Relatórios", ACOES);
+  useCabecalho('Relatórios', ACOES);
 
   return <p>Relatórios — a implementar.</p>;
 }

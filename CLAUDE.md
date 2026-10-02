@@ -21,7 +21,7 @@ src/app/
   login/                   tela de entrada (POST /api/auth/login)
   (app)/layout.tsx         casco logado: <Navegacao> + cabeçalho via ContextoCabecalho
   (app)/chamados/          fila de pré-cadastros do app; [id] revisa, aprova ou devolve
-  (app)/familias/          esqueleto (TODO)
+  (app)/familias/          lista com busca, filtros e ficha em modal (API); nova/ cadastra (POST /api/familias)
   (app)/pessoas/           lista com filtros e modal criar/editar/remover (API)
   (app)/relatorios/        esqueleto (TODO); botão Imprimir já existe
   (app)/perfil/            esqueleto (TODO)

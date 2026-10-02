@@ -83,6 +83,23 @@
   border-color: var(--laranja);
 }
 
+.filtroComunidade {
+  min-height: 34px;
+  padding: 6px 14px;
+  border: 1px solid var(--linha-forte);
+  border-radius: 999px;
+  background: var(--superficie);
+  color: var(--texto-forte);
+  font: inherit;
+  font-size: var(--t-apoio);
+  cursor: pointer;
+}
+
+.filtroComunidade:focus-visible {
+  outline: 2px solid var(--laranja);
+  outline-offset: 2px;
+}
+
 .chipAtivo {
   border-color: var(--laranja);
   background: var(--laranja-claro);

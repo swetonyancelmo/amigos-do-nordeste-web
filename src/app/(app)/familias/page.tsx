@@ -6,49 +6,17 @@ import { Aviso } from '@/componentes/Aviso';
 import { useCabecalho } from '@/componentes/ContextoCabecalho';
 import { Modal } from '@/componentes/Modal';
 import { api } from '@/lib/api';
+import { data } from '@/lib/datas';
 import { useMetadados } from '@/lib/metadados';
-import type { Familia, Opcao, Pessoa } from '@/tipos/dominio';
+import type { Comunidade, FamiliaDetalhe, FamiliaResumo, Opcao, Pagina, Pessoa } from '@/tipos/dominio';
 import styles from './familias.module.css';
-
-/** Um item de `GET /api/familias`. */
-interface ItemFamilia {
-  id: string;
-  responsavelNome: string;
-  comunidadeId: string;
-  comunidadeNome: string;
-  municipioNome: string;
-  ativa: boolean;
-  semBanheiro: boolean;
-  totalPessoas: number;
-  totalAte12Anos: number;
-  totalDe13A59Anos: number;
-  total60AnosOuMais: number;
-  totalSemIdadeConhecida: number;
-}
-
-interface RespostaFamilias {
-  itens: ItemFamilia[];
-  pagina: number;
-  porPagina: number;
-  total: number;
-  totalPaginas: number;
-}
-
-interface ComunidadeResumo {
-  id: string;
-  nome: string;
-}
-
-// A ficha pode trazer campos que ainda não estão em `dominio.ts`.
-type FichaFamilia = Familia & { observacoes?: string | null; ativa?: boolean };
-type PessoaFicha = Pessoa & { observacoes?: string | null };
 
 const POR_PAGINA = 25;
 
 // Fora do componente: JSX estável, o cabeçalho não re-renderiza à toa.
 const ACOES = (
-  <Link href="/cadastro-familia/nova" className="botao botao--primario">
-    + Nova família
+  <Link href="/familias/nova" className="botao botao--primario">
+    Nova família
   </Link>
 );
 
@@ -56,45 +24,19 @@ const ACOES = (
 
 const formatarNumero = (n: number) => n.toLocaleString('pt-BR');
 
-/** A API pode devolver uma lista pura ou um objeto paginado com `itens`. */
-function comoLista<T>(dado: unknown): T[] {
-  if (Array.isArray(dado)) return dado as T[];
-  const itens = (dado as { itens?: unknown } | null)?.itens;
-  return Array.isArray(itens) ? (itens as T[]) : [];
-}
-
-// "OUTRO_PARENTE" -> "Outro parente" (usado quando a API não manda rótulo)
-function formatarEnum(valor: string) {
-  const texto = valor.toLowerCase().replace(/_/g, ' ');
-  return texto.charAt(0).toUpperCase() + texto.slice(1);
-}
-
 function rotuloDe(lista: Opcao[] | undefined, valor: string | null | undefined) {
-  if (!valor) return '—';
-  return lista?.find((o) => o.valor === valor)?.rotulo ?? formatarEnum(valor);
+  if (!valor) return '';
+  return lista?.find((o) => o.valor === valor)?.rotulo ?? valor;
 }
 
-function formatarData(data: string) {
-  const [ano, mes, dia] = data.slice(0, 10).split('-');
-  return `${dia}/${mes}/${ano}`;
+/** A idade vem calculada da API; aqui só se diz de onde ela saiu. */
+function exibirIdade(pessoa: Pessoa) {
+  if (pessoa.idade === null) return '';
+  if (pessoa.dataNascimento) return `${pessoa.idade} anos (nasceu em ${data(pessoa.dataNascimento)})`;
+  return `uns ${pessoa.idade} anos (estimada)`;
 }
 
-function calcularIdade(data: string) {
-  const [ano, mes, dia] = data.slice(0, 10).split('-').map(Number);
-  const hoje = new Date();
-  let idade = hoje.getFullYear() - ano;
-  if (hoje.getMonth() + 1 < mes || (hoje.getMonth() + 1 === mes && hoje.getDate() < dia)) {
-    idade -= 1;
-  }
-  return idade;
-}
-
-function exibirIdade(pessoa: PessoaFicha) {
-  if (pessoa.dataNascimento) {
-    return `${formatarData(pessoa.dataNascimento)} (${calcularIdade(pessoa.dataNascimento)} anos)`;
-  }
-  return pessoa.idadeEstimada != null ? `${pessoa.idadeEstimada} anos (estimada)` : '—';
-}
+const simNao = (v: boolean | null) => (v === null ? 'Não informado' : v ? 'Sim' : 'Não');
 
 /** Números das páginas (começam em 0) com reticências: 1 2 3 … 315 */
 function paginasVisiveis(atual: number, total: number): (number | 'reticencias')[] {
@@ -145,50 +87,26 @@ function Dado({ rotulo, children, larga }: { rotulo: string; children: React.Rea
 }
 
 /** Tudo o que está cadastrado da família: carrega a ficha ao abrir o modal. */
-function DetalhesFamilia({ item }: { item: ItemFamilia }) {
+function DetalhesFamilia({ id }: { id: string }) {
   const { metadados } = useMetadados();
-  const [ficha, setFicha] = useState<FichaFamilia | null>(null);
-  const [pessoas, setPessoas] = useState<PessoaFicha[]>([]);
-  const [carregando, setCarregando] = useState(true);
+  const [ficha, setFicha] = useState<FamiliaDetalhe | null>(null);
   const [erro, setErro] = useState('');
 
   useEffect(() => {
     let ativo = true;
-    setCarregando(true);
-    setErro('');
-
-    Promise.all([
-      api.get<FichaFamilia>(`/familias/${item.id}`),
-      api.get<unknown>(`/familias/${item.id}/pessoas`).catch(() => null),
-    ])
-      .then(([dadosFicha, dadosPessoas]) => {
-        if (!ativo) return;
-        const daRota = dadosPessoas === null ? [] : comoLista<PessoaFicha>(dadosPessoas);
-        setFicha(dadosFicha);
-        setPessoas(daRota.length > 0 ? daRota : (dadosFicha.pessoas ?? []));
-      })
-      .catch((e) => ativo && setErro(mensagemDeErro(e, 'Não foi possível carregar a família.')))
-      .finally(() => ativo && setCarregando(false));
-
+    api
+      .get<FamiliaDetalhe>(`/familias/${id}`)
+      .then((dado) => ativo && setFicha(dado))
+      .catch((e) => ativo && setErro(mensagemDeErro(e, 'Não foi possível carregar a família.')));
     return () => {
       ativo = false;
     };
-  }, [item.id]);
+  }, [id]);
 
-  if (carregando) return <p className={styles.estado}>Carregando…</p>;
-  if (erro || !ficha) return <Aviso tom="erro">{erro || 'Família não encontrada.'}</Aviso>;
+  if (erro) return <Aviso tom="erro">{erro}</Aviso>;
+  if (!ficha) return <p className={styles.estado} role="status">Carregando…</p>;
 
-  const listaParentesco = (metadados as unknown as Record<string, Opcao[] | undefined> | null)?.parentesco;
-  const totais = ficha.totais ?? {
-    totalPessoas: item.totalPessoas,
-    ate12: item.totalAte12Anos,
-    de13a59: item.totalDe13A59Anos,
-    de60ouMais: item.total60AnosOuMais,
-    semIdadeInformada: item.totalSemIdadeConhecida,
-  };
-  const rendas = ficha.fontesRenda ?? [];
-  const ativa = ficha.ativa ?? item.ativa;
-  const semBanheiro = ficha.temBanheiro === null ? item.semBanheiro : ficha.temBanheiro === false;
+  const { totais, pessoas, fontesRenda } = ficha;
 
   return (
     <>
@@ -198,9 +116,9 @@ function DetalhesFamilia({ item }: { item: ItemFamilia }) {
           <Dado rotulo="Responsável">{ficha.responsavelNome}</Dado>
           <Dado rotulo="CPF">{ficha.responsavelCpf}</Dado>
           <Dado rotulo="Telefone">{ficha.telefone}</Dado>
-          <Dado rotulo="Situação">{ativa ? 'Ativa' : 'Inativa'}</Dado>
-          <Dado rotulo="Comunidade">{item.comunidadeNome}</Dado>
-          <Dado rotulo="Município">{item.municipioNome}</Dado>
+          <Dado rotulo="Situação">{ficha.ativa ? 'Ativa' : 'Inativa'}</Dado>
+          <Dado rotulo="Comunidade">{ficha.comunidade.nome}</Dado>
+          <Dado rotulo="Município">{ficha.comunidade.municipioNome}</Dado>
           <Dado rotulo="Ponto de referência" larga>
             {ficha.pontoReferencia}
           </Dado>
@@ -216,15 +134,10 @@ function DetalhesFamilia({ item }: { item: ItemFamilia }) {
         <h3 className={styles.secaoTitulo}>Moradia</h3>
         <dl className={styles.grade}>
           <Dado rotulo="Abastecimento de água">
-            {ficha.abastecimentoAgua?.length
-              ? ficha.abastecimentoAgua.map((v) => rotuloDe(metadados?.abastecimentoAgua, v)).join(', ')
-              : ''}
+            {ficha.abastecimentoAgua.map((v) => rotuloDe(metadados?.abastecimentoAgua, v)).join(', ')}
           </Dado>
           <Dado rotulo="Tratamento da água">{rotuloDe(metadados?.tratamentoAgua, ficha.tratamentoAgua)}</Dado>
-          <Dado rotulo="Tem banheiro">
-            {ficha.temBanheiro === null ? 'Não informado' : ficha.temBanheiro ? 'Sim' : 'Não'}
-            {semBanheiro && ficha.temBanheiro === null ? ' (tratada como sem banheiro)' : ''}
-          </Dado>
+          <Dado rotulo="Tem banheiro">{simNao(ficha.temBanheiro)}</Dado>
           <Dado rotulo="Escoamento sanitário">
             {rotuloDe(metadados?.escoamentoSanitario, ficha.escoamentoSanitario)}
           </Dado>
@@ -236,10 +149,10 @@ function DetalhesFamilia({ item }: { item: ItemFamilia }) {
         <div className={styles.totais}>
           {[
             ['Pessoas', totais.totalPessoas],
-            ['Até 12 anos', totais.ate12],
-            ['13 a 59 anos', totais.de13a59],
-            ['60 anos ou mais', totais.de60ouMais],
-            ['Sem idade', totais.semIdadeInformada],
+            ['Até 12 anos', totais.totalAte12Anos],
+            ['13 a 59 anos', totais.totalDe13A59Anos],
+            ['60 anos ou mais', totais.total60AnosOuMais],
+            ['Sem idade', totais.totalSemIdadeConhecida],
           ].map(([rotulo, valor]) => (
             <div key={rotulo} className={styles.totalCaixa}>
               <span className={styles.totalNumero}>{valor}</span>
@@ -258,7 +171,7 @@ function DetalhesFamilia({ item }: { item: ItemFamilia }) {
             {pessoas.map((pessoa) => (
               <article key={pessoa.id} className={styles.cartao}>
                 <div className={styles.cartaoTopo}>
-                  <span className={styles.cartaoNome}>{pessoa.nome}</span>
+                  <span className={styles.cartaoNome}>{pessoa.nome ?? 'Sem nome'}</span>
                   <div className={styles.badges}>
                     {pessoa.cadastroIncompleto && <span className={`${styles.tag} ${styles.tagIncompleto}`}>Incompleto</span>}
                     {pessoa.estuda && <span className={`${styles.tag} ${styles.tagEstuda}`}>Estuda</span>}
@@ -266,10 +179,12 @@ function DetalhesFamilia({ item }: { item: ItemFamilia }) {
                   </div>
                 </div>
                 <dl className={styles.grade}>
-                  <Dado rotulo="Parentesco">{rotuloDe(listaParentesco, pessoa.parentesco)}</Dado>
+                  <Dado rotulo="Parentesco">{rotuloDe(metadados?.parentesco, pessoa.parentesco)}</Dado>
                   <Dado rotulo="Sexo">{rotuloDe(metadados?.sexo, pessoa.sexo)}</Dado>
-                  <Dado rotulo="Nascimento / idade">{exibirIdade(pessoa)}</Dado>
-                  <Dado rotulo="Série">{pessoa.estuda ? rotuloDe(metadados?.serie, pessoa.serie) : 'Não estuda'}</Dado>
+                  <Dado rotulo="Idade">{exibirIdade(pessoa)}</Dado>
+                  <Dado rotulo="Série">
+                    {pessoa.estuda === false ? 'Não estuda' : rotuloDe(metadados?.serie, pessoa.serie)}
+                  </Dado>
                   <Dado rotulo="Tamanho da roupa">{rotuloDe(metadados?.tamanhoRoupa, pessoa.tamanhoRoupa)}</Dado>
                   <Dado rotulo="Número do calçado">{pessoa.numeroCalcado}</Dado>
                   {pessoa.observacoes && (
@@ -285,20 +200,30 @@ function DetalhesFamilia({ item }: { item: ItemFamilia }) {
       </section>
 
       <section className={styles.secao}>
-        <h3 className={styles.secaoTitulo}>Fontes de renda ({rendas.length})</h3>
-        {rendas.length === 0 ? (
+        <h3 className={styles.secaoTitulo}>Renda</h3>
+        <dl className={styles.grade}>
+          <Dado rotulo="Quanto entra por mês, somando tudo" larga>
+            {rotuloDe(metadados?.faixaRenda, ficha.faixaRenda)}
+          </Dado>
+        </dl>
+        {fontesRenda.length === 0 ? (
           <p className={styles.vazio}>Nenhuma fonte de renda cadastrada.</p>
         ) : (
           <div className={styles.lista}>
-            {rendas.map((renda) => (
+            {fontesRenda.map((renda) => (
               <article key={renda.id} className={styles.cartao}>
                 <dl className={styles.grade}>
-                  <Dado rotulo="Tipo">{rotuloDe(metadados?.tipoFonteRenda, renda.tipo)}</Dado>
+                  <Dado rotulo="De onde vem">{rotuloDe(metadados?.tipoFonteRenda, renda.tipo)}</Dado>
                   <Dado rotulo="Quem recebe">
-                    {pessoas.find((p) => p.id === renda.pessoaId)?.nome ?? ''}
+                    {renda.pessoaId === null
+                      ? 'A família'
+                      : (pessoas.find((p) => p.id === renda.pessoaId)?.nome ?? 'Sem nome')}
                   </Dado>
-                  <Dado rotulo="Faixa">{rotuloDe(metadados?.faixaRenda, renda.faixa)}</Dado>
-                  <Dado rotulo="Observação">{renda.observacao}</Dado>
+                  {renda.observacao && (
+                    <Dado rotulo="Observação" larga>
+                      {renda.observacao}
+                    </Dado>
+                  )}
                 </dl>
               </article>
             ))}
@@ -327,11 +252,11 @@ export default function Familias() {
   const [incluirInativas, setIncluirInativas] = useState(false);
   const [pagina, setPagina] = useState(0);
 
-  const [resposta, setResposta] = useState<RespostaFamilias | null>(null);
+  const [resposta, setResposta] = useState<Pagina<FamiliaResumo> | null>(null);
   const [carregando, setCarregando] = useState(true);
   const [erro, setErro] = useState('');
-  const [comunidades, setComunidades] = useState<ComunidadeResumo[]>([]);
-  const [selecionada, setSelecionada] = useState<ItemFamilia | null>(null);
+  const [comunidades, setComunidades] = useState<Comunidade[]>([]);
+  const [selecionada, setSelecionada] = useState<FamiliaResumo | null>(null);
   const ultimaRequisicao = useRef(0);
 
   // Espera a pessoa parar de digitar antes de buscar
@@ -343,12 +268,9 @@ export default function Familias() {
     return () => clearTimeout(espera);
   }, [digitado]);
 
-  // Comunidades para os chips de filtro
+  // Comunidades para o filtro
   useEffect(() => {
-    api
-      .get<unknown>('/comunidades')
-      .then((dado) => setComunidades(comoLista<ComunidadeResumo>(dado)))
-      .catch(() => setComunidades([]));
+    api.get<Comunidade[]>('/comunidades').then(setComunidades).catch(() => setComunidades([]));
   }, []);
 
   // Lista de famílias
@@ -365,7 +287,7 @@ export default function Familias() {
     setCarregando(true);
     setErro('');
     api
-      .get<RespostaFamilias>(`/familias?${params}`)
+      .get<Pagina<FamiliaResumo>>(`/familias?${params}`)
       .then((dado) => atual() && setResposta(dado))
       .catch((e) => atual() && setErro(mensagemDeErro(e, 'Não foi possível carregar as famílias.')))
       .finally(() => atual() && setCarregando(false));
@@ -410,25 +332,20 @@ export default function Familias() {
         </div>
 
         <div className={styles.chips} role="group" aria-label="Filtros">
-          <button
-            type="button"
-            className={`${styles.chip} ${comunidadeId === '' ? styles.chipAtivo : ''}`}
-            aria-pressed={comunidadeId === ''}
-            onClick={() => escolherComunidade('')}
+          {/* Select, não chip: são dezenas de comunidades. */}
+          <select
+            className={styles.filtroComunidade}
+            value={comunidadeId}
+            onChange={(e) => escolherComunidade(e.target.value)}
+            aria-label="Comunidade"
           >
-            Todas as comunidades
-          </button>
-          {comunidades.map((c) => (
-            <button
-              key={c.id}
-              type="button"
-              className={`${styles.chip} ${comunidadeId === c.id ? styles.chipAtivo : ''}`}
-              aria-pressed={comunidadeId === c.id}
-              onClick={() => escolherComunidade(c.id)}
-            >
-              {c.nome}
-            </button>
-          ))}
+            <option value="">Todas as comunidades</option>
+            {comunidades.map((c) => (
+              <option key={c.id} value={c.id}>
+                {c.nome} · {c.municipioNome}
+              </option>
+            ))}
+          </select>
           <button
             type="button"
             className={`${styles.chip} ${semBanheiro ? styles.chipAtivo : ''}`}
@@ -542,7 +459,7 @@ export default function Familias() {
         titulo={selecionada ? `Família de ${selecionada.responsavelNome}` : 'Família'}
         onFechar={fecharModal}
       >
-        {selecionada && <DetalhesFamilia key={selecionada.id} item={selecionada} />}
+        {selecionada && <DetalhesFamilia key={selecionada.id} id={selecionada.id} />}
       </Modal>
     </main>
   );
