@@ -229,6 +229,7 @@
 .botoesFormulario {
   display: flex;
   justify-content: flex-end;
+  margin-left: auto;
   flex-wrap: wrap;
   gap: 12px;
 }

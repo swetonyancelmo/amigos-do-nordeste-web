@@ -1,11 +1,15 @@
 'use client';
 
 import type { ChangeEvent, FormEvent } from 'react';
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
+import { Aviso } from '@/componentes/Aviso';
 import { Botao } from '@/componentes/Botao';
-import { ModalFonteRenda, type FonteRendaFormulario } from '@/componentes/fonte-renda/ModalFonteRenda';
+import { api } from '@/lib/api';
+import { hoje } from '@/lib/datas';
 import { useMetadados } from '@/lib/metadados';
-import type { Sexo } from '@/tipos/dominio';
+import type {
+  FamiliaResumo, Pagina, Parentesco, PessoaDetalhe, PessoaRequisicao, Serie, Sexo, TamanhoRoupa,
+} from '@/tipos/dominio';
 import styles from '@/app/(app)/pessoas/pessoas.module.css';
 
 type IconeCampo =
@@ -44,34 +48,35 @@ function RotuloCampo({ htmlFor, label, icon }: { htmlFor: string; label: string;
   );
 }
 
-export type PessoaFormulario = {
-  id?: string;
+
+/** O que a tela edita. Texto vazio vira null ao montar o corpo da requisição. */
+type Formulario = {
   nome: string;
-  sexo: Sexo;
+  sexo: Sexo | '';
   dataNascimento: string;
   idadeEstimada: string;
-  parentesco: string;
+  parentesco: Parentesco | '';
   estuda: boolean;
-  serie: string;
-  tamanhoRoupa: string;
+  serie: Serie | '';
+  tamanhoRoupa: TamanhoRoupa | '';
   numeroCalcado: string;
   gestante: boolean;
   observacoes: string;
-  familia: string;
-  comunidade: string;
-  cadastroIncompleto: boolean;
-  fontesRenda: FonteRendaFormulario[];
 };
+
+/** A família escolhida: só o que a tela mostra e o id para o POST. */
+type FamiliaEscolhida = { id: string; responsavelNome: string; comunidadeNome: string };
 
 type Props = {
-  onSalvar: (pessoa: PessoaFormulario) => void;
+  /** null = pessoa nova. */
+  pessoa: PessoaDetalhe | null;
+  onSalvo: () => void;
   onFechar: () => void;
-  valorInicial?: Partial<PessoaFormulario>;
 };
 
-const valoresIniciais: PessoaFormulario = {
+const vazio: Formulario = {
   nome: '',
-  sexo: 'FEMININO',
+  sexo: '',
   dataNascimento: '',
   idadeEstimada: '',
   parentesco: '',
@@ -81,58 +86,143 @@ const valoresIniciais: PessoaFormulario = {
   numeroCalcado: '',
   gestante: false,
   observacoes: '',
-  familia: 'Família de Teste',
-  comunidade: 'Sítio de Teste',
-  cadastroIncompleto: false,
-  fontesRenda: [],
 };
 
-export function PessoaForm({ onSalvar, onFechar, valorInicial }: Props) {
+function dePessoa(p: PessoaDetalhe): Formulario {
+  return {
+    nome: p.nome ?? '',
+    sexo: p.sexo ?? '',
+    dataNascimento: p.dataNascimento ?? '',
+    idadeEstimada: p.idadeEstimada === null ? '' : String(p.idadeEstimada),
+    parentesco: p.parentesco ?? '',
+    estuda: p.estuda === true,
+    serie: p.serie ?? '',
+    tamanhoRoupa: p.tamanhoRoupa ?? '',
+    numeroCalcado: p.numeroCalcado ?? '',
+    gestante: p.gestante === true,
+    observacoes: p.observacoes ?? '',
+  };
+}
+
+/**
+ * Monta a `PessoaRequisicao`. Data de nascimento e idade estimada não vão
+ * juntas (a API recusa); a estimativa leva a data em que foi feita, para o
+ * sistema envelhecê-la. Se a estimativa não mudou na edição, mantém a data
+ * original em vez de "rejuvenescer" a pessoa.
+ */
+function montarCorpo(form: Formulario, original: PessoaDetalhe | null): PessoaRequisicao {
+  const nome = form.nome.trim() || null;
+  const idadeTexto = form.idadeEstimada.trim();
+  const idadeEstimada = !form.dataNascimento && idadeTexto ? Number(idadeTexto) : null;
+  const estimativaMantida = original?.idadeEstimada === idadeEstimada && original?.idadeEstimadaEm;
+
+  return {
+    nome,
+    // Sem nome a API só aceita com cadastroIncompleto = true; com nome, ela
+    // mesma decide (falta de idade também marca incompleto).
+    cadastroIncompleto: nome === null,
+    sexo: form.sexo || null,
+    dataNascimento: form.dataNascimento || null,
+    idadeEstimada,
+    idadeEstimadaEm: idadeEstimada === null ? null : (estimativaMantida || hoje()),
+    parentesco: form.parentesco || null,
+    estuda: form.estuda,
+    serie: form.estuda ? (form.serie || null) : null,
+    tamanhoRoupa: form.tamanhoRoupa || null,
+    numeroCalcado: form.numeroCalcado || null,
+    gestante: form.sexo === 'FEMININO' ? form.gestante : null,
+    observacoes: form.observacoes.trim() || null,
+  };
+}
+
+function mensagem(e: unknown) {
+  return e instanceof Error ? e.message : 'Não foi possível salvar.';
+}
+
+export function PessoaForm({ pessoa, onSalvo, onFechar }: Props) {
   const { metadados } = useMetadados();
-  const [form, setForm] = useState<PessoaFormulario>({
-    ...valoresIniciais,
-    ...valorInicial,
-  });
-  const [modalFonteRendaAberta, setModalFonteRendaAberta] = useState(false);
+  const [form, setForm] = useState<Formulario>(pessoa ? dePessoa(pessoa) : vazio);
+  const [familia, setFamilia] = useState<FamiliaEscolhida | null>(
+    pessoa
+      ? { id: pessoa.familia.id, responsavelNome: pessoa.familia.responsavelNome, comunidadeNome: pessoa.comunidade.nome }
+      : null,
+  );
+  const [busca, setBusca] = useState('');
+  const [resultados, setResultados] = useState<FamiliaResumo[] | null>(null);
+  const [enviando, setEnviando] = useState(false);
+  const [erro, setErro] = useState<string | null>(null);
 
-  const podeMostrarSerie = form.estuda;
+  // Busca de família pelo nome do responsável, com uma pausa para não
+  // disparar uma requisição por tecla.
+  useEffect(() => {
+    const termo = busca.trim();
+    if (pessoa || familia || termo.length < 2) {
+      setResultados(null);
+      return;
+    }
+    let ativo = true;
+    const espera = setTimeout(() => {
+      const query = new URLSearchParams({ busca: termo, porPagina: '10' });
+      api.get<Pagina<FamiliaResumo>>(`/familias?${query}`)
+        .then((r) => { if (ativo) setResultados(r.itens); })
+        .catch((e) => { if (ativo) setErro(mensagem(e)); });
+    }, 300);
+    return () => { ativo = false; clearTimeout(espera); };
+  }, [busca, familia, pessoa]);
 
-  function alterarCampo(chave: keyof PessoaFormulario, valor: string | boolean) {
+  function alterarCampo<K extends keyof Formulario>(chave: K, valor: Formulario[K]) {
     setForm((atual) => ({
       ...atual,
       [chave]: valor,
-      cadastroIncompleto: !valor && chave === 'nome' ? true : atual.cadastroIncompleto,
+      // Data e estimativa não andam juntas: preencher uma limpa a outra.
+      ...(chave === 'dataNascimento' && valor ? { idadeEstimada: '' } : {}),
+      ...(chave === 'idadeEstimada' && valor ? { dataNascimento: '' } : {}),
       // Homem não pode ficar marcado como gestante ao trocar o sexo.
-      gestante: chave === 'sexo' && valor === 'MASCULINO' ? false : atual.gestante,
+      ...(chave === 'sexo' && valor !== 'FEMININO' ? { gestante: false } : {}),
     }));
   }
 
-  function adicionarFonteRenda(fonte: FonteRendaFormulario) {
-    setForm((atual) => ({ ...atual, fontesRenda: [...atual.fontesRenda, fonte] }));
-    setModalFonteRendaAberta(false);
-  }
-
-  function removerFonteRenda(indice: number) {
-    setForm((atual) => ({
-      ...atual,
-      fontesRenda: atual.fontesRenda.filter((_, i) => i !== indice),
-    }));
-  }
-
-  function onSubmit(event: FormEvent) {
+  async function onSubmit(event: FormEvent) {
     event.preventDefault();
+    if (!familia) {
+      setErro('Escolha a família da pessoa.');
+      return;
+    }
 
-    const pessoa: PessoaFormulario = {
-      ...form,
-      id: form.id ?? `p-${Date.now()}`,
-      cadastroIncompleto: !form.nome.trim() || !form.familia,
-    };
+    setEnviando(true);
+    setErro(null);
+    try {
+      const corpo = montarCorpo(form, pessoa);
+      if (pessoa) {
+        await api.put<PessoaDetalhe>(`/pessoas/${pessoa.id}`, corpo);
+      } else {
+        await api.post<PessoaDetalhe>(`/familias/${familia.id}/pessoas`, corpo);
+      }
+      onSalvo();
+    } catch (e) {
+      setErro(mensagem(e));
+    } finally {
+      setEnviando(false);
+    }
+  }
 
-    onSalvar(pessoa);
+  async function remover() {
+    if (!pessoa) return;
+    if (!window.confirm('Remover esta pessoa da família? Não dá para desfazer.')) return;
+
+    setEnviando(true);
+    setErro(null);
+    try {
+      await api.delete(`/pessoas/${pessoa.id}`);
+      onSalvo();
+    } catch (e) {
+      setErro(mensagem(e));
+    } finally {
+      setEnviando(false);
+    }
   }
 
   return (
-    <>
     <form onSubmit={onSubmit} className={styles.formularioPessoa}>
       <div className={styles.linhaDoisColunas}>
         <div className={styles.campo}>
@@ -141,23 +231,54 @@ export function PessoaForm({ onSalvar, onFechar, valorInicial }: Props) {
             id="nome-pessoa"
             className={styles.campo__entrada}
             value={form.nome}
+            maxLength={120}
             onChange={(event: ChangeEvent<HTMLInputElement>) => alterarCampo('nome', event.target.value)}
             placeholder="Ex.: Pessoa de Teste"
-            required
           />
         </div>
 
         <div className={styles.campo}>
           <RotuloCampo htmlFor="familia-pessoa" label="Família" icon="familia" />
-          <input
-            id="familia-pessoa"
-            className={styles.campo__entrada}
-            value={form.familia}
-            onChange={(event: ChangeEvent<HTMLInputElement>) => alterarCampo('familia', event.target.value)}
-            placeholder="Ex.: Família de Teste"
-          />
+          {familia ? (
+            <div className={styles.linhaRenda}>
+              <span>Família de {familia.responsavelNome} · {familia.comunidadeNome}</span>
+              {/* Mudar a família de alguém é mudar a família, não a pessoa: só na criação. */}
+              {!pessoa && (
+                <button type="button" className={styles.botaoRemover} onClick={() => { setFamilia(null); setBusca(''); }}>
+                  Trocar
+                </button>
+              )}
+            </div>
+          ) : (
+            <input
+              id="familia-pessoa"
+              className={styles.campo__entrada}
+              value={busca}
+              onChange={(event: ChangeEvent<HTMLInputElement>) => setBusca(event.target.value)}
+              placeholder="Busque pelo nome do responsável"
+              autoComplete="off"
+            />
+          )}
         </div>
       </div>
+
+      {!familia && resultados && (
+        <div className={styles.secaoFormulario} aria-live="polite">
+          {resultados.length === 0 && <p className="texto-apoio">Nenhuma família ativa com esse responsável.</p>}
+          {resultados.map((f) => (
+            <div key={f.id} className={styles.linhaRenda}>
+              <span>Família de {f.responsavelNome} · {f.comunidadeNome}</span>
+              <button
+                type="button"
+                className={styles.botaoAdicionar}
+                onClick={() => setFamilia({ id: f.id, responsavelNome: f.responsavelNome, comunidadeNome: f.comunidadeNome })}
+              >
+                Escolher
+              </button>
+            </div>
+          ))}
+        </div>
+      )}
 
       <div className={styles.linhaTresColunas}>
         <div className={styles.campo}>
@@ -166,8 +287,9 @@ export function PessoaForm({ onSalvar, onFechar, valorInicial }: Props) {
             id="sexo-pessoa"
             className={`${styles.campo__entrada} ${styles.campo__select}`}
             value={form.sexo}
-            onChange={(event: ChangeEvent<HTMLSelectElement>) => alterarCampo('sexo', event.target.value)}
+            onChange={(event: ChangeEvent<HTMLSelectElement>) => alterarCampo('sexo', event.target.value as Sexo | '')}
           >
+            <option value="">Selecione</option>
             {metadados?.sexo.map((opcao) => (
               <option key={opcao.valor} value={opcao.valor}>{opcao.rotulo}</option>
             ))}
@@ -179,6 +301,7 @@ export function PessoaForm({ onSalvar, onFechar, valorInicial }: Props) {
           <input
             id="data-nascimento"
             type="date"
+            max={hoje()}
             className={styles.campo__entrada}
             value={form.dataNascimento}
             onChange={(event: ChangeEvent<HTMLInputElement>) => alterarCampo('dataNascimento', event.target.value)}
@@ -191,6 +314,7 @@ export function PessoaForm({ onSalvar, onFechar, valorInicial }: Props) {
             id="idade-estimada"
             type="number"
             min={0}
+            max={130}
             className={styles.campo__entrada}
             value={form.idadeEstimada}
             onChange={(event: ChangeEvent<HTMLInputElement>) => alterarCampo('idadeEstimada', event.target.value)}
@@ -206,7 +330,7 @@ export function PessoaForm({ onSalvar, onFechar, valorInicial }: Props) {
             id="parentesco-pessoa"
             className={`${styles.campo__entrada} ${styles.campo__select}`}
             value={form.parentesco}
-            onChange={(event: ChangeEvent<HTMLSelectElement>) => alterarCampo('parentesco', event.target.value)}
+            onChange={(event: ChangeEvent<HTMLSelectElement>) => alterarCampo('parentesco', event.target.value as Parentesco | '')}
           >
             <option value="">Selecione</option>
             {metadados?.parentesco.map((opcao) => (
@@ -221,7 +345,7 @@ export function PessoaForm({ onSalvar, onFechar, valorInicial }: Props) {
             id="tamanho-roupa"
             className={`${styles.campo__entrada} ${styles.campo__select}`}
             value={form.tamanhoRoupa}
-            onChange={(event: ChangeEvent<HTMLSelectElement>) => alterarCampo('tamanhoRoupa', event.target.value)}
+            onChange={(event: ChangeEvent<HTMLSelectElement>) => alterarCampo('tamanhoRoupa', event.target.value as TamanhoRoupa | '')}
           >
             <option value="">Selecione</option>
             {metadados?.tamanhoRoupa.map((opcao) => (
@@ -248,18 +372,12 @@ export function PessoaForm({ onSalvar, onFechar, valorInicial }: Props) {
         </div>
 
         <div className={styles.campo}>
-          <RotuloCampo htmlFor="comunidade-pessoa" label="Comunidade" icon="comunidade" />
-          {/* TODO: lista fixa até existir endpoint de comunidades na API (não faz parte de GET /api/metadados). */}
-          <select
-            id="comunidade-pessoa"
-            className={`${styles.campo__entrada} ${styles.campo__select}`}
-            value={form.comunidade}
-            onChange={(event: ChangeEvent<HTMLSelectElement>) => alterarCampo('comunidade', event.target.value)}
-          >
-            <option value="">Selecione a comunidade</option>
-            <option value="Sítio de Teste">Sítio de Teste</option>
-            <option value="Povoado de Teste">Povoado de Teste</option>
-          </select>
+          <span className={styles.campo__rotulo}>
+            <span className={styles.campo__icone}><IconeFormulario nome="comunidade" /></span>
+            <span>Comunidade</span>
+          </span>
+          {/* Vem da família: pessoa não tem comunidade própria. */}
+          <p className="texto-apoio">{familia ? familia.comunidadeNome : 'A da família escolhida'}</p>
         </div>
       </div>
 
@@ -278,20 +396,20 @@ export function PessoaForm({ onSalvar, onFechar, valorInicial }: Props) {
             type="checkbox"
             checked={form.gestante}
             onChange={(event: ChangeEvent<HTMLInputElement>) => alterarCampo('gestante', event.target.checked)}
-            disabled={form.sexo === 'MASCULINO'}
+            disabled={form.sexo !== 'FEMININO'}
           />
           <span className={styles.checkboxTexto}><IconeFormulario nome="gestante" /> Gestante</span>
         </label>
       </div>
 
-      {podeMostrarSerie && (
+      {form.estuda && (
         <div className={styles.campo}>
           <RotuloCampo htmlFor="serie-pessoa" label="Série/Etapa" icon="serie" />
           <select
             id="serie-pessoa"
             className={`${styles.campo__entrada} ${styles.campo__select}`}
             value={form.serie}
-            onChange={(event: ChangeEvent<HTMLSelectElement>) => alterarCampo('serie', event.target.value)}
+            onChange={(event: ChangeEvent<HTMLSelectElement>) => alterarCampo('serie', event.target.value as Serie | '')}
           >
             <option value="">Selecione</option>
             {metadados?.serie.map((opcao) => (
@@ -312,36 +430,23 @@ export function PessoaForm({ onSalvar, onFechar, valorInicial }: Props) {
         />
       </div>
 
-      <div className={styles.secaoFormulario}>
-        {form.fontesRenda.map((fonte, indice) => (
-          <div key={indice} className={styles.linhaRenda}>
-            <span>{metadados?.tipoFonteRenda.find((o) => o.valor === fonte.tipo)?.rotulo ?? fonte.tipo}</span>
-            <button type="button" className={styles.botaoRemover} onClick={() => removerFonteRenda(indice)}>
-              Remover
-            </button>
-          </div>
-        ))}
-
-        <button type="button" className={styles.botaoAdicionar} onClick={() => setModalFonteRendaAberta(true)}>
-          Adicionar fonte de renda
-        </button>
-      </div>
+      {erro && <Aviso tom="erro" titulo="Não deu para salvar">{erro}</Aviso>}
 
       <footer className={styles.rodapeFormulario}>
+        {pessoa && (
+          <button type="button" className={styles.botaoRemover} onClick={remover} disabled={enviando}>
+            Remover pessoa
+          </button>
+        )}
         <div className={styles.botoesFormulario}>
           <Botao type="button" variante="secundario" onClick={onFechar}>
             Cancelar
           </Botao>
-          <Botao type="submit">Salvar pessoa</Botao>
+          <Botao type="submit" disabled={enviando}>
+            {enviando ? 'Salvando…' : 'Salvar pessoa'}
+          </Botao>
         </div>
       </footer>
     </form>
-
-    <ModalFonteRenda
-      aberto={modalFonteRendaAberta}
-      onFechar={() => setModalFonteRendaAberta(false)}
-      onSalvar={adicionarFonteRenda}
-    />
-    </>
   );
 }
