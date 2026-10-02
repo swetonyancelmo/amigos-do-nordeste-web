@@ -144,6 +144,60 @@ export interface Pessoa {
   observacoes: string | null;
 }
 
+/** `Vinculos.*Resumo`: de onde a pessoa é. Saem da família, não da pessoa. */
+export interface VinculoFamilia {
+  id: string;
+  responsavelNome: string;
+}
+
+export interface Vinculo {
+  id: string;
+  nome: string;
+}
+
+/** `PessoaResumoResponse` — uma linha de `GET /api/pessoas`. */
+export interface PessoaResumo {
+  id: string;
+  nome: string | null;
+  cadastroIncompleto: boolean;
+  /** Calculada na hora pela API; null quando não há data nem estimativa. */
+  idade: number | null;
+  /** true: a idade veio de estimativa, não de data de nascimento. */
+  idadeEstimada: boolean;
+  dataNascimento: string | null;
+  familia: VinculoFamilia;
+  comunidade: Vinculo;
+  municipio: Vinculo;
+  estuda: boolean | null;
+}
+
+/** `PessoaDetalheResponse` — `GET/POST/PUT` de pessoa: a `Pessoa` mais os vínculos. */
+export interface PessoaDetalhe extends Pessoa {
+  familia: VinculoFamilia;
+  comunidade: Vinculo;
+  municipio: Vinculo;
+}
+
+/**
+ * `PessoaRequisicao` — corpo de `POST /api/familias/{familiaId}/pessoas` e
+ * `PUT /api/pessoas/{id}`. Sem família nem comunidade: vêm da família.
+ */
+export interface PessoaRequisicao {
+  nome: string | null;
+  cadastroIncompleto: boolean | null;
+  sexo: Sexo | null;
+  dataNascimento: string | null;
+  idadeEstimada: number | null;
+  idadeEstimadaEm: string | null;
+  parentesco: Parentesco | null;
+  estuda: boolean | null;
+  serie: Serie | null;
+  tamanhoRoupa: TamanhoRoupa | null;
+  numeroCalcado: string | null;
+  gestante: boolean | null;
+  observacoes: string | null;
+}
+
 /**
  * `FonteRendaResponse`: de onde vem o dinheiro, não quanto. `pessoaId` null =
  * renda da família (ex.: Bolsa Família). Quanto entra na casa é a

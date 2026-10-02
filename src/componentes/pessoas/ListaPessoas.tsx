@@ -1,47 +1,20 @@
-type PessoaResumo = {
-  id?: string;
-  nome: string;
-  familia: string;
-  comunidade: string;
-  dataNascimento?: string;
-  idadeEstimada?: string;
-  cadastroIncompleto: boolean;
-  estuda: boolean;
-  gestante: boolean;
-};
+import { data } from '@/lib/datas';
+import type { PessoaResumo } from '@/tipos/dominio';
+import styles from '@/app/(app)/pessoas/pessoas.module.css';
 
 type Props = {
   pessoas: PessoaResumo[];
+  onAbrir: (id: string) => void;
 };
 
-import styles from '@/app/(app)/pessoas/pessoas.module.css';
-
-function formatarData(data: string) {
-  const [ano, mes, dia] = data.split('-');
-  return `${dia}/${mes}/${ano}`;
-}
-
-function calcularIdade(data: string) {
-  const [ano, mes, dia] = data.split('-').map(Number);
-  const hoje = new Date();
-  let idade = hoje.getFullYear() - ano;
-
-  if (hoje.getMonth() + 1 < mes || (hoje.getMonth() + 1 === mes && hoje.getDate() < dia)) {
-    idade -= 1;
-  }
-
-  return idade;
-}
-
+/** A idade vem calculada da API; aqui só se escreve. */
 function exibirIdade(pessoa: PessoaResumo) {
-  if (pessoa.dataNascimento) {
-    return `${formatarData(pessoa.dataNascimento)} (${calcularIdade(pessoa.dataNascimento)} anos)`;
-  }
-
-  return pessoa.idadeEstimada ? `${pessoa.idadeEstimada} anos (estimada)` : '—';
+  if (pessoa.idade === null) return '—';
+  if (pessoa.idadeEstimada) return `${pessoa.idade} anos (estimada)`;
+  return `${data(pessoa.dataNascimento)} (${pessoa.idade} anos)`;
 }
 
-export function ListaPessoas({ pessoas }: Props) {
+export function ListaPessoas({ pessoas, onAbrir }: Props) {
   return (
     <div className={styles.tabelaRolagem}>
       <table className={styles.tabela}>
@@ -57,20 +30,21 @@ export function ListaPessoas({ pessoas }: Props) {
         </thead>
         <tbody>
           {pessoas.map((pessoa) => (
-            <tr key={pessoa.id ?? pessoa.nome}>
-              <td className={styles.pessoaNome}>{pessoa.nome}</td>
-              <td className={styles.familiaCelula}>{pessoa.familia}</td>
-              <td>{pessoa.comunidade}</td>
+            <tr key={pessoa.id}>
+              <td className={styles.pessoaNome}>{pessoa.nome ?? 'Sem nome'}</td>
+              <td className={styles.familiaCelula}>Família de {pessoa.familia.responsavelNome}</td>
+              <td>{pessoa.comunidade.nome}</td>
               <td>{exibirIdade(pessoa)}</td>
               <td>
                 <div className={styles.badges}>
                   {pessoa.cadastroIncompleto && <span className={`${styles.tag} ${styles['tag--incompleto']}`}>Incompleto</span>}
                   {pessoa.estuda && <span className={`${styles.tag} ${styles['tag--estuda']}`}>Estuda</span>}
-                  {pessoa.gestante && <span className={`${styles.tag} ${styles['tag--gestante']}`}>Gestante</span>}
                 </div>
               </td>
               <td className={styles.acoes}>
-                <button type="button" className="botao botao--secundario">Ver</button>
+                <button type="button" className="botao botao--secundario" onClick={() => onAbrir(pessoa.id)}>
+                  Ver
+                </button>
               </td>
             </tr>
           ))}
