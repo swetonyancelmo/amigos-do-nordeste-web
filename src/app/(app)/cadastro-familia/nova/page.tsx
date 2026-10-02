@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useMemo, useState } from "react";
 // @ts-ignore
 import "@/app/globals.css";
 // @ts-ignore
@@ -10,10 +10,11 @@ import {
   MapPin,
   Building2,
   User,
+  Users,
   Phone,
   FileText,
   Compass,
-  Users,
+  Calendar,
   GraduationCap,
   Shirt,
   Footprints,
@@ -21,19 +22,19 @@ import {
   Home,
   DollarSign,
   Plus,
-  X,
-  Menu,
 } from "lucide-react";
+
+import { useMetadados } from "@/lib/metadados";
+import type { FaixaRenda, Opcao } from "@/tipos/dominio";
 
 interface Membro {
   id: string;
   nome: string;
   sexo: string;
-  nascimento: string;
-  idade: number;
+  dataNascimento: string;
   serie: string;
-  roupa: string;
-  calcado: number;
+  tamanhoRoupa: string;
+  numeroCalcado: string;
 }
 
 interface FonteRenda {
@@ -41,12 +42,279 @@ interface FonteRenda {
   tipo: string;
   quemRecebe: string;
   faixa: string;
+  faixaEditada: boolean; // true quando o usuário mexeu na faixa manualmente
   observacao: string;
 }
 
-export default function NovaFamiliaPage() {
-  const [sidebarAberta, setSidebarAberta] = useState(false);
+const gerarId = () => `${Date.now()}-${Math.random().toString(36).slice(2)}`;
 
+const novoMembro = (): Membro => ({
+  id: gerarId(),
+  nome: "",
+  sexo: "",
+  dataNascimento: "",
+  serie: "",
+  tamanhoRoupa: "",
+  numeroCalcado: "",
+});
+
+const novaRenda = (): FonteRenda => ({
+  id: gerarId(),
+  tipo: "",
+  quemRecebe: "",
+  faixa: "",
+  faixaEditada: false,
+  observacao: "",
+});
+
+// ---------------------------------------------------------------------------
+// Opções extras dos selects, pensadas na realidade das famílias do interior.
+// Elas se juntam ao que vem de GET /api/metadados (a API tem prioridade nos
+// rótulos). ATENÇÃO: o backend só aceita valores que existam nos enums dele —
+// opções novas precisam ser cadastradas lá também.
+// ---------------------------------------------------------------------------
+const TEXTOS_RENDA = [
+  "Bolsa Família",
+  "BPC",
+  "Aposentadoria",
+  "Aposentadoria rural",
+  "Pensão",
+  "Pensão por morte",
+  "Auxílio-doença",
+  "Salário-maternidade",
+  "Seguro-defeso",
+  "Garantia-Safra",
+  "Bolsa Estiagem",
+  "Programa estadual ou municipal",
+  "Trabalho fixo",
+  "Trabalho sazonal",
+  "Trabalho informal",
+  "Agricultura de subsistência",
+  "Venda de produtos da roça",
+  "Pesca artesanal",
+  "Criação de animais",
+  "Artesanato",
+  "Diarista ou doméstica",
+  "Construção civil",
+  "Comércio informal",
+  "Ajuda de familiares",
+  "Doações",
+  "Nenhuma",
+  "Outra",
+];
+
+const TEXTOS_ROUPA = [
+  "RN",
+  "2",
+  "4",
+  "6",
+  "8",
+  "10",
+  "12",
+  "14",
+  "16",
+  "PP",
+  "P",
+  "M",
+  "G",
+  "GG",
+  "XG",
+  "XGG",
+  "G1",
+  "G2",
+  "G3",
+];
+
+// Calçado em pares de dois dígitos: 15/16, 17/18 ... 45/46
+const TEXTOS_CALCADO = Array.from(
+  { length: 16 },
+  (_, i) => `${15 + i * 2}/${16 + i * 2}`,
+);
+
+// Séries agrupadas por etapa de ensino (valores ANO_1..ANO_9, PRE, ENSINO_MEDIO e
+// NAO_SE_APLICA já existem na API; os demais são novos).
+const GRUPOS_SERIE: { titulo: string; itens: Opcao[] }[] = [
+  {
+    titulo: "Educação infantil",
+    itens: [
+      { valor: "CRECHE", rotulo: "Creche" },
+      { valor: "PRE", rotulo: "Pré-escola" },
+    ],
+  },
+  {
+    titulo: "Ensino fundamental",
+    itens: Array.from({ length: 9 }, (_, i) => ({
+      valor: `ANO_${i + 1}`,
+      rotulo: `${i + 1}º ano`,
+    })),
+  },
+  {
+    titulo: "Ensino médio",
+    itens: [
+      { valor: "ENSINO_MEDIO_1_ANO", rotulo: "1º ano" },
+      { valor: "ENSINO_MEDIO_2_ANO", rotulo: "2º ano" },
+      { valor: "ENSINO_MEDIO_3_ANO", rotulo: "3º ano" },
+      { valor: "ENSINO_MEDIO", rotulo: "Ensino médio (ano não informado)" },
+    ],
+  },
+  {
+    titulo: "EJA (Educação de Jovens e Adultos)",
+    itens: [
+      { valor: "ALFABETIZACAO_DE_ADULTOS", rotulo: "Alfabetização de adultos" },
+      { valor: "EJA_ENSINO_FUNDAMENTAL", rotulo: "EJA - Ensino fundamental" },
+      { valor: "EJA_ENSINO_MEDIO", rotulo: "EJA - Ensino médio" },
+    ],
+  },
+  {
+    titulo: "Técnico e superior",
+    itens: [
+      { valor: "CURSO_TECNICO", rotulo: "Curso técnico" },
+      { valor: "ENSINO_SUPERIOR", rotulo: "Ensino superior" },
+    ],
+  },
+  {
+    titulo: "Outros",
+    itens: [{ valor: "NAO_SE_APLICA", rotulo: "Não se aplica" }],
+  },
+];
+
+/** Aplica os rótulos da API e põe em "Outros" qualquer série que a API tenha e a lista não. */
+function agruparSeries(api: Opcao[] | undefined) {
+  const rotuloDaApi = new Map((api ?? []).map((o) => [o.valor, o.rotulo]));
+  const conhecidos = new Set(
+    GRUPOS_SERIE.flatMap((g) => g.itens.map((o) => o.valor)),
+  );
+  const extrasDaApi = (api ?? []).filter((o) => !conhecidos.has(o.valor));
+  return GRUPOS_SERIE.map((g) => ({
+    titulo: g.titulo,
+    itens: [
+      ...g.itens.map((o) => ({
+        valor: o.valor,
+        rotulo: rotuloDaApi.get(o.valor) ?? o.rotulo,
+      })),
+      ...(g.titulo === "Outros" ? extrasDaApi : []),
+    ].sort(porRotulo),
+  })).sort((a, b) => porRotulo({ rotulo: a.titulo }, { rotulo: b.titulo }));
+}
+
+// Ordem alfanumérica pelo rótulo, com números em ordem natural (2 vem antes de 10).
+const porRotulo = (a: { rotulo: string }, b: { rotulo: string }) =>
+  a.rotulo.localeCompare(b.rotulo, "pt-BR", {
+    numeric: true,
+    sensitivity: "base",
+  });
+
+// "Auxílio-doença" -> "AUXILIO_DOENCA" (mesmo padrão dos enums da API)
+const normalizar = (texto: string) =>
+  texto
+    .normalize("NFD")
+    .replace(/[\u0300-\u036f]/g, "")
+    .toUpperCase()
+    .replace(/[^A-Z0-9]+/g, "_")
+    .replace(/^_+|_+$/g, "");
+
+/**
+ * Junta a lista da API com a lista local, sem repetir valores.
+ * `ordem`: "locais" segue a ordem da lista local (e a API completa o resto);
+ *          "api" mantém a ordem da API e acrescenta as locais no fim.
+ * `ultimos`: valores que ficam sempre no final (ex.: "Outra", "Nenhuma").
+ */
+function mesclarOpcoes(
+  api: Opcao[] | undefined,
+  locais: Opcao[],
+  ordem: "locais" | "api",
+  ultimos: string[] = [],
+): Opcao[] {
+  const daApi = api ?? [];
+  const rotuloDaApi = new Map(daApi.map((o) => [o.valor, o.rotulo]));
+  const doLocal = locais.map((o) => ({
+    valor: o.valor,
+    rotulo: rotuloDaApi.get(o.valor) ?? o.rotulo,
+  }));
+  const valoresLocais = new Set(doLocal.map((o) => o.valor));
+  const soDaApi = daApi.filter((o) => !valoresLocais.has(o.valor));
+  const valoresApi = new Set(daApi.map((o) => o.valor));
+  const soLocais = doLocal.filter((o) => !valoresApi.has(o.valor));
+
+  const lista =
+    ordem === "locais" ? [...doLocal, ...soDaApi] : [...daApi, ...soLocais];
+  return [
+    ...lista.filter((o) => !ultimos.includes(o.valor)),
+    ...lista.filter((o) => ultimos.includes(o.valor)),
+  ];
+}
+
+const opcoesRendaLocais: Opcao[] = TEXTOS_RENDA.map((t) => ({
+  valor: normalizar(t),
+  rotulo: t,
+}));
+const opcoesRoupaLocais: Opcao[] = TEXTOS_ROUPA.map((t) => ({
+  valor: t,
+  rotulo:
+    t === "RN" ? "RN (recém-nascido)" : /^\d+$/.test(t) ? `Infantil ${t}` : t,
+}));
+const opcoesCalcadoLocais: Opcao[] = TEXTOS_CALCADO.map((t) => ({
+  valor: t,
+  rotulo: t,
+}));
+// O calçado usa só os pares acima (não mistura com a lista de números soltos da API).
+const opcoesCalcado = opcoesCalcadoLocais;
+// Faixa que já é conhecida a partir do tipo de renda (o usuário pode alterar).
+const FAIXA_SUGERIDA: Record<string, FaixaRenda> = {
+  NENHUMA: "SEM_RENDA_FIXA",
+  BPC: "ATE_1_SM",
+  BOLSA_FAMILIA: "ATE_1_SM",
+  SEGURO_DEFESO: "ATE_1_SM",
+  GARANTIA_SAFRA: "ATE_1_SM",
+  BOLSA_ESTIAGEM: "ATE_1_SM",
+};
+
+// Idade calculada pela data de nascimento (recalcula sozinha a cada dia).
+function calcularIdade(dataNascimento: string): number | null {
+  if (!dataNascimento) return null;
+  const nascimento = new Date(`${dataNascimento}T00:00:00`);
+  if (Number.isNaN(nascimento.getTime())) return null;
+  const hoje = new Date();
+  let idade = hoje.getFullYear() - nascimento.getFullYear();
+  const jaFezAniversario =
+    hoje.getMonth() > nascimento.getMonth() ||
+    (hoje.getMonth() === nascimento.getMonth() &&
+      hoje.getDate() >= nascimento.getDate());
+  if (!jaFezAniversario) idade -= 1;
+  return idade >= 0 ? idade : null;
+}
+
+const estiloCampo = {
+  width: "100%",
+  padding: "8px 12px",
+  borderRadius: "6px",
+  border: "1px solid #d1d5db",
+} as const;
+
+const estiloBotaoAdicionar = {
+  color: "#ea580c",
+  border: "1px solid #fdba74",
+  padding: "6px 12px",
+  borderRadius: "6px",
+  background: "#fff",
+  cursor: "pointer",
+  fontSize: "0.875rem",
+  display: "flex",
+  alignItems: "center",
+  gap: "4px",
+} as const;
+
+const estiloBotaoRemover = {
+  border: "1px solid #fecaca",
+  background: "#fff",
+  color: "#b91c1c",
+  borderRadius: "6px",
+  padding: "4px 10px",
+  fontSize: "0.75rem",
+  cursor: "pointer",
+} as const;
+
+export default function NovaFamiliaPage() {
   // Dados Básicos
   const [municipio, setMunicipio] = useState("");
   const [comunidade, setComunidade] = useState("");
@@ -61,68 +329,103 @@ export default function NovaFamiliaPage() {
   const [escoamento, setEscoamento] = useState("Rede de esgoto");
   const [tratamentoAgua, setTratamentoAgua] = useState("Cloração");
 
-  // Membros
-  const [membros, setMembros] = useState<Membro[]>([
-    {
-      id: Date.now().toString(),
-      nome: "",
-      sexo: "",
-      nascimento: "",
-      idade: 0,
-      serie: "",
-      roupa: "",
-      calcado: 0,
-    },
-  ]);
+  const { metadados } = useMetadados();
 
-  // Renda
-  const [rendas, setRendas] = useState<FonteRenda[]>([
-    {
-      id: Date.now().toString(),
-      tipo: "",
-      quemRecebe: "",
-      faixa: "",
-      observacao: "",
-    },
-  ]);
+  const opcoesRenda = useMemo(
+    () =>
+      mesclarOpcoes(
+        metadados?.tipoFonteRenda,
+        opcoesRendaLocais,
+        "locais",
+      ).sort(porRotulo),
+    [metadados],
+  );
+  // Tamanho de roupa segue a ordem convencional (RN, infantil, PP...XGG, plus size),
+  // não a alfabética.
+  const opcoesRoupa = useMemo(
+    () => mesclarOpcoes(metadados?.tamanhoRoupa, opcoesRoupaLocais, "locais"),
+    [metadados],
+  );
+  const gruposSerie = useMemo(
+    () => agruparSeries(metadados?.serie),
+    [metadados],
+  );
+
+  // Membros e rendas (uma linha em branco para começar)
+  const [membros, setMembros] = useState<Membro[]>(() => [novoMembro()]);
+  const [rendas, setRendas] = useState<FonteRenda[]>(() => [novaRenda()]);
 
   const [salvando, setSalvando] = useState(false);
 
-  // Manipuladores de Mudança para Membros
+  const rotuloFaixa = (valor: FaixaRenda) =>
+    metadados?.faixaRenda.find((o) => o.valor === valor)?.rotulo ?? "";
+
+  // O campo de faixa é livre; se o texto bater com uma opção da API, envia o valor dela.
+  const faixaParaEnvio = (texto: string) => {
+    const t = texto.trim();
+    if (!t) return null;
+    return (
+      metadados?.faixaRenda.find(
+        (o) => o.rotulo.toLowerCase() === t.toLowerCase(),
+      )?.valor ?? t
+    );
+  };
+
   const handleMembroChange = (
     index: number,
-    field: keyof Membro,
-    value: string | number,
+    campo: keyof Membro,
+    valor: string,
   ) => {
-    const novosMembros = [...membros];
-    novosMembros[index] = {
-      ...novosMembros[index],
-      [field]: field === "idade" || field === "calcado" ? Number(value) : value,
-    };
-    setMembros(novosMembros);
+    setMembros((atual) =>
+      atual.map((m, i) => (i === index ? { ...m, [campo]: valor } : m)),
+    );
   };
 
-  // Manipuladores de Mudança para Rendas
   const handleRendaChange = (
     index: number,
-    field: keyof FonteRenda,
-    value: string,
+    campo: keyof FonteRenda,
+    valor: string,
   ) => {
-    const novasRendas = [...rendas];
-    novasRendas[index] = {
-      ...novasRendas[index],
-      [field]: value,
-    };
-    setRendas(novasRendas);
+    setRendas((atual) =>
+      atual.map((r, i) => {
+        if (i !== index) return r;
+        if (campo === "tipo") {
+          // Preenche a faixa quando ela é conhecida, a menos que o usuário já tenha editado
+          const sugerida = FAIXA_SUGERIDA[valor];
+          return {
+            ...r,
+            tipo: valor,
+            faixa: r.faixaEditada
+              ? r.faixa
+              : sugerida
+                ? rotuloFaixa(sugerida)
+                : "",
+          };
+        }
+        if (campo === "faixa") {
+          return { ...r, faixa: valor, faixaEditada: valor !== "" };
+        }
+        return { ...r, [campo]: valor };
+      }),
+    );
   };
 
+  const adicionarMembro = () => setMembros((atual) => [...atual, novoMembro()]);
+  const removerMembro = (index: number) =>
+    setMembros((atual) => atual.filter((_, i) => i !== index));
+
+  const adicionarRenda = () => setRendas((atual) => [...atual, novaRenda()]);
+  const removerRenda = (index: number) =>
+    setRendas((atual) => atual.filter((_, i) => i !== index));
+
   // Cálculos Automáticos de Idade/Faixas Etárias
+  const idades = membros.map((m) => calcularIdade(m.dataNascimento));
   const totalPessoas = membros.length;
-  const ate12Anos = membros.filter((m) => m.idade <= 12).length;
-  const de13a59Anos = membros.filter(
-    (m) => m.idade >= 13 && m.idade <= 59,
+  const ate12Anos = idades.filter((i) => i !== null && i <= 12).length;
+  const de13a59Anos = idades.filter(
+    (i) => i !== null && i >= 13 && i <= 59,
   ).length;
-  const mais60Anos = membros.filter((m) => m.idade >= 60).length;
+  const mais60Anos = idades.filter((i) => i !== null && i >= 60).length;
 
   const toggleAbastecimento = (opcao: string) => {
     setAbastecimento((prev) =>
@@ -130,31 +433,6 @@ export default function NovaFamiliaPage() {
         ? prev.filter((item) => item !== opcao)
         : [...prev, opcao],
     );
-  };
-
-  const adicionarMembro = () => {
-    const novo: Membro = {
-      id: Date.now().toString(),
-      nome: "",
-      sexo: "",
-      nascimento: "",
-      idade: 0,
-      serie: "",
-      roupa: "",
-      calcado: 0,
-    };
-    setMembros([...membros, novo]);
-  };
-
-  const adicionarRenda = () => {
-    const nova: FonteRenda = {
-      id: Date.now().toString(),
-      tipo: "",
-      quemRecebe: "",
-      faixa: "",
-      observacao: "",
-    };
-    setRendas([...rendas, nova]);
   };
 
   const handleSubmit = async () => {
@@ -167,8 +445,21 @@ export default function NovaFamiliaPage() {
       cpf,
       pontoReferencia,
       moradia: { abastecimento, temBanheiro, escoamento, tratamentoAgua },
-      membros,
-      rendas,
+      membros: membros.map((m, i) => ({
+        nome: m.nome,
+        sexo: m.sexo,
+        dataNascimento: m.dataNascimento || null,
+        idade: idades[i],
+        serie: m.serie,
+        tamanhoRoupa: m.tamanhoRoupa || null,
+        numeroCalcado: m.numeroCalcado || null,
+      })),
+      rendas: rendas.map((r) => ({
+        tipo: r.tipo,
+        quemRecebe: r.quemRecebe,
+        faixa: faixaParaEnvio(r.faixa),
+        observacao: r.observacao,
+      })),
       totaisCalculados: { totalPessoas, ate12Anos, de13a59Anos, mais60Anos },
     };
 
@@ -203,12 +494,6 @@ export default function NovaFamiliaPage() {
       <style
         dangerouslySetInnerHTML={{
           __html: `
-      /* Esconde botão de menu e overlay por padrão no computador */
-      .btn-menu-mobile,
-      .sidebar-overlay {
-        display: none !important;
-      }
-
       /* Estilo dos rótulos com ícones */
       .label-com-icone {
         display: flex;
@@ -218,88 +503,6 @@ export default function NovaFamiliaPage() {
         color: #4b5563;
         font-weight: 600;
         margin-bottom: 4px;
-      }
-
-      /* ===================================================
-         1. COMPORTAMENTO DA SIDEBAR RESPONSIVA
-         =================================================== */
-
-      /* Regras para Telemóvel e Tablet (Até 768px) */
-      @media (max-width: 768px) {
-        .btn-menu-mobile {
-          display: flex !important;
-        }
-
-        .sidebar-container {
-          position: fixed !important;
-          top: 0;
-          left: 0;
-          bottom: 0;
-          height: 100vh;
-          z-index: 50;
-          transform: translateX(-100%);
-          transition: transform 0.3s ease-in-out;
-          box-shadow: 4px 0 12px rgba(0,0,0,0.15);
-        }
-
-        .sidebar-container.aberta {
-          transform: translateX(0) !important;
-        }
-
-        .sidebar-overlay.aberta {
-          display: block !important;
-          position: fixed;
-          inset: 0;
-          background-color: rgba(0, 0, 0, 0.4);
-          z-index: 40;
-        }
-      }
-
-      /* Regras para Computador (Maior que 768px) */
-      @media (min-width: 769px) {
-        .sidebar-container {
-          position: relative !important;
-          transform: none !important;
-          display: flex !important;
-        }
-      }
-
-      /* ===================================================
-         2. ESTILOS DE NAVEGAÇÃO (SIDEBAR)
-         =================================================== */
-      .nav-item {
-        display: flex;
-        align-items: center;
-        gap: 10px;
-        padding: 10px 16px;
-        border-radius: 8px;
-        color: #4b5563;
-        font-size: 0.875rem;
-        font-weight: 500;
-        cursor: pointer;
-        text-decoration: none;
-        transition: background-color 0.2s, color 0.2s;
-      }
-
-      .nav-item:hover {
-        background-color: #f9fafb;
-      }
-
-      .nav-item.active {
-        background-color: #ffedd5;
-        color: #ea580c;
-        font-weight: 600;
-      }
-
-      .nav-dot {
-        width: 6px;
-        height: 6px;
-        border-radius: 50%;
-        background-color: #d1d5db;
-      }
-
-      .nav-item.active .nav-dot {
-        background-color: #ea580c;
       }
 
       /* ===================================================
@@ -383,149 +586,6 @@ export default function NovaFamiliaPage() {
           backgroundColor: "#f5f3ef",
         }}
       >
-        {/* Overlay escuro de fundo no Mobile (clicar fora fecha o menu) */}
-        <div
-          className={`sidebar-overlay ${sidebarAberta ? "aberta" : ""}`}
-          onClick={() => setSidebarAberta(false)}
-        />
-        <aside
-          className={`sidebar-container ${sidebarAberta ? "aberta" : ""}`}
-          style={{
-            width: "240px",
-            backgroundColor: "#ffffff",
-            borderRight: "1px solid #e5e7eb",
-            padding: "24px 16px",
-            display: "flex",
-            flexDirection: "column",
-            justifyContent: "space-between",
-            flexShrink: 0,
-          }}
-        >
-          <div
-            style={{ display: "flex", flexDirection: "column", gap: "32px" }}
-          >
-            <div
-              style={{
-                display: "flex",
-                alignItems: "center",
-                justifyContent: "space-between",
-              }}
-            >
-              <div
-                style={{ display: "flex", alignItems: "center", gap: "12px" }}
-              >
-                <img
-                  src="/logo-amigos-do-nordeste.jpeg"
-                  alt="Logótipo Amigos do Nordeste"
-                  style={{
-                    width: "36px",
-                    height: "36px",
-                    borderRadius: "50%",
-                    objectFit: "cover",
-                  }}
-                />
-                <div>
-                  <h2
-                    style={{
-                      fontSize: "0.95rem",
-                      fontWeight: "bold",
-                      color: "#ea580c",
-                      margin: 0,
-                      lineHeight: 1.2,
-                    }}
-                  >
-                    Amigos do Nordeste
-                  </h2>
-                  <p
-                    style={{ fontSize: "0.75rem", color: "#9ca3af", margin: 0 }}
-                  >
-                    Cadastro de famílias
-                  </p>
-                </div>
-              </div>
-
-              {/* Botão "X" para fechar no celular */}
-              <button
-                className="btn-menu-mobile"
-                onClick={() => setSidebarAberta(false)}
-                style={{
-                  border: "none",
-                  background: "transparent",
-                  fontSize: "1.2rem",
-                  cursor: "pointer",
-                  color: "#6b7280",
-                }}
-              >
-                <X size={20} color="#FFA500" />
-              </button>
-            </div>
-
-            <nav
-              style={{ display: "flex", flexDirection: "column", gap: "4px" }}
-            >
-              <div className="nav-item">
-                <span className="nav-dot"></span>Início
-              </div>
-              <div className="nav-item active">
-                <span className="nav-dot"></span>Famílias
-              </div>
-              <div className="nav-item">
-                <span className="nav-dot"></span>Comunidades
-              </div>
-              <div className="nav-item">
-                <span className="nav-dot"></span>Relatórios
-              </div>
-              <div className="nav-item">
-                <span className="nav-dot"></span>Configurações
-              </div>
-            </nav>
-          </div>
-
-          {/* Perfil do Rodapé */}
-          <div
-            style={{
-              display: "flex",
-              alignItems: "center",
-              gap: "12px",
-              padding: "10px 12px",
-              backgroundColor: "#f9fafb",
-              borderRadius: "8px",
-              border: "1px solid #f3f4f6",
-            }}
-          >
-            <div
-              style={{
-                width: "32px",
-                height: "32px",
-                borderRadius: "50%",
-                backgroundColor: "#16a34a",
-                color: "#ffffff",
-                display: "flex",
-                alignItems: "center",
-                justifyContent: "center",
-                fontSize: "0.75rem",
-                fontWeight: "bold",
-              }}
-            >
-              DA
-            </div>
-            <div>
-              <p
-                style={{
-                  fontSize: "0.8rem",
-                  fontWeight: "bold",
-                  color: "#374151",
-                  margin: 0,
-                }}
-              >
-                Dona da associação
-              </p>
-              <p style={{ fontSize: "0.7rem", color: "#9ca3af", margin: 0 }}>
-                Único acesso
-              </p>
-            </div>
-          </div>
-        </aside>
         <main
           style={{
             flex: 1,
@@ -538,20 +598,6 @@ export default function NovaFamiliaPage() {
         >
           {/* Cabeçalho */}
           <div style={{ display: "flex", alignItems: "center", gap: "12px" }}>
-            <button
-              className="btn-menu-mobile"
-              onClick={() => setSidebarAberta(true)}
-              style={{
-                padding: "8px 12px",
-                borderRadius: "6px",
-                border: "1px solid #d1d5db",
-                backgroundColor: "#fff",
-                cursor: "pointer",
-                fontSize: "1.1rem",
-              }}
-            >
-              <Menu size={20} color="#FFA500" />
-            </button>
             <div>
               <h1
                 style={{
@@ -724,19 +770,9 @@ export default function NovaFamiliaPage() {
                 Membros da família
               </h3>
               <button
+                type="button"
                 onClick={adicionarMembro}
-                style={{
-                  color: "#ea580c",
-                  border: "1px solid #fdba74",
-                  padding: "6px 12px",
-                  borderRadius: "6px",
-                  background: "#fff",
-                  cursor: "pointer",
-                  fontSize: "0.875rem",
-                  display: "flex",
-                  alignItems: "center",
-                  gap: "4px",
-                }}
+                style={estiloBotaoAdicionar}
               >
                 <Plus size={16} color="#FFA500" /> Adicionar membro
               </button>
@@ -756,16 +792,34 @@ export default function NovaFamiliaPage() {
                     backgroundColor: "#fafafa",
                   }}
                 >
-                  <p
+                  <div
                     style={{
-                      fontSize: "0.75rem",
-                      fontWeight: "bold",
-                      color: "#6b7280",
+                      display: "flex",
+                      justifyContent: "space-between",
+                      alignItems: "center",
                       marginBottom: "12px",
                     }}
                   >
-                    Membro #{index + 1}
-                  </p>
+                    <p
+                      style={{
+                        fontSize: "0.75rem",
+                        fontWeight: "bold",
+                        color: "#6b7280",
+                        margin: 0,
+                      }}
+                    >
+                      Membro #{index + 1}
+                    </p>
+                    {membros.length > 1 && (
+                      <button
+                        type="button"
+                        onClick={() => removerMembro(index)}
+                        style={estiloBotaoRemover}
+                      >
+                        Remover
+                      </button>
+                    )}
+                  </div>
 
                   <div className="grid-2-colunas">
                     {/* Coluna da Esquerda */}
@@ -781,15 +835,9 @@ export default function NovaFamiliaPage() {
                             handleMembroChange(index, "nome", e.target.value)
                           }
                           placeholder="Digite o nome"
-                          style={{
-                            width: "100%",
-                            padding: "8px 12px",
-                            borderRadius: "6px",
-                            border: "1px solid #d1d5db",
-                          }}
+                          style={estiloCampo}
                         />
                       </div>
-
                       <div>
                         <label className="label-com-icone">
                           <Users size={15} color="#FFA500" /> Sexo
@@ -801,31 +849,45 @@ export default function NovaFamiliaPage() {
                             handleMembroChange(index, "sexo", e.target.value)
                           }
                           placeholder="M ou F"
-                          style={{
-                            width: "100%",
-                            padding: "8px 12px",
-                            borderRadius: "6px",
-                            border: "1px solid #d1d5db",
-                          }}
+                          style={estiloCampo}
                         />
                       </div>
-
                       <div>
                         <label className="label-com-icone">
-                          <User size={15} color="#FFA500" /> Idade
+                          <Calendar size={15} color="#FFA500" /> Data de
+                          nascimento
                         </label>
                         <input
-                          type="number"
-                          value={m.idade || ""}
+                          type="date"
+                          value={m.dataNascimento}
                           onChange={(e) =>
-                            handleMembroChange(index, "idade", e.target.value)
+                            handleMembroChange(
+                              index,
+                              "dataNascimento",
+                              e.target.value,
+                            )
                           }
-                          placeholder="Ex: 8"
+                          placeholder=""
+                          style={estiloCampo}
+                        />
+                      </div>
+                      <div>
+                        <label className="label-com-icone">
+                          <User size={15} color="#FFA500" /> Idade (calculada)
+                        </label>
+                        <input
+                          type="text"
+                          readOnly
+                          value={
+                            idades[index] !== null
+                              ? `${idades[index]} anos`
+                              : ""
+                          }
+                          placeholder="Preenchida pela data de nascimento"
                           style={{
-                            width: "100%",
-                            padding: "8px 12px",
-                            borderRadius: "6px",
-                            border: "1px solid #d1d5db",
+                            ...estiloCampo,
+                            background: "#f3f4f6",
+                            color: "#4b5563",
                           }}
                         />
                       </div>
@@ -837,60 +899,71 @@ export default function NovaFamiliaPage() {
                         <label className="label-com-icone">
                           <GraduationCap size={15} color="#FFA500" /> Série
                         </label>
-                        <input
-                          type="text"
+                        <select
                           value={m.serie}
                           onChange={(e) =>
                             handleMembroChange(index, "serie", e.target.value)
                           }
-                          placeholder="Ex: 8º Ano"
-                          style={{
-                            width: "100%",
-                            padding: "8px 12px",
-                            borderRadius: "6px",
-                            border: "1px solid #d1d5db",
-                          }}
-                        />
+                          style={estiloCampo}
+                        >
+                          <option value="">Selecione</option>
+                          {gruposSerie.map((g) => (
+                            <optgroup key={g.titulo} label={g.titulo}>
+                              {g.itens.map((o) => (
+                                <option key={o.valor} value={o.valor}>
+                                  {o.rotulo}
+                                </option>
+                              ))}
+                            </optgroup>
+                          ))}
+                        </select>
                       </div>
-
                       <div>
                         <label className="label-com-icone">
-                          <Shirt size={15} color="#FFA500" /> Roupa
+                          <Shirt size={15} color="#FFA500" /> Tamanho da roupa
                         </label>
-                        <input
-                          type="text"
-                          value={m.roupa}
+                        <select
+                          value={m.tamanhoRoupa}
                           onChange={(e) =>
-                            handleMembroChange(index, "roupa", e.target.value)
+                            handleMembroChange(
+                              index,
+                              "tamanhoRoupa",
+                              e.target.value,
+                            )
                           }
-                          placeholder="Ex: M"
-                          style={{
-                            width: "100%",
-                            padding: "8px 12px",
-                            borderRadius: "6px",
-                            border: "1px solid #d1d5db",
-                          }}
-                        />
+                          style={estiloCampo}
+                        >
+                          <option value="">Selecione</option>
+                          {opcoesRoupa.map((o) => (
+                            <option key={o.valor} value={o.valor}>
+                              {o.rotulo}
+                            </option>
+                          ))}
+                        </select>
                       </div>
-
                       <div>
                         <label className="label-com-icone">
-                          <Footprints size={15} color="#FFA500" /> Calçado
+                          <Footprints size={15} color="#FFA500" /> Número do
+                          calçado
                         </label>
-                        <input
-                          type="text"
-                          value={m.calcado || ""}
+                        <select
+                          value={m.numeroCalcado}
                           onChange={(e) =>
-                            handleMembroChange(index, "calcado", e.target.value)
+                            handleMembroChange(
+                              index,
+                              "numeroCalcado",
+                              e.target.value,
+                            )
                           }
-                          placeholder="Ex: 35"
-                          style={{
-                            width: "100%",
-                            padding: "8px 12px",
-                            borderRadius: "6px",
-                            border: "1px solid #d1d5db",
-                          }}
-                        />
+                          style={estiloCampo}
+                        >
+                          <option value="">Selecione</option>
+                          {opcoesCalcado.map((o) => (
+                            <option key={o.valor} value={o.valor}>
+                              {o.rotulo}
+                            </option>
+                          ))}
+                        </select>
                       </div>
                     </div>
                   </div>
@@ -1067,23 +1140,20 @@ export default function NovaFamiliaPage() {
                 </p>
               </div>
               <button
+                type="button"
                 onClick={adicionarRenda}
-                style={{
-                  color: "#ea580c",
-                  border: "1px solid #fdba74",
-                  padding: "6px 12px",
-                  borderRadius: "6px",
-                  background: "#fff",
-                  cursor: "pointer",
-                  display: "flex",
-                  alignItems: "center",
-                  gap: "4px",
-                  fontSize: "0.875rem",
-                }}
+                style={estiloBotaoAdicionar}
               >
                 <Plus size={16} color="#FFA500" /> Adicionar fonte
               </button>
             </div>
+
+            {/* Sugestões para o campo de faixa (continua sendo texto livre) */}
+            <datalist id="faixas-renda">
+              {metadados?.faixaRenda.map((o) => (
+                <option key={o.valor} value={o.rotulo} />
+              ))}
+            </datalist>
 
             {/* Envoltório para permitir Scroll Horizontal em telas pequenas */}
             <div className="tabela-overflow">
@@ -1124,6 +1194,7 @@ export default function NovaFamiliaPage() {
                         <FileText size={14} color="#FFA500" /> Observação
                       </span>
                     </th>
+                    <th style={{ padding: "8px" }} />
                   </tr>
                 </thead>
                 <tbody>
@@ -1133,20 +1204,20 @@ export default function NovaFamiliaPage() {
                       style={{ borderBottom: "1px solid #f3f4f6" }}
                     >
                       <td style={{ padding: "4px" }}>
-                        <input
-                          type="text"
+                        <select
                           value={r.tipo}
                           onChange={(e) =>
                             handleRendaChange(index, "tipo", e.target.value)
                           }
-                          placeholder="Ex: Salário"
-                          style={{
-                            width: "100%",
-                            padding: "8px 12px",
-                            borderRadius: "6px",
-                            border: "1px solid #d1d5db",
-                          }}
-                        />
+                          style={estiloCampo}
+                        >
+                          <option value="">Selecione</option>
+                          {opcoesRenda.map((o) => (
+                            <option key={o.valor} value={o.valor}>
+                              {o.rotulo}
+                            </option>
+                          ))}
+                        </select>
                       </td>
                       <td style={{ padding: "4px" }}>
                         <input
@@ -1160,12 +1231,7 @@ export default function NovaFamiliaPage() {
                             )
                           }
                           placeholder="Ex: Maria"
-                          style={{
-                            width: "100%",
-                            padding: "8px 12px",
-                            borderRadius: "6px",
-                            border: "1px solid #d1d5db",
-                          }}
+                          style={estiloCampo}
                         />
                       </td>
                       <td style={{ padding: "4px" }}>
@@ -1176,12 +1242,8 @@ export default function NovaFamiliaPage() {
                             handleRendaChange(index, "faixa", e.target.value)
                           }
                           placeholder="Ex: Até 1 salário"
-                          style={{
-                            width: "100%",
-                            padding: "8px 12px",
-                            borderRadius: "6px",
-                            border: "1px solid #d1d5db",
-                          }}
+                          list="faixas-renda"
+                          style={estiloCampo}
                         />
                       </td>
                       <td style={{ padding: "4px" }}>
@@ -1196,13 +1258,19 @@ export default function NovaFamiliaPage() {
                             )
                           }
                           placeholder="Observações..."
-                          style={{
-                            width: "100%",
-                            padding: "8px 12px",
-                            borderRadius: "6px",
-                            border: "1px solid #d1d5db",
-                          }}
+                          style={estiloCampo}
                         />
+                      </td>
+                      <td style={{ padding: "4px", textAlign: "right" }}>
+                        {rendas.length > 1 && (
+                          <button
+                            type="button"
+                            onClick={() => removerRenda(index)}
+                            style={estiloBotaoRemover}
+                          >
+                            Remover
+                          </button>
+                        )}
                       </td>
                     </tr>
                   ))}
