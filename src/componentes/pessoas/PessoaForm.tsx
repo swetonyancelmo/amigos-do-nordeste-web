@@ -5,6 +5,7 @@ import { useState } from 'react';
 import { Botao } from '@/componentes/Botao';
 import { ModalFonteRenda, type FonteRendaFormulario } from '@/componentes/fonte-renda/ModalFonteRenda';
 import { useMetadados } from '@/lib/metadados';
+import type { Sexo } from '@/tipos/dominio';
 import styles from '@/app/(app)/pessoas/pessoas.module.css';
 
 type IconeCampo =
@@ -46,7 +47,7 @@ function RotuloCampo({ htmlFor, label, icon }: { htmlFor: string; label: string;
 export type PessoaFormulario = {
   id?: string;
   nome: string;
-  sexo: 'F' | 'M';
+  sexo: Sexo;
   dataNascimento: string;
   idadeEstimada: string;
   parentesco: string;
@@ -70,18 +71,18 @@ type Props = {
 
 const valoresIniciais: PessoaFormulario = {
   nome: '',
-  sexo: 'F',
+  sexo: 'FEMININO',
   dataNascimento: '',
   idadeEstimada: '',
-  parentesco: 'FILHA',
+  parentesco: '',
   estuda: false,
   serie: '',
   tamanhoRoupa: '',
   numeroCalcado: '',
   gestante: false,
   observacoes: '',
-  familia: 'Família da Joana',
-  comunidade: 'Jeritacó',
+  familia: 'Família de Teste',
+  comunidade: 'Sítio de Teste',
   cadastroIncompleto: false,
   fontesRenda: [],
 };
@@ -102,7 +103,7 @@ export function PessoaForm({ onSalvar, onFechar, valorInicial }: Props) {
       [chave]: valor,
       cadastroIncompleto: !valor && chave === 'nome' ? true : atual.cadastroIncompleto,
       // Homem não pode ficar marcado como gestante ao trocar o sexo.
-      gestante: chave === 'sexo' && valor === 'M' ? false : atual.gestante,
+      gestante: chave === 'sexo' && valor === 'MASCULINO' ? false : atual.gestante,
     }));
   }
 
@@ -141,7 +142,7 @@ export function PessoaForm({ onSalvar, onFechar, valorInicial }: Props) {
             className={styles.campo__entrada}
             value={form.nome}
             onChange={(event: ChangeEvent<HTMLInputElement>) => alterarCampo('nome', event.target.value)}
-            placeholder="Ex.: Maria da Silva"
+            placeholder="Ex.: Pessoa de Teste"
             required
           />
         </div>
@@ -153,7 +154,7 @@ export function PessoaForm({ onSalvar, onFechar, valorInicial }: Props) {
             className={styles.campo__entrada}
             value={form.familia}
             onChange={(event: ChangeEvent<HTMLInputElement>) => alterarCampo('familia', event.target.value)}
-            placeholder="Ex.: Família da Joana"
+            placeholder="Ex.: Família de Teste"
           />
         </div>
       </div>
@@ -167,8 +168,9 @@ export function PessoaForm({ onSalvar, onFechar, valorInicial }: Props) {
             value={form.sexo}
             onChange={(event: ChangeEvent<HTMLSelectElement>) => alterarCampo('sexo', event.target.value)}
           >
-            <option value="F">Feminino</option>
-            <option value="M">Masculino</option>
+            {metadados?.sexo.map((opcao) => (
+              <option key={opcao.valor} value={opcao.valor}>{opcao.rotulo}</option>
+            ))}
           </select>
         </div>
 
@@ -206,13 +208,10 @@ export function PessoaForm({ onSalvar, onFechar, valorInicial }: Props) {
             value={form.parentesco}
             onChange={(event: ChangeEvent<HTMLSelectElement>) => alterarCampo('parentesco', event.target.value)}
           >
-            <option value="RESPONSAVEL">Responsável</option>
-            <option value="CONJUGE">Cônjuge</option>
-            <option value="FILHA">Filha</option>
-            <option value="FILHO">Filho</option>
-            <option value="NETA">Neta</option>
-            <option value="NETO">Neto</option>
-            <option value="OUTRO">Outro</option>
+            <option value="">Selecione</option>
+            {metadados?.parentesco.map((opcao) => (
+              <option key={opcao.valor} value={opcao.valor}>{opcao.rotulo}</option>
+            ))}
           </select>
         </div>
 
@@ -258,10 +257,8 @@ export function PessoaForm({ onSalvar, onFechar, valorInicial }: Props) {
             onChange={(event: ChangeEvent<HTMLSelectElement>) => alterarCampo('comunidade', event.target.value)}
           >
             <option value="">Selecione a comunidade</option>
-            <option value="Jeritacó">Jeritacó</option>
-            <option value="Mulungu">Mulungu</option>
-            <option value="Pindorama">Pindorama</option>
-            <option value="Morro da Esperança">Morro da Esperança</option>
+            <option value="Sítio de Teste">Sítio de Teste</option>
+            <option value="Povoado de Teste">Povoado de Teste</option>
           </select>
         </div>
       </div>
@@ -281,7 +278,7 @@ export function PessoaForm({ onSalvar, onFechar, valorInicial }: Props) {
             type="checkbox"
             checked={form.gestante}
             onChange={(event: ChangeEvent<HTMLInputElement>) => alterarCampo('gestante', event.target.checked)}
-            disabled={form.sexo === 'M'}
+            disabled={form.sexo === 'MASCULINO'}
           />
           <span className={styles.checkboxTexto}><IconeFormulario nome="gestante" /> Gestante</span>
         </label>
@@ -319,7 +316,6 @@ export function PessoaForm({ onSalvar, onFechar, valorInicial }: Props) {
         {form.fontesRenda.map((fonte, indice) => (
           <div key={indice} className={styles.linhaRenda}>
             <span>{metadados?.tipoFonteRenda.find((o) => o.valor === fonte.tipo)?.rotulo ?? fonte.tipo}</span>
-            <span>{metadados?.faixaRenda.find((o) => o.valor === fonte.faixa)?.rotulo ?? fonte.faixa ?? '—'}</span>
             <button type="button" className={styles.botaoRemover} onClick={() => removerFonteRenda(indice)}>
               Remover
             </button>

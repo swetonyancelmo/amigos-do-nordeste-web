@@ -184,6 +184,17 @@
   background: var(--pagina);
 }
 
+/* Só para a decisão que cria um registro (aprovar um chamado): precisa ser
+   impossível de confundir com a que devolve, parada ao lado dela. */
+.botao--sucesso {
+  background: var(--verde);
+  color: var(--superficie);
+}
+
+.botao--sucesso:hover:not(:disabled) {
+  background: var(--verde-escuro);
+}
+
 .botao--largo {
   width: 100%;
 }

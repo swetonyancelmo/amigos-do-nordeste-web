@@ -3,7 +3,7 @@
 import { useEffect, useState } from 'react';
 import { Modal } from '@/componentes/Modal';
 import { useMetadados } from '@/lib/metadados';
-import type { FaixaRenda, TipoFonteRenda } from '@/tipos/dominio';
+import type { TipoFonteRenda } from '@/tipos/dominio';
 import styles from '@/app/(app)/pessoas/pessoas.module.css';
 
 type PessoaOpcao = {
@@ -14,7 +14,6 @@ type PessoaOpcao = {
 export type FonteRendaFormulario = {
   tipo: TipoFonteRenda | '';
   pessoaIndice: number | null;
-  faixa: FaixaRenda | '';
   observacao: string;
 };
 
@@ -26,15 +25,14 @@ type Props = {
 };
 
 const pessoasPadrao: PessoaOpcao[] = [
-  { id: 'p-1', nome: 'Maria da Silva' },
-  { id: 'p-2', nome: 'João Pereira' },
-  { id: 'p-3', nome: 'Ana Souza' },
+  { id: 'p-1', nome: 'Criança de Teste' },
+  { id: 'p-2', nome: 'Outra Pessoa de Teste' },
+  { id: 'p-3', nome: 'Responsável de Teste' },
 ];
 
 const valoresIniciais: FonteRendaFormulario = {
   tipo: '',
   pessoaIndice: null,
-  faixa: '',
   observacao: '',
 };
 
@@ -88,7 +86,6 @@ export function ModalFonteRenda({
     onSalvar({
       ...form,
       pessoaIndice: form.pessoaIndice === null ? null : Number(form.pessoaIndice),
-      faixa: form.faixa || '',
       observacao: form.observacao.trim(),
     });
     onFechar();
@@ -112,37 +109,22 @@ export function ModalFonteRenda({
           </select>
         </div>
 
-        <div className={styles.linhaDoisColunas}>
-          <div className={styles.campo}>
-            <RotuloCampo htmlFor="tipo-renda" label="Tipo da renda" icon="renda" />
-            <select
-              id="tipo-renda"
-              className={`${styles.campo__entrada} ${styles.campo__select}`}
-              value={form.tipo}
-              onChange={(event) => alterarCampo('tipo', event.target.value as TipoFonteRenda)}
-              required
-            >
-              <option value="">Selecione</option>
-              {metadados?.tipoFonteRenda.map((opcao) => (
-                <option key={opcao.valor} value={opcao.valor}>{opcao.rotulo}</option>
-              ))}
-            </select>
-          </div>
-
-          <div className={styles.campo}>
-            <RotuloCampo htmlFor="faixa-renda" label="Faixa" icon="renda" />
-            <select
-              id="faixa-renda"
-              className={`${styles.campo__entrada} ${styles.campo__select}`}
-              value={form.faixa}
-              onChange={(event) => alterarCampo('faixa', event.target.value as FaixaRenda | '')}
-            >
-              <option value="">Selecione</option>
-              {metadados?.faixaRenda.map((opcao) => (
-                <option key={opcao.valor} value={opcao.valor}>{opcao.rotulo}</option>
-              ))}
-            </select>
-          </div>
+        {/* Só o tipo: quanto entra na casa é a faixa de renda da família,
+            não de cada fonte — faixa não se soma (ADR-0003, V14). */}
+        <div className={styles.campo}>
+          <RotuloCampo htmlFor="tipo-renda" label="Tipo da renda" icon="renda" />
+          <select
+            id="tipo-renda"
+            className={`${styles.campo__entrada} ${styles.campo__select}`}
+            value={form.tipo}
+            onChange={(event) => alterarCampo('tipo', event.target.value as TipoFonteRenda)}
+            required
+          >
+            <option value="">Selecione</option>
+            {metadados?.tipoFonteRenda.map((opcao) => (
+              <option key={opcao.valor} value={opcao.valor}>{opcao.rotulo}</option>
+            ))}
+          </select>
         </div>
 
         <div className={styles.campo}>

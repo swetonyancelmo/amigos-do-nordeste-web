@@ -19,7 +19,7 @@ Next.js 15 (App Router) · React 19 · TypeScript
 Precisa de **Node 22+** e **pnpm**. A API precisa estar de pé em paralelo.
 
 ```bash
-cp .env.example .env.local     # NEXT_PUBLIC_API_URL aponta para a API
+cp .env.example .env.local     # API_URL aponta para a API; o Next repassa /api/* para ela
 pnpm install
 pnpm dev                       # http://localhost:3000
 ```

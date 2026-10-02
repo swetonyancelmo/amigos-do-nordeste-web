@@ -12,7 +12,7 @@ import estilos from './login.module.css';
 
 /**
  * Tela de entrada. Não existe "criar conta" aqui de propósito: o sistema tem
- * uma usuária só, criada pelo comando `pnpm usuario:criar` na instalação.
+ * uma usuária só, criada pelo perfil `criar-usuario` da API na instalação.
  *
  * Também não há "esqueci minha senha": a redefinição é feita no servidor por
  * quem instalou. A tela não explica nenhuma das duas coisas — quem usa é uma

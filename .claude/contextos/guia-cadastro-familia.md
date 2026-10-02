@@ -4,6 +4,16 @@ Mesmo formato dos guias anteriores: cada capítulo explica **o que fazer** e **p
 do código. Duas diferenças em relação aos guias da Tela de Relatórios valem aviso logo de cara —
 veja o Capítulo 0.
 
+> **Atualização de 01/10/2026 — renda (V14, ADR-0003 revisada):** onde este guia
+> mostra `fontesRenda[].faixa`, isso não existe mais. A faixa agora é **uma só,
+> da família** (`faixaRenda` no corpo do `POST`/`PUT /api/familias`, irmã de
+> `abastecimentoAgua`), e cada fonte tem só `tipo`, `pessoaIndice`/`pessoaId` e
+> `observacao`. O tipo `NENHUMA` também saiu: família sem renda é
+> `faixaRenda: "SEM_RENDA_FIXA"`. Os valores válidos vêm de `metadados.faixaRenda`,
+> não da lista escrita na seção de enums abaixo. Na tela, use o mesmo desenho da
+> revisão de chamado: uma pergunta "Quanto entra na casa por mês, somando tudo"
+> e, abaixo, a lista "De onde vem".
+
 ---
 
 ## Capítulo 0 — O que essa tela cadastra, e duas ressalvas importantes
