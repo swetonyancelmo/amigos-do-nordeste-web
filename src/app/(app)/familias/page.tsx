@@ -334,7 +334,7 @@ export default function Familias() {
         <div className={styles.chips} role="group" aria-label="Filtros">
           {/* Select, não chip: são dezenas de comunidades. */}
           <select
-            className={styles.filtroComunidade}
+            className={`${styles.filtroComunidade} ${comunidadeId ? styles.filtroComunidadeAtivo : ''}`}
             value={comunidadeId}
             onChange={(e) => escolherComunidade(e.target.value)}
             aria-label="Comunidade"

@@ -83,21 +83,55 @@
   border-color: var(--laranja);
 }
 
+/* Fica na fileira dos chips, com a mesma altura e forma. A seta nativa sai
+   (encostava na borda da pílula) e entra a mesma do select de Pessoas. */
 .filtroComunidade {
-  min-height: 34px;
-  padding: 6px 14px;
+  appearance: none;
+  -webkit-appearance: none;
+  max-width: 100%;
+  padding: 6px 36px 6px 14px;
   border: 1px solid var(--linha-forte);
   border-radius: 999px;
-  background: var(--superficie);
-  color: var(--texto-forte);
+  background-color: var(--superficie);
+  background-image:
+    linear-gradient(45deg, transparent 50%, var(--texto-medio) 50%),
+    linear-gradient(135deg, var(--texto-medio) 50%, transparent 50%);
+  background-position: calc(100% - 18px) 50%, calc(100% - 13px) 50%;
+  background-size: 5px 5px;
+  background-repeat: no-repeat;
+  color: var(--texto-medio);
   font: inherit;
   font-size: var(--t-apoio);
+  line-height: inherit;
+  text-overflow: ellipsis;
   cursor: pointer;
+  transition:
+    border-color var(--transicao),
+    box-shadow var(--transicao);
 }
 
-.filtroComunidade:focus-visible {
-  outline: 2px solid var(--laranja);
-  outline-offset: 2px;
+.filtroComunidade:hover {
+  border-color: var(--laranja);
+}
+
+.filtroComunidade:focus {
+  outline: none;
+  border-color: var(--laranja);
+  box-shadow: 0 0 0 3px var(--laranja-claro);
+}
+
+/* Comunidade escolhida: mesmo destaque do chip ativo. */
+.filtroComunidadeAtivo {
+  border-color: var(--laranja);
+  background-color: var(--laranja-claro);
+  color: var(--laranja-escuro);
+  font-weight: 700;
+}
+
+.filtroComunidade option {
+  background: var(--superficie);
+  color: var(--texto-forte);
+  font-weight: 400;
 }
 
 .chipAtivo {
