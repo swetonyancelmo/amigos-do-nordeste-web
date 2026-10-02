@@ -384,7 +384,7 @@ export default function Familias() {
               <tbody>
                 {itens.map((familia) => (
                   <tr key={familia.id} className={styles.linha} onClick={() => setSelecionada(familia)}>
-                    <td>
+                    <td className={styles.celulaNome}>
                       <button
                         type="button"
                         className={styles.nomeBotao}
@@ -396,13 +396,13 @@ export default function Familias() {
                         {familia.responsavelNome}
                       </button>
                     </td>
-                    <td>{familia.comunidadeNome}</td>
-                    <td>{familia.municipioNome}</td>
-                    <td className={styles.numero}>{familia.totalPessoas}</td>
-                    <td className={styles.numero}>{familia.totalAte12Anos}</td>
-                    <td className={styles.numero}>{familia.totalDe13A59Anos}</td>
-                    <td className={styles.numero}>{familia.total60AnosOuMais}</td>
-                    <td>
+                    <td data-rotulo="Comunidade">{familia.comunidadeNome}</td>
+                    <td data-rotulo="Município">{familia.municipioNome}</td>
+                    <td className={styles.numero} data-rotulo="Pessoas">{familia.totalPessoas}</td>
+                    <td className={styles.numero} data-rotulo="Até 12">{familia.totalAte12Anos}</td>
+                    <td className={styles.numero} data-rotulo="13 a 59">{familia.totalDe13A59Anos}</td>
+                    <td className={styles.numero} data-rotulo="60+">{familia.total60AnosOuMais}</td>
+                    <td className={styles.celulaSituacao} data-rotulo="Situação">
                       <div className={styles.badges}>
                         {!familia.ativa && <span className={`${styles.tag} ${styles.tagInativa}`}>Inativa</span>}
                         {familia.semBanheiro && <span className={`${styles.tag} ${styles.tagSemBanheiro}`}>Sem banheiro</span>}

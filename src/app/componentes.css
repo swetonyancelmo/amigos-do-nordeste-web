@@ -143,6 +143,8 @@
   font-family: inherit;
   font-size: var(--t-base);
   font-weight: 700;
+  /* Link com cara de botão ("Nova família") não ganha o sublinhado do <a>. */
+  text-decoration: none;
   cursor: pointer;
   /* Hover em 3s, pedido à parte do resto da transição do sistema (--transicao,
      140ms) — o clique (:active, logo abaixo) continua rápido, porque feedback
