@@ -1,9 +1,11 @@
 'use client';
 
-import { useEffect, useMemo, useState } from 'react';
+import dynamic from 'next/dynamic';
+import { useCallback, useEffect, useMemo, useState } from 'react';
 import { Aviso } from '@/componentes/Aviso';
 import { Botao } from '@/componentes/Botao';
 import { Campo } from '@/componentes/Campo';
+import type { Ponto } from '@/componentes/comunidade/MiniMapa';
 import { useCabecalho } from '@/componentes/ContextoCabecalho';
 import { Selecao } from '@/componentes/Selecao';
 import { api } from '@/lib/api';
@@ -45,6 +47,12 @@ type Erros = Partial<Record<keyof Formulario, string>>;
 
 const ID_NOME = 'nome-comunidade';
 
+/* Leaflet usa `window`, então o mapa só existe no navegador. */
+const MiniMapa = dynamic(() => import('@/componentes/comunidade/MiniMapa'), {
+  ssr: false,
+  loading: () => <p className="texto-apoio">Carregando o mapa…</p>,
+});
+
 const mensagem = (e: unknown) => (e instanceof Error ? e.message : 'Não foi possível concluir a operação.');
 
 const cancelado = (e: unknown) => e instanceof DOMException && e.name === 'AbortError';
@@ -53,6 +61,16 @@ const textoOuNulo = (valor: string) => valor.trim() || null;
 
 /** Aceita vírgula ("-8,4123"), que é como se digita decimal no Brasil. */
 const coordenada = (valor: string) => (valor.trim() ? Number(valor.trim().replace(',', '.')) : null);
+
+/** Mostra no campo do jeito que se digita aqui: "-8,412345". */
+const textoCoordenada = (valor: number) => String(valor).replace('.', ',');
+
+/**
+ * Par "lat, long" colado de uma vez (Google Maps, link de localização do
+ * WhatsApp: "-8.4123, -37.0541"). Exige ponto decimal, para não confundir com
+ * um número só escrito com vírgula ("-8,4123").
+ */
+const PAR = /(-?\d{1,3}\.\d+)\s*,\s*(-?\d{1,3}\.\d+)/;
 
 function validar(form: Formulario): Erros {
   const erros: Erros = {};
@@ -128,6 +146,30 @@ export default function RegistroComunidade() {
     () => municipiosIbge?.map((m) => ({ valor: String(m.id), rotulo: m.nome })),
     [municipiosIbge],
   );
+
+  const municipioNome = municipiosIbge?.find((m) => String(m.id) === form.municipioIbge)?.nome ?? null;
+
+  // O pino segue o que está nos campos, desde que seja um ponto inteiro e válido.
+  const latitude = coordenada(form.latitude);
+  const longitude = coordenada(form.longitude);
+  const ponto = useMemo<Ponto | null>(
+    () => (latitude !== null && longitude !== null && Math.abs(latitude) <= 90 && Math.abs(longitude) <= 180
+      ? { latitude, longitude }
+      : null),
+    [latitude, longitude],
+  );
+
+  const marcar = useCallback(({ latitude: lat, longitude: lng }: Ponto) => {
+    setForm((atual) => ({ ...atual, latitude: textoCoordenada(lat), longitude: textoCoordenada(lng) }));
+    setErros((atuais) => ({ ...atuais, latitude: undefined, longitude: undefined }));
+    setCriada(null);
+  }, []);
+
+  function mudarCoordenada(campo: 'latitude' | 'longitude', valor: string) {
+    const par = PAR.exec(valor);
+    if (par) marcar({ latitude: Number(par[1]), longitude: Number(par[2]) });
+    else mudar(campo, valor);
+  }
 
   function mudar(campo: keyof Formulario, valor: string) {
     setForm((atual) => (campo === 'uf'
@@ -247,13 +289,21 @@ export default function RegistroComunidade() {
             required
           />
         </div>
+        <MiniMapa
+          codigoIbge={form.municipioIbge || null}
+          municipioNome={municipioNome}
+          uf={form.uf}
+          nomeComunidade={form.nome}
+          ponto={ponto}
+          aoMarcar={marcar}
+        />
         <div className={estilos.grade}>
           <Campo
             rotulo="Latitude"
-            ajuda="Opcional. Ex.: -8,4123"
+            ajuda="Opcional. Ex.: -8,4123, ou cole o par do Google Maps"
             inputMode="decimal"
             value={form.latitude}
-            onChange={(e) => mudar('latitude', e.target.value)}
+            onChange={(e) => mudarCoordenada('latitude', e.target.value)}
             erro={erros.latitude}
           />
           <Campo
@@ -261,7 +311,7 @@ export default function RegistroComunidade() {
             ajuda="Opcional. Ex.: -37,0541"
             inputMode="decimal"
             value={form.longitude}
-            onChange={(e) => mudar('longitude', e.target.value)}
+            onChange={(e) => mudarCoordenada('longitude', e.target.value)}
             erro={erros.longitude}
           />
         </div>

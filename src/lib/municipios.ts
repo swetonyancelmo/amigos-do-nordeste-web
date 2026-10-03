@@ -14,6 +14,8 @@ import type { Municipio } from '@/tipos/dominio';
 
 const IBGE = 'https://servicodados.ibge.gov.br/api/v1/localidades';
 
+const IBGE_MALHAS = 'https://servicodados.ibge.gov.br/api/v3/malhas/municipios';
+
 const IBGE_FORA = 'Não foi possível carregar a lista do IBGE. Confira a internet e tente de novo.';
 
 export interface UfIbge {
@@ -28,10 +30,19 @@ export interface MunicipioIbge {
   nome: string;
 }
 
-async function buscarIbge<T>(caminho: string, sinal?: AbortSignal): Promise<T> {
+/**
+ * Contorno do município (GeoJSON `FeatureCollection` com um polígono). Só o
+ * mínimo que o mapa lê; o Leaflet recebe o objeto inteiro.
+ */
+export interface MalhaMunicipio {
+  type: 'FeatureCollection';
+  features: { type: 'Feature'; geometry: { type: string; coordinates: unknown } }[];
+}
+
+async function buscarIbge<T>(url: string, sinal?: AbortSignal): Promise<T> {
   let resposta: Response;
   try {
-    resposta = await fetch(`${IBGE}${caminho}`, { signal: sinal });
+    resposta = await fetch(url, { signal: sinal });
   } catch (e) {
     if (e instanceof DOMException && e.name === 'AbortError') throw e;
     throw new Error(IBGE_FORA);
@@ -41,13 +52,24 @@ async function buscarIbge<T>(caminho: string, sinal?: AbortSignal): Promise<T> {
 }
 
 export const listarUfs = (sinal?: AbortSignal) =>
-  buscarIbge<UfIbge[]>('/estados?orderBy=nome', sinal);
+  buscarIbge<UfIbge[]>(`${IBGE}/estados?orderBy=nome`, sinal);
 
 export const listarMunicipiosIbge = (uf: string, sinal?: AbortSignal) =>
-  buscarIbge<MunicipioIbge[]>(`/estados/${encodeURIComponent(uf)}/municipios?orderBy=nome`, sinal);
+  buscarIbge<MunicipioIbge[]>(`${IBGE}/estados/${encodeURIComponent(uf)}/municipios?orderBy=nome`, sinal);
+
+/**
+ * Contorno do município para enquadrar o mini-mapa (ADR-0005). Qualidade
+ * mínima basta para desenhar a borda e pesa poucos KB. Não é coordenada de
+ * comunidade: o centro desse polígono nunca vai para latitude/longitude.
+ */
+export const buscarMalhaMunicipio = (codigoIbge: string, sinal?: AbortSignal) =>
+  buscarIbge<MalhaMunicipio>(
+    `${IBGE_MALHAS}/${encodeURIComponent(codigoIbge)}?formato=application/vnd.geo%2Bjson&qualidade=minima`,
+    sinal,
+  );
 
 /** "São José do Egito" e "sao jose do egito" são o mesmo município. */
-const chave = (texto: string) =>
+export const chave = (texto: string) =>
   texto.normalize('NFD').replace(/\p{Diacritic}/gu, '').trim().toLowerCase();
 
 function procurar(lista: Municipio[], codigo: string, nome: string, uf: string) {
