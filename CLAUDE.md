@@ -21,6 +21,7 @@ src/app/
   login/                   tela de entrada (POST /api/auth/login)
   (app)/layout.tsx         casco logado: <Navegacao> + cabeçalho via ContextoCabecalho
   (app)/chamados/          fila de pré-cadastros do app; [id] revisa, aprova ou devolve
+  (app)/agentes/           agentes do app: cadastrar e gerar código de convite (novo código desliga o celular atual)
   (app)/familias/          lista com busca, filtros e ficha em modal (API); nova/ cadastra (POST /api/familias)
   (app)/pessoas/           lista com filtros e modal criar/editar/remover (API)
   (app)/relatorios/        esqueleto (TODO); botão Imprimir já existe
@@ -77,7 +78,8 @@ Swagger: `http://localhost:3333/swagger-ui.html`. Rotas que interessam ao painel
 `totais` calculados), `/api/pessoas`, `/api/familias/{id}/pessoas`,
 `/api/comunidades`, `/api/municipios`, `/api/pre-cadastros` (fila de chamados:
 listar, ficha em `/{id}`, `/{id}/aprovar`, `/{id}/devolver`), `/api/relatorios/necessidades`,
-`/api/relatorios/situacao`, `/api/auth/trocar-senha`.
+`/api/relatorios/situacao`, `/api/auth/trocar-senha`, `/api/agentes` (criar,
+listar, `/{id}/novo-convite`; não há rota para desativar nem renomear).
 
 **O que ainda falta ou diverge (02/10/2026):**
 
