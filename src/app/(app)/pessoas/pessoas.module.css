@@ -528,9 +528,76 @@
     grid-template-columns: 1fr;
   }
 
-  .tabela th,
-  .tabela td {
-    padding-right: 12px;
-    padding-left: 12px;
+  /*
+   * A tabela de 700px obrigava a arrastar de lado sem nenhum sinal de que
+   * havia mais colunas. Aqui cada linha vira um cartão; o rótulo de cada
+   * dado vem do data-rotulo da célula.
+   */
+  .tabela {
+    min-width: 0;
+  }
+
+  .tabela thead {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    overflow: hidden;
+    clip-path: inset(50%);
+  }
+
+  .tabela tbody {
+    display: block;
+  }
+
+  .tabela tr {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: var(--e-2) var(--e-3);
+    padding: var(--e-4) 0;
+    border-bottom: 1px solid var(--linha);
+  }
+
+  .tabela tbody tr:last-child {
+    border-bottom: 0;
+  }
+
+  .tabela td,
+  .tabela td:first-child,
+  .tabela td:last-child {
+    display: block;
+    min-width: 0;
+    padding: 0;
+    border: 0;
+    white-space: normal;
+    overflow-wrap: anywhere;
+  }
+
+  .tabela td[data-rotulo]::before {
+    content: attr(data-rotulo);
+    display: block;
+    color: var(--texto-suave);
+    font-size: var(--t-micro);
+    font-weight: 700;
+    letter-spacing: 0.04em;
+    text-transform: uppercase;
+  }
+
+  .pessoaNome,
+  .familiaCelula,
+  .acoes {
+    grid-column: 1 / -1;
+  }
+
+  /* Sem selo nenhum, a célula de status não ocupa espaço no cartão. */
+  .statusCelula:has(.badges:empty) {
+    display: none;
+  }
+
+  .statusCelula {
+    grid-column: 1 / -1;
+  }
+
+  .acoes button {
+    width: 100%;
   }
 }
