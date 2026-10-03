@@ -1,81 +1,92 @@
-'use client';
+"use client";
 
-import Link from 'next/link';
-import { useCallback, useEffect, useRef, useState } from 'react';
-import { Aviso } from '@/componentes/Aviso';
-import { useCabecalho } from '@/componentes/ContextoCabecalho';
-import { Modal } from '@/componentes/Modal';
-import { api } from '@/lib/api';
-<<<<<<< HEAD
-import { data as formatarData, dataHora } from '@/lib/datas';
-=======
-import { data } from '@/lib/datas';
->>>>>>> 86acb96694a4559e6700af77b7db3b0e71b8bb54
-import { useMetadados } from '@/lib/metadados';
-import type { Comunidade, FamiliaDetalhe, FamiliaResumo, Opcao, Pagina, Pessoa } from '@/tipos/dominio';
-import styles from './familias.module.css';
+import Link from "next/link";
+import { useCallback, useEffect, useRef, useState } from "react";
+import { Aviso } from "@/componentes/Aviso";
+import { useCabecalho } from "@/componentes/ContextoCabecalho";
+import { Modal } from "@/componentes/Modal";
+import { api } from "@/lib/api";
+import { data as formatarData, dataHora } from "@/lib/datas";
+import { useMetadados } from "@/lib/metadados";
+import type {
+  Comunidade,
+  FamiliaDetalhe,
+  FamiliaResumo,
+  Opcao,
+  Pagina,
+  Pessoa,
+} from "@/tipos/dominio";
+import styles from "./familias.module.css";
 
-<<<<<<< HEAD
 /** Uma linha de `GET /api/familias`. */
 type ItemFamilia = FamiliaResumo;
 type RespostaFamilias = Pagina<FamiliaResumo>;
-type ComunidadeResumo = Pick<Comunidade, 'id' | 'nome'>;
+type ComunidadeResumo = Pick<Comunidade, "id" | "nome">;
 
-=======
->>>>>>> 86acb96694a4559e6700af77b7db3b0e71b8bb54
 const POR_PAGINA = 25;
 
 // Fora do componente: JSX estável, o cabeçalho não re-renderiza à toa.
 const ACOES = (
-  <Link href="/familias/nova" className="botao botao--primario">
-    Nova família
+  <Link href="/cadastro-familia/nova" className="botao botao--primario">
+    + Nova família
   </Link>
 );
 
 /* ------------------------------------------------------------- utilitários */
 
-const formatarNumero = (n: number) => n.toLocaleString('pt-BR');
+const formatarNumero = (n: number) => n.toLocaleString("pt-BR");
 
-function rotuloDe(lista: Opcao[] | undefined, valor: string | null | undefined) {
-  if (!valor) return '';
-  return lista?.find((o) => o.valor === valor)?.rotulo ?? valor;
+/** A API pode devolver uma lista pura ou um objeto paginado com `itens`. */
+function comoLista<T>(dado: unknown): T[] {
+  if (Array.isArray(dado)) return dado as T[];
+  const itens = (dado as { itens?: unknown } | null)?.itens;
+  return Array.isArray(itens) ? (itens as T[]) : [];
 }
 
-<<<<<<< HEAD
+// "OUTRO_PARENTE" -> "Outro parente" (usado quando a API não manda rótulo)
+function formatarEnum(valor: string) {
+  const texto = valor.toLowerCase().replace(/_/g, " ");
+  return texto.charAt(0).toUpperCase() + texto.slice(1);
+}
+
+function rotuloDe(
+  lista: Opcao[] | undefined,
+  valor: string | null | undefined,
+) {
+  if (!valor) return "—";
+  return lista?.find((o) => o.valor === valor)?.rotulo ?? formatarEnum(valor);
+}
+
 function exibirIdade(pessoa: Pessoa) {
   if (pessoa.dataNascimento) {
     return pessoa.idade != null
       ? `${formatarData(pessoa.dataNascimento)} (${pessoa.idade} anos)`
       : formatarData(pessoa.dataNascimento);
   }
-  return pessoa.idade != null ? `${pessoa.idade} anos (estimada)` : '—';
+  return pessoa.idade != null ? `${pessoa.idade} anos (estimada)` : "—";
 }
-=======
-/** A idade vem calculada da API; aqui só se diz de onde ela saiu. */
-function exibirIdade(pessoa: Pessoa) {
-  if (pessoa.idade === null) return '';
-  if (pessoa.dataNascimento) return `${pessoa.idade} anos (nasceu em ${data(pessoa.dataNascimento)})`;
-  return `uns ${pessoa.idade} anos (estimada)`;
-}
-
-const simNao = (v: boolean | null) => (v === null ? 'Não informado' : v ? 'Sim' : 'Não');
->>>>>>> 86acb96694a4559e6700af77b7db3b0e71b8bb54
 
 /** Números das páginas (começam em 0) com reticências: 1 2 3 … 315 */
-function paginasVisiveis(atual: number, total: number): (number | 'reticencias')[] {
+function paginasVisiveis(
+  atual: number,
+  total: number,
+): (number | "reticencias")[] {
   const conjunto = new Set(
-    [0, total - 1, atual - 1, atual, atual + 1].filter((n) => n >= 0 && n < total),
+    [0, total - 1, atual - 1, atual, atual + 1].filter(
+      (n) => n >= 0 && n < total,
+    ),
   );
   const ordenadas = [...conjunto].sort((a, b) => a - b);
-  const saida: (number | 'reticencias')[] = [];
+  const saida: (number | "reticencias")[] = [];
   ordenadas.forEach((n, i) => {
-    if (i > 0 && n - ordenadas[i - 1] > 1) saida.push('reticencias');
+    if (i > 0 && n - ordenadas[i - 1] > 1) saida.push("reticencias");
     saida.push(n);
   });
   return saida;
 }
 
-const mensagemDeErro = (e: unknown, padrao: string) => (e instanceof Error ? e.message : padrao);
+const mensagemDeErro = (e: unknown, padrao: string) =>
+  e instanceof Error ? e.message : padrao;
 
 function IconeBusca() {
   return (
@@ -100,50 +111,53 @@ function IconeBusca() {
 
 /* ------------------------------------------------------------------ ficha */
 
-function Dado({ rotulo, children, larga }: { rotulo: string; children: React.ReactNode; larga?: boolean }) {
+function Dado({
+  rotulo,
+  children,
+  larga,
+}: {
+  rotulo: string;
+  children: React.ReactNode;
+  larga?: boolean;
+}) {
   return (
     <div className={larga ? styles.larga : undefined}>
       <dt>{rotulo}</dt>
-      <dd>{children || '—'}</dd>
+      <dd>{children || "—"}</dd>
     </div>
   );
 }
 
 /** Tudo o que está cadastrado da família: carrega a ficha ao abrir o modal. */
-function DetalhesFamilia({ id }: { id: string }) {
+function DetalhesFamilia({ item }: { item: ItemFamilia }) {
   const { metadados } = useMetadados();
   const [ficha, setFicha] = useState<FamiliaDetalhe | null>(null);
-<<<<<<< HEAD
   const [carregando, setCarregando] = useState(true);
-=======
->>>>>>> 86acb96694a4559e6700af77b7db3b0e71b8bb54
-  const [erro, setErro] = useState('');
+  const [erro, setErro] = useState("");
 
   useEffect(() => {
     let ativo = true;
-<<<<<<< HEAD
     setCarregando(true);
-    setErro('');
+    setErro("");
 
     api
       .get<FamiliaDetalhe>(`/familias/${item.id}`)
       .then((dado) => ativo && setFicha(dado))
-      .catch((e) => ativo && setErro(mensagemDeErro(e, 'Não foi possível carregar a família.')))
+      .catch(
+        (e) =>
+          ativo &&
+          setErro(mensagemDeErro(e, "Não foi possível carregar a família.")),
+      )
       .finally(() => ativo && setCarregando(false));
 
-=======
-    api
-      .get<FamiliaDetalhe>(`/familias/${id}`)
-      .then((dado) => ativo && setFicha(dado))
-      .catch((e) => ativo && setErro(mensagemDeErro(e, 'Não foi possível carregar a família.')));
->>>>>>> 86acb96694a4559e6700af77b7db3b0e71b8bb54
     return () => {
       ativo = false;
     };
-  }, [id]);
+  }, [item.id]);
 
-  if (erro) return <Aviso tom="erro">{erro}</Aviso>;
-  if (!ficha) return <p className={styles.estado} role="status">Carregando…</p>;
+  if (carregando) return <p className={styles.estado}>Carregando…</p>;
+  if (erro || !ficha)
+    return <Aviso tom="erro">{erro || "Família não encontrada."}</Aviso>;
 
   const { totais, pessoas, fontesRenda } = ficha;
 
@@ -155,19 +169,17 @@ function DetalhesFamilia({ id }: { id: string }) {
           <Dado rotulo="Responsável">{ficha.responsavelNome}</Dado>
           <Dado rotulo="CPF">{ficha.responsavelCpf}</Dado>
           <Dado rotulo="Telefone">{ficha.telefone}</Dado>
-          <Dado rotulo="Situação">{ficha.ativa ? 'Ativa' : 'Inativa'}</Dado>
+          <Dado rotulo="Situação">{ficha.ativa ? "Ativa" : "Inativa"}</Dado>
           <Dado rotulo="Comunidade">{ficha.comunidade.nome}</Dado>
           <Dado rotulo="Município">{ficha.comunidade.municipioNome}</Dado>
-<<<<<<< HEAD
-          <Dado rotulo="Faixa de renda da casa">{ficha.faixaRenda ? rotuloDe(metadados?.faixaRenda, ficha.faixaRenda) : ''}</Dado>
+          <Dado rotulo="Faixa de renda da casa">
+            {ficha.faixaRenda
+              ? rotuloDe(metadados?.faixaRenda, ficha.faixaRenda)
+              : ""}
+          </Dado>
           <Dado rotulo="Ponto de referência">{ficha.pontoReferencia}</Dado>
           <Dado rotulo="Cadastrada em">{dataHora(ficha.criadoEm)}</Dado>
           <Dado rotulo="Atualizada em">{dataHora(ficha.atualizadoEm)}</Dado>
-=======
-          <Dado rotulo="Ponto de referência" larga>
-            {ficha.pontoReferencia}
-          </Dado>
->>>>>>> 86acb96694a4559e6700af77b7db3b0e71b8bb54
           {ficha.observacoes && (
             <Dado rotulo="Observações" larga>
               {ficha.observacoes}
@@ -180,18 +192,25 @@ function DetalhesFamilia({ id }: { id: string }) {
         <h3 className={styles.secaoTitulo}>Moradia</h3>
         <dl className={styles.grade}>
           <Dado rotulo="Abastecimento de água">
-            {ficha.abastecimentoAgua.map((v) => rotuloDe(metadados?.abastecimentoAgua, v)).join(', ')}
+            {ficha.abastecimentoAgua
+              .map((v) => rotuloDe(metadados?.abastecimentoAgua, v))
+              .join(", ")}
           </Dado>
-          <Dado rotulo="Tratamento da água">{rotuloDe(metadados?.tratamentoAgua, ficha.tratamentoAgua)}</Dado>
-<<<<<<< HEAD
+          <Dado rotulo="Tratamento da água">
+            {rotuloDe(metadados?.tratamentoAgua, ficha.tratamentoAgua)}
+          </Dado>
           <Dado rotulo="Tem banheiro">
-            {ficha.temBanheiro === null ? 'Não informado' : ficha.temBanheiro ? 'Sim' : 'Não'}
+            {ficha.temBanheiro === null
+              ? "Não informado"
+              : ficha.temBanheiro
+                ? "Sim"
+                : "Não"}
           </Dado>
-=======
-          <Dado rotulo="Tem banheiro">{simNao(ficha.temBanheiro)}</Dado>
->>>>>>> 86acb96694a4559e6700af77b7db3b0e71b8bb54
           <Dado rotulo="Escoamento sanitário">
-            {rotuloDe(metadados?.escoamentoSanitario, ficha.escoamentoSanitario)}
+            {rotuloDe(
+              metadados?.escoamentoSanitario,
+              ficha.escoamentoSanitario,
+            )}
           </Dado>
         </dl>
       </section>
@@ -200,15 +219,12 @@ function DetalhesFamilia({ id }: { id: string }) {
         <h3 className={styles.secaoTitulo}>Totais</h3>
         <div className={styles.totais}>
           {[
-            ['Pessoas', totais.totalPessoas],
-<<<<<<< HEAD
-            ['Estudando', totais.totalPessoasEstudando],
-=======
->>>>>>> 86acb96694a4559e6700af77b7db3b0e71b8bb54
-            ['Até 12 anos', totais.totalAte12Anos],
-            ['13 a 59 anos', totais.totalDe13A59Anos],
-            ['60 anos ou mais', totais.total60AnosOuMais],
-            ['Sem idade', totais.totalSemIdadeConhecida],
+            ["Pessoas", totais.totalPessoas],
+            ["Estudando", totais.totalPessoasEstudando],
+            ["Até 12 anos", totais.totalAte12Anos],
+            ["13 a 59 anos", totais.totalDe13A59Anos],
+            ["60 anos ou mais", totais.total60AnosOuMais],
+            ["Sem idade", totais.totalSemIdadeConhecida],
           ].map(([rotulo, valor]) => (
             <div key={rotulo} className={styles.totalCaixa}>
               <span className={styles.totalNumero}>{valor}</span>
@@ -227,35 +243,45 @@ function DetalhesFamilia({ id }: { id: string }) {
             {pessoas.map((pessoa) => (
               <article key={pessoa.id} className={styles.cartao}>
                 <div className={styles.cartaoTopo}>
-<<<<<<< HEAD
-                  <span className={styles.cartaoNome}>{pessoa.nome ?? 'Sem nome informado'}</span>
-=======
-                  <span className={styles.cartaoNome}>{pessoa.nome ?? 'Sem nome'}</span>
->>>>>>> 86acb96694a4559e6700af77b7db3b0e71b8bb54
+                  <span className={styles.cartaoNome}>
+                    {pessoa.nome ?? "Sem nome informado"}
+                  </span>
                   <div className={styles.badges}>
-                    {pessoa.cadastroIncompleto && <span className={`${styles.tag} ${styles.tagIncompleto}`}>Incompleto</span>}
-                    {pessoa.estuda && <span className={`${styles.tag} ${styles.tagEstuda}`}>Estuda</span>}
-                    {pessoa.gestante && <span className={`${styles.tag} ${styles.tagGestante}`}>Gestante</span>}
+                    {pessoa.cadastroIncompleto && (
+                      <span className={`${styles.tag} ${styles.tagIncompleto}`}>
+                        Incompleto
+                      </span>
+                    )}
+                    {pessoa.estuda && (
+                      <span className={`${styles.tag} ${styles.tagEstuda}`}>
+                        Estuda
+                      </span>
+                    )}
+                    {pessoa.gestante && (
+                      <span className={`${styles.tag} ${styles.tagGestante}`}>
+                        Gestante
+                      </span>
+                    )}
                   </div>
                 </div>
                 <dl className={styles.grade}>
-                  <Dado rotulo="Parentesco">{rotuloDe(metadados?.parentesco, pessoa.parentesco)}</Dado>
-                  <Dado rotulo="Sexo">{rotuloDe(metadados?.sexo, pessoa.sexo)}</Dado>
-<<<<<<< HEAD
+                  <Dado rotulo="Parentesco">
+                    {rotuloDe(metadados?.parentesco, pessoa.parentesco)}
+                  </Dado>
+                  <Dado rotulo="Sexo">
+                    {rotuloDe(metadados?.sexo, pessoa.sexo)}
+                  </Dado>
                   <Dado rotulo="Nascimento / idade">{exibirIdade(pessoa)}</Dado>
                   <Dado rotulo="Série">
                     {pessoa.estuda === false
-                      ? 'Não estuda'
+                      ? "Não estuda"
                       : pessoa.serie
                         ? rotuloDe(metadados?.serie, pessoa.serie)
-                        : 'Não informada'}
-=======
-                  <Dado rotulo="Idade">{exibirIdade(pessoa)}</Dado>
-                  <Dado rotulo="Série">
-                    {pessoa.estuda === false ? 'Não estuda' : rotuloDe(metadados?.serie, pessoa.serie)}
->>>>>>> 86acb96694a4559e6700af77b7db3b0e71b8bb54
+                        : "Não informada"}
                   </Dado>
-                  <Dado rotulo="Tamanho da roupa">{rotuloDe(metadados?.tamanhoRoupa, pessoa.tamanhoRoupa)}</Dado>
+                  <Dado rotulo="Tamanho da roupa">
+                    {rotuloDe(metadados?.tamanhoRoupa, pessoa.tamanhoRoupa)}
+                  </Dado>
                   <Dado rotulo="Número do calçado">{pessoa.numeroCalcado}</Dado>
                   {pessoa.observacoes && (
                     <Dado rotulo="Observações" larga>
@@ -270,16 +296,9 @@ function DetalhesFamilia({ id }: { id: string }) {
       </section>
 
       <section className={styles.secao}>
-<<<<<<< HEAD
-        <h3 className={styles.secaoTitulo}>Fontes de renda ({fontesRenda.length})</h3>
-=======
-        <h3 className={styles.secaoTitulo}>Renda</h3>
-        <dl className={styles.grade}>
-          <Dado rotulo="Quanto entra por mês, somando tudo" larga>
-            {rotuloDe(metadados?.faixaRenda, ficha.faixaRenda)}
-          </Dado>
-        </dl>
->>>>>>> 86acb96694a4559e6700af77b7db3b0e71b8bb54
+        <h3 className={styles.secaoTitulo}>
+          Fontes de renda ({fontesRenda.length})
+        </h3>
         {fontesRenda.length === 0 ? (
           <p className={styles.vazio}>Nenhuma fonte de renda cadastrada.</p>
         ) : (
@@ -287,26 +306,18 @@ function DetalhesFamilia({ id }: { id: string }) {
             {fontesRenda.map((renda) => (
               <article key={renda.id} className={styles.cartao}>
                 <dl className={styles.grade}>
-                  <Dado rotulo="De onde vem">{rotuloDe(metadados?.tipoFonteRenda, renda.tipo)}</Dado>
+                  <Dado rotulo="Tipo">
+                    {rotuloDe(metadados?.tipoFonteRenda, renda.tipo)}
+                  </Dado>
                   <Dado rotulo="Quem recebe">
                     {renda.pessoaId === null
-<<<<<<< HEAD
-                      ? 'Família toda'
-                      : (pessoas.find((p) => p.id === renda.pessoaId)?.nome ?? '')}
+                      ? "Família toda"
+                      : (pessoas.find((p) => p.id === renda.pessoaId)?.nome ??
+                        "")}
                   </Dado>
                   <Dado rotulo="Observação" larga>
                     {renda.observacao}
                   </Dado>
-=======
-                      ? 'A família'
-                      : (pessoas.find((p) => p.id === renda.pessoaId)?.nome ?? 'Sem nome')}
-                  </Dado>
-                  {renda.observacao && (
-                    <Dado rotulo="Observação" larga>
-                      {renda.observacao}
-                    </Dado>
-                  )}
->>>>>>> 86acb96694a4559e6700af77b7db3b0e71b8bb54
                 </dl>
               </article>
             ))}
@@ -326,20 +337,20 @@ function DetalhesFamilia({ id }: { id: string }) {
  *  - paginação simples, sem scroll infinito.
  */
 export default function Familias() {
-  useCabecalho('Famílias', ACOES);
+  useCabecalho("Famílias", ACOES);
 
-  const [digitado, setDigitado] = useState('');
-  const [busca, setBusca] = useState('');
-  const [comunidadeId, setComunidadeId] = useState('');
+  const [digitado, setDigitado] = useState("");
+  const [busca, setBusca] = useState("");
+  const [comunidadeId, setComunidadeId] = useState("");
   const [semBanheiro, setSemBanheiro] = useState(false);
   const [incluirInativas, setIncluirInativas] = useState(false);
   const [pagina, setPagina] = useState(0);
 
-  const [resposta, setResposta] = useState<Pagina<FamiliaResumo> | null>(null);
+  const [resposta, setResposta] = useState<RespostaFamilias | null>(null);
   const [carregando, setCarregando] = useState(true);
-  const [erro, setErro] = useState('');
-  const [comunidades, setComunidades] = useState<Comunidade[]>([]);
-  const [selecionada, setSelecionada] = useState<FamiliaResumo | null>(null);
+  const [erro, setErro] = useState("");
+  const [comunidades, setComunidades] = useState<ComunidadeResumo[]>([]);
+  const [selecionada, setSelecionada] = useState<ItemFamilia | null>(null);
   const ultimaRequisicao = useRef(0);
 
   // Espera a pessoa parar de digitar antes de buscar
@@ -351,9 +362,12 @@ export default function Familias() {
     return () => clearTimeout(espera);
   }, [digitado]);
 
-  // Comunidades para o filtro
+  // Comunidades para os chips de filtro
   useEffect(() => {
-    api.get<Comunidade[]>('/comunidades').then(setComunidades).catch(() => setComunidades([]));
+    api
+      .get<unknown>("/comunidades")
+      .then((dado) => setComunidades(comoLista<ComunidadeResumo>(dado)))
+      .catch(() => setComunidades([]));
   }, []);
 
   // Lista de famílias
@@ -361,18 +375,25 @@ export default function Familias() {
     const requisicao = ++ultimaRequisicao.current;
     const atual = () => requisicao === ultimaRequisicao.current; // ignora resposta atrasada
 
-    const params = new URLSearchParams({ pagina: String(pagina), porPagina: String(POR_PAGINA) });
-    if (busca) params.set('busca', busca);
-    if (comunidadeId) params.set('comunidadeId', comunidadeId);
-    if (semBanheiro) params.set('semBanheiro', 'true');
-    if (incluirInativas) params.set('incluirInativas', 'true');
+    const params = new URLSearchParams({
+      pagina: String(pagina),
+      porPagina: String(POR_PAGINA),
+    });
+    if (busca) params.set("busca", busca);
+    if (comunidadeId) params.set("comunidadeId", comunidadeId);
+    if (semBanheiro) params.set("semBanheiro", "true");
+    if (incluirInativas) params.set("incluirInativas", "true");
 
     setCarregando(true);
-    setErro('');
+    setErro("");
     api
-      .get<Pagina<FamiliaResumo>>(`/familias?${params}`)
+      .get<RespostaFamilias>(`/familias?${params}`)
       .then((dado) => atual() && setResposta(dado))
-      .catch((e) => atual() && setErro(mensagemDeErro(e, 'Não foi possível carregar as famílias.')))
+      .catch(
+        (e) =>
+          atual() &&
+          setErro(mensagemDeErro(e, "Não foi possível carregar as famílias.")),
+      )
       .finally(() => atual() && setCarregando(false));
   }, [busca, comunidadeId, semBanheiro, incluirInativas, pagina]);
 
@@ -399,7 +420,9 @@ export default function Familias() {
     <main className={`${styles.pagina} pagina-pessoas`}>
       <section className={styles.conteudo}>
         <p className={styles.resumo}>
-          {resposta ? `${formatarNumero(total)} ${total === 1 ? 'família' : 'famílias'}` : 'Carregando famílias…'}
+          {resposta
+            ? `${formatarNumero(total)} ${total === 1 ? "família" : "famílias"}`
+            : "Carregando famílias…"}
         </p>
 
         <div className={styles.busca}>
@@ -415,23 +438,28 @@ export default function Familias() {
         </div>
 
         <div className={styles.chips} role="group" aria-label="Filtros">
-          {/* Select, não chip: são dezenas de comunidades. */}
-          <select
-            className={`${styles.filtroComunidade} ${comunidadeId ? styles.filtroComunidadeAtivo : ''}`}
-            value={comunidadeId}
-            onChange={(e) => escolherComunidade(e.target.value)}
-            aria-label="Comunidade"
-          >
-            <option value="">Todas as comunidades</option>
-            {comunidades.map((c) => (
-              <option key={c.id} value={c.id}>
-                {c.nome} · {c.municipioNome}
-              </option>
-            ))}
-          </select>
           <button
             type="button"
-            className={`${styles.chip} ${semBanheiro ? styles.chipAtivo : ''}`}
+            className={`${styles.chip} ${comunidadeId === "" ? styles.chipAtivo : ""}`}
+            aria-pressed={comunidadeId === ""}
+            onClick={() => escolherComunidade("")}
+          >
+            Todas as comunidades
+          </button>
+          {comunidades.map((c) => (
+            <button
+              key={c.id}
+              type="button"
+              className={`${styles.chip} ${comunidadeId === c.id ? styles.chipAtivo : ""}`}
+              aria-pressed={comunidadeId === c.id}
+              onClick={() => escolherComunidade(c.id)}
+            >
+              {c.nome}
+            </button>
+          ))}
+          <button
+            type="button"
+            className={`${styles.chip} ${semBanheiro ? styles.chipAtivo : ""}`}
             aria-pressed={semBanheiro}
             onClick={alternarSemBanheiro}
           >
@@ -439,7 +467,7 @@ export default function Familias() {
           </button>
           <button
             type="button"
-            className={`${styles.chip} ${incluirInativas ? styles.chipAtivo : ''}`}
+            className={`${styles.chip} ${incluirInativas ? styles.chipAtivo : ""}`}
             aria-pressed={incluirInativas}
             onClick={alternarInativas}
           >
@@ -450,7 +478,10 @@ export default function Familias() {
         {erro && <Aviso tom="erro">{erro}</Aviso>}
 
         <div className={styles.cartaoTabela}>
-          <div className={`${styles.tabelaRolagem} ${carregando && resposta ? styles.carregando : ''}`} aria-busy={carregando}>
+          <div
+            className={`${styles.tabelaRolagem} ${carregando && resposta ? styles.carregando : ""}`}
+            aria-busy={carregando}
+          >
             <table className={styles.tabela}>
               <thead>
                 <tr>
@@ -466,8 +497,12 @@ export default function Familias() {
               </thead>
               <tbody>
                 {itens.map((familia) => (
-                  <tr key={familia.id} className={styles.linha} onClick={() => setSelecionada(familia)}>
-                    <td className={styles.celulaNome}>
+                  <tr
+                    key={familia.id}
+                    className={styles.linha}
+                    onClick={() => setSelecionada(familia)}
+                  >
+                    <td>
                       <button
                         type="button"
                         className={styles.nomeBotao}
@@ -479,17 +514,33 @@ export default function Familias() {
                         {familia.responsavelNome}
                       </button>
                     </td>
-                    <td data-rotulo="Comunidade">{familia.comunidadeNome}</td>
-                    <td data-rotulo="Município">{familia.municipioNome}</td>
-                    <td className={styles.numero} data-rotulo="Pessoas">{familia.totalPessoas}</td>
-                    <td className={styles.numero} data-rotulo="Até 12">{familia.totalAte12Anos}</td>
-                    <td className={styles.numero} data-rotulo="13 a 59">{familia.totalDe13A59Anos}</td>
-                    <td className={styles.numero} data-rotulo="60+">{familia.total60AnosOuMais}</td>
-                    <td className={styles.celulaSituacao} data-rotulo="Situação">
+                    <td>{familia.comunidadeNome}</td>
+                    <td>{familia.municipioNome}</td>
+                    <td className={styles.numero}>{familia.totalPessoas}</td>
+                    <td className={styles.numero}>{familia.totalAte12Anos}</td>
+                    <td className={styles.numero}>
+                      {familia.totalDe13A59Anos}
+                    </td>
+                    <td className={styles.numero}>
+                      {familia.total60AnosOuMais}
+                    </td>
+                    <td>
                       <div className={styles.badges}>
-                        {!familia.ativa && <span className={`${styles.tag} ${styles.tagInativa}`}>Inativa</span>}
-                        {familia.semBanheiro && <span className={`${styles.tag} ${styles.tagSemBanheiro}`}>Sem banheiro</span>}
-                        {familia.ativa && !familia.semBanheiro && '—'}
+                        {!familia.ativa && (
+                          <span
+                            className={`${styles.tag} ${styles.tagInativa}`}
+                          >
+                            Inativa
+                          </span>
+                        )}
+                        {familia.semBanheiro && (
+                          <span
+                            className={`${styles.tag} ${styles.tagSemBanheiro}`}
+                          >
+                            Sem banheiro
+                          </span>
+                        )}
+                        {familia.ativa && !familia.semBanheiro && "—"}
                       </div>
                     </td>
                   </tr>
@@ -498,32 +549,43 @@ export default function Familias() {
             </table>
           </div>
 
-          {!resposta && carregando && <p className={styles.estado}>Carregando…</p>}
+          {!resposta && carregando && (
+            <p className={styles.estado}>Carregando…</p>
+          )}
           {resposta && itens.length === 0 && (
-            <p className={styles.estado}>Nenhuma família encontrada com esses filtros.</p>
+            <p className={styles.estado}>
+              Nenhuma família encontrada com esses filtros.
+            </p>
           )}
         </div>
 
         {resposta && total > 0 && (
           <div className={styles.rodape}>
             <span className={styles.contador}>
-              Mostrando {formatarNumero(itens.length)} de {formatarNumero(total)}{' '}
-              {total === 1 ? 'família' : 'famílias'}
+              Mostrando {formatarNumero(itens.length)} de{" "}
+              {formatarNumero(total)} {total === 1 ? "família" : "famílias"}
             </span>
 
             {totalPaginas > 1 && (
-              <nav className={styles.paginas} aria-label="Paginação da lista de famílias">
+              <nav
+                className={styles.paginas}
+                aria-label="Paginação da lista de famílias"
+              >
                 {paginasVisiveis(resposta.pagina, totalPaginas).map((n, i) =>
-                  n === 'reticencias' ? (
-                    <span key={`reticencias-${i}`} className={styles.reticencias} aria-hidden="true">
+                  n === "reticencias" ? (
+                    <span
+                      key={`reticencias-${i}`}
+                      className={styles.reticencias}
+                      aria-hidden="true"
+                    >
                       …
                     </span>
                   ) : (
                     <button
                       key={n}
                       type="button"
-                      className={`${styles.botaoPagina} ${n === resposta.pagina ? styles.botaoPaginaAtivo : ''}`}
-                      aria-current={n === resposta.pagina ? 'page' : undefined}
+                      className={`${styles.botaoPagina} ${n === resposta.pagina ? styles.botaoPaginaAtivo : ""}`}
+                      aria-current={n === resposta.pagina ? "page" : undefined}
                       aria-label={`Página ${n + 1}`}
                       onClick={() => setPagina(n)}
                     >
@@ -539,10 +601,14 @@ export default function Familias() {
 
       <Modal
         aberto={selecionada !== null}
-        titulo={selecionada ? `Família de ${selecionada.responsavelNome}` : 'Família'}
+        titulo={
+          selecionada ? `Família de ${selecionada.responsavelNome}` : "Família"
+        }
         onFechar={fecharModal}
       >
-        {selecionada && <DetalhesFamilia key={selecionada.id} id={selecionada.id} />}
+        {selecionada && (
+          <DetalhesFamilia key={selecionada.id} item={selecionada} />
+        )}
       </Modal>
     </main>
   );
