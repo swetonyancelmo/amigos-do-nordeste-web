@@ -4,6 +4,7 @@ import { useEffect, useState } from 'react';
 import Link from 'next/link';
 import { useCabecalho } from '@/componentes/ContextoCabecalho';
 import { Aviso } from '@/componentes/Aviso';
+import { Paginacao, paginarNoCliente } from '@/componentes/Paginacao';
 import { api } from '@/lib/api';
 import { dataHora } from '@/lib/datas';
 import type { PreCadastroResumo, SituacaoPreCadastro } from '@/tipos/dominio';
@@ -34,6 +35,8 @@ export default function Chamados() {
   const [aba, setAba] = useState<SituacaoPreCadastro>('PENDENTE');
   const [todos, setTodos] = useState<PreCadastroResumo[] | null>(null);
   const [erro, setErro] = useState<string | null>(null);
+  const [pagina, setPagina] = useState(0);
+  const [porPagina, setPorPagina] = useState(20);
 
   useEffect(() => {
     let ativo = true;
@@ -60,7 +63,7 @@ export default function Chamados() {
             role="tab"
             aria-selected={aba === a.valor}
             className={aba === a.valor ? `${estilos.aba} ${estilos.abaAtiva}` : estilos.aba}
-            onClick={() => setAba(a.valor)}
+            onClick={() => { setAba(a.valor); setPagina(0); }}
           >
             {a.rotulo} · {todos ? porSituacao(a.valor).length : '—'}
           </button>
@@ -79,7 +82,7 @@ export default function Chamados() {
 
       {lista && lista.length > 0 && (
         <div className={estilos.cards}>
-          {lista.map((c) => (
+          {paginarNoCliente(lista, pagina, porPagina).map((c) => (
             <div
               key={c.id}
               className={
@@ -108,6 +111,17 @@ export default function Chamados() {
             </div>
           ))}
         </div>
+      )}
+
+      {lista && lista.length > 0 && (
+        <Paginacao
+          rotulo="chamados"
+          pagina={pagina}
+          porPagina={porPagina}
+          total={lista.length}
+          onPagina={setPagina}
+          onPorPagina={(n) => { setPorPagina(n); setPagina(0); }}
+        />
       )}
 
       {aba === 'PENDENTE' && (

@@ -6,6 +6,7 @@ import { Botao } from '@/componentes/Botao';
 import { useCabecalho } from '@/componentes/ContextoCabecalho';
 import { ListaPessoas } from '@/componentes/pessoas/ListaPessoas';
 import { ModalPessoa } from '@/componentes/pessoas/ModalPessoa';
+import { Paginacao } from '@/componentes/Paginacao';
 import { api } from '@/lib/api';
 import type { Comunidade, Pagina, PessoaResumo } from '@/tipos/dominio';
 import styles from './pessoas.module.css';
@@ -22,8 +23,6 @@ function IconeFiltro({ tipo }: { tipo: 'busca' | 'comunidade' | 'status' }) {
   );
 }
 
-const POR_PAGINA = 20;
-
 type Status = '' | 'incompleto' | 'completo';
 
 /** null = modal fechado; '' = pessoa nova; id = editar. */
@@ -36,6 +35,7 @@ export default function PessoasPage() {
   const [comunidadeId, setComunidadeId] = useState('');
   const [status, setStatus] = useState<Status>('');
   const [pagina, setPagina] = useState(0);
+  const [porPagina, setPorPagina] = useState(20);
   const [recarga, setRecarga] = useState(0);
   const [comunidades, setComunidades] = useState<Comunidade[]>([]);
   const [dados, setDados] = useState<Pagina<PessoaResumo> | null>(null);
@@ -63,7 +63,7 @@ export default function PessoasPage() {
 
   useEffect(() => {
     let ativo = true;
-    const query = new URLSearchParams({ pagina: String(pagina), tamanho: String(POR_PAGINA) });
+    const query = new URLSearchParams({ pagina: String(pagina), tamanho: String(porPagina) });
     if (nome) query.set('nome', nome);
     if (comunidadeId) query.set('comunidadeId', comunidadeId);
     if (status) query.set('cadastroIncompleto', String(status === 'incompleto'));
@@ -72,15 +72,13 @@ export default function PessoasPage() {
       .then((r) => { if (ativo) { setDados(r); setErro(null); } })
       .catch((e) => { if (ativo) setErro(e instanceof Error ? e.message : 'Não foi possível carregar.'); });
     return () => { ativo = false; };
-  }, [nome, comunidadeId, status, pagina, recarga]);
+  }, [nome, comunidadeId, status, pagina, porPagina, recarga]);
 
   const fechar = useCallback(() => setAberta(null), []);
   const salvo = useCallback(() => {
     setAberta(null);
     setRecarga((n) => n + 1);
   }, []);
-
-  const totalPaginas = Math.max(dados?.totalPaginas ?? 1, 1);
 
   return (
     <main className={`${styles.pagina} pagina-pessoas`}>
@@ -135,24 +133,16 @@ export default function PessoasPage() {
         {dados?.itens.length === 0 && <p className="texto-apoio">Nenhuma pessoa encontrada.</p>}
         {dados && dados.itens.length > 0 && <ListaPessoas pessoas={dados.itens} onAbrir={setAberta} />}
 
-        <nav className={styles.paginacao} aria-label="Paginação da lista de pessoas">
-          <span className={styles.contadorPagina}>Página {pagina + 1} de {totalPaginas}</span>
-
-          <div className={styles.controlesPagina}>
-            <button type="button" className={styles.botaoPagina} disabled={pagina === 0} onClick={() => setPagina((p) => p - 1)} aria-label="Página anterior">
-              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
-                <path d="m15 18-6-6 6-6" />
-              </svg>
-              Anterior
-            </button>
-            <button type="button" className={styles.botaoPagina} disabled={pagina + 1 >= totalPaginas} onClick={() => setPagina((p) => p + 1)} aria-label="Próxima página">
-              Próxima
-              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
-                <path d="m9 18 6-6-6-6" />
-              </svg>
-            </button>
-          </div>
-        </nav>
+        {dados && dados.total > 0 && (
+          <Paginacao
+            rotulo="pessoas"
+            pagina={pagina}
+            porPagina={porPagina}
+            total={dados.total}
+            onPagina={setPagina}
+            onPorPagina={(n) => { setPorPagina(n); setPagina(0); }}
+          />
+        )}
       </section>
 
       <ModalPessoa

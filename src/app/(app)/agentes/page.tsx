@@ -6,6 +6,7 @@ import { Botao } from '@/componentes/Botao';
 import { Campo } from '@/componentes/Campo';
 import { useCabecalho } from '@/componentes/ContextoCabecalho';
 import { Modal } from '@/componentes/Modal';
+import { Paginacao, paginarNoCliente } from '@/componentes/Paginacao';
 import { api, ErroApi } from '@/lib/api';
 import { dataHora } from '@/lib/datas';
 import type { Agente } from '@/tipos/dominio';
@@ -53,6 +54,8 @@ function Codigo({ codigo }: { codigo: string }) {
 export default function Agentes() {
   const [agentes, setAgentes] = useState<Agente[] | null>(null);
   const [erro, setErro] = useState<string | null>(null);
+  const [pagina, setPagina] = useState(0);
+  const [porPagina, setPorPagina] = useState(20);
 
   const [novaAberta, setNovaAberta] = useState(false);
   const [nome, setNome] = useState('');
@@ -140,7 +143,7 @@ export default function Agentes() {
 
       {agentes && agentes.length > 0 && (
         <div className={estilos.cards}>
-          {agentes.map((a) => (
+          {paginarNoCliente(agentes, pagina, porPagina).map((a) => (
             <div key={a.id} className={`cartao ${estilos.card}`}>
               <div className={estilos.cardCorpo}>
                 <div className={estilos.cardTitulo}>
@@ -167,6 +170,17 @@ export default function Agentes() {
             </div>
           ))}
         </div>
+      )}
+
+      {agentes && agentes.length > 0 && (
+        <Paginacao
+          rotulo="agentes"
+          pagina={pagina}
+          porPagina={porPagina}
+          total={agentes.length}
+          onPagina={setPagina}
+          onPorPagina={(n) => { setPorPagina(n); setPagina(0); }}
+        />
       )}
 
       <Modal aberto={novaAberta} titulo={criada ? 'Agente cadastrada' : 'Nova agente'} onFechar={fecharNova}>

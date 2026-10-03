@@ -5,13 +5,12 @@ import { useCallback, useEffect, useRef, useState } from 'react';
 import { Aviso } from '@/componentes/Aviso';
 import { useCabecalho } from '@/componentes/ContextoCabecalho';
 import { Modal } from '@/componentes/Modal';
+import { Paginacao } from '@/componentes/Paginacao';
 import { api } from '@/lib/api';
 import { data } from '@/lib/datas';
 import { useMetadados } from '@/lib/metadados';
 import type { Comunidade, FamiliaDetalhe, FamiliaResumo, Opcao, Pagina, Pessoa } from '@/tipos/dominio';
 import styles from './familias.module.css';
-
-const POR_PAGINA = 25;
 
 // Fora do componente: JSX estável, o cabeçalho não re-renderiza à toa.
 const ACOES = (
@@ -37,20 +36,6 @@ function exibirIdade(pessoa: Pessoa) {
 }
 
 const simNao = (v: boolean | null) => (v === null ? 'Não informado' : v ? 'Sim' : 'Não');
-
-/** Números das páginas (começam em 0) com reticências: 1 2 3 … 315 */
-function paginasVisiveis(atual: number, total: number): (number | 'reticencias')[] {
-  const conjunto = new Set(
-    [0, total - 1, atual - 1, atual, atual + 1].filter((n) => n >= 0 && n < total),
-  );
-  const ordenadas = [...conjunto].sort((a, b) => a - b);
-  const saida: (number | 'reticencias')[] = [];
-  ordenadas.forEach((n, i) => {
-    if (i > 0 && n - ordenadas[i - 1] > 1) saida.push('reticencias');
-    saida.push(n);
-  });
-  return saida;
-}
 
 const mensagemDeErro = (e: unknown, padrao: string) => (e instanceof Error ? e.message : padrao);
 
@@ -251,6 +236,7 @@ export default function Familias() {
   const [semBanheiro, setSemBanheiro] = useState(false);
   const [incluirInativas, setIncluirInativas] = useState(false);
   const [pagina, setPagina] = useState(0);
+  const [porPagina, setPorPagina] = useState(20);
 
   const [resposta, setResposta] = useState<Pagina<FamiliaResumo> | null>(null);
   const [carregando, setCarregando] = useState(true);
@@ -278,7 +264,7 @@ export default function Familias() {
     const requisicao = ++ultimaRequisicao.current;
     const atual = () => requisicao === ultimaRequisicao.current; // ignora resposta atrasada
 
-    const params = new URLSearchParams({ pagina: String(pagina), porPagina: String(POR_PAGINA) });
+    const params = new URLSearchParams({ pagina: String(pagina), porPagina: String(porPagina) });
     if (busca) params.set('busca', busca);
     if (comunidadeId) params.set('comunidadeId', comunidadeId);
     if (semBanheiro) params.set('semBanheiro', 'true');
@@ -291,7 +277,7 @@ export default function Familias() {
       .then((dado) => atual() && setResposta(dado))
       .catch((e) => atual() && setErro(mensagemDeErro(e, 'Não foi possível carregar as famílias.')))
       .finally(() => atual() && setCarregando(false));
-  }, [busca, comunidadeId, semBanheiro, incluirInativas, pagina]);
+  }, [busca, comunidadeId, semBanheiro, incluirInativas, pagina, porPagina]);
 
   const fecharModal = useCallback(() => setSelecionada(null), []);
 
@@ -310,7 +296,6 @@ export default function Familias() {
 
   const itens = resposta?.itens ?? [];
   const total = resposta?.total ?? 0;
-  const totalPaginas = resposta?.totalPaginas ?? 0;
 
   return (
     <main className={`${styles.pagina} pagina-pessoas`}>
@@ -422,35 +407,14 @@ export default function Familias() {
         </div>
 
         {resposta && total > 0 && (
-          <div className={styles.rodape}>
-            <span className={styles.contador}>
-              Mostrando {formatarNumero(itens.length)} de {formatarNumero(total)}{' '}
-              {total === 1 ? 'família' : 'famílias'}
-            </span>
-
-            {totalPaginas > 1 && (
-              <nav className={styles.paginas} aria-label="Paginação da lista de famílias">
-                {paginasVisiveis(resposta.pagina, totalPaginas).map((n, i) =>
-                  n === 'reticencias' ? (
-                    <span key={`reticencias-${i}`} className={styles.reticencias} aria-hidden="true">
-                      …
-                    </span>
-                  ) : (
-                    <button
-                      key={n}
-                      type="button"
-                      className={`${styles.botaoPagina} ${n === resposta.pagina ? styles.botaoPaginaAtivo : ''}`}
-                      aria-current={n === resposta.pagina ? 'page' : undefined}
-                      aria-label={`Página ${n + 1}`}
-                      onClick={() => setPagina(n)}
-                    >
-                      {n + 1}
-                    </button>
-                  ),
-                )}
-              </nav>
-            )}
-          </div>
+          <Paginacao
+            rotulo="famílias"
+            pagina={pagina}
+            porPagina={porPagina}
+            total={total}
+            onPagina={setPagina}
+            onPorPagina={(n) => { setPorPagina(n); setPagina(0); }}
+          />
         )}
       </section>
 

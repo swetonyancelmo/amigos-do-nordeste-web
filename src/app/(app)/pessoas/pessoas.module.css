@@ -310,54 +310,6 @@
   scrollbar-color: var(--linha-forte) transparent;
 }
 
-.paginacao {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: var(--e-4);
-  padding-top: var(--e-4);
-}
-
-.contadorPagina {
-  color: var(--texto-medio);
-  font-family: var(--fonte-marca);
-  font-size: var(--t-apoio);
-  font-weight: 700;
-}
-
-.controlesPagina {
-  display: flex;
-  gap: var(--e-2);
-}
-
-.botaoPagina {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  gap: var(--e-2);
-  min-height: 38px;
-  padding: var(--e-2) var(--e-3);
-  border: 1px solid var(--linha-forte);
-  border-radius: var(--raio);
-  background: var(--superficie);
-  color: var(--texto-forte);
-  font: inherit;
-  font-size: var(--t-apoio);
-  font-weight: 700;
-  cursor: pointer;
-}
-
-.botaoPagina:hover:not(:disabled) {
-  border-color: var(--texto-suave);
-  background: var(--pagina);
-}
-
-.botaoPagina:disabled {
-  color: var(--texto-suave);
-  cursor: not-allowed;
-  opacity: 0.62;
-}
-
 .tabela {
   width: 100%;
   min-width: 760px;
@@ -506,19 +458,6 @@
 
   .botoesFormulario {
     width: auto;
-  }
-
-  .paginacao {
-    align-items: flex-start;
-    flex-direction: column;
-  }
-
-  .controlesPagina {
-    width: 100%;
-  }
-
-  .botaoPagina {
-    flex: 1;
   }
 }
 

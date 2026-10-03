@@ -27,7 +27,7 @@ src/app/
   (app)/registro-comunidade/  cadastra comunidade (POST /api/comunidades) com mini-mapa; ainda sem lista nem edição
   (app)/relatorios/        esqueleto (TODO); botão Imprimir já existe
   (app)/perfil/            esqueleto (TODO)
-src/componentes/           Botao, Campo, Selecao, Aviso, Modal, Marca, Sol, Cabecalho,
+src/componentes/           Botao, Campo, Selecao, Aviso, Modal, Paginacao, Marca, Sol, Cabecalho,
                            ContextoCabecalho (useCabecalho), Navegacao, GuardaSessao,
                            pessoas/{ListaPessoas,ModalPessoa,PessoaForm},
                            fonte-renda/ModalFonteRenda,

@@ -275,59 +275,6 @@
   text-align: center;
 }
 
-/* ---------------------------------------------------------------- Rodapé */
-
-.rodape {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  flex-wrap: wrap;
-  gap: var(--e-3);
-}
-
-.contador {
-  color: var(--texto-medio);
-  font-size: var(--t-apoio);
-}
-
-.paginas {
-  display: flex;
-  flex-wrap: wrap;
-  gap: var(--e-1);
-}
-
-.botaoPagina {
-  min-width: 34px;
-  min-height: 34px;
-  padding: 0 var(--e-2);
-  border: 1px solid var(--linha-forte);
-  border-radius: var(--raio-p);
-  background: var(--superficie);
-  color: var(--texto-forte);
-  font: inherit;
-  font-size: var(--t-apoio);
-  font-weight: 700;
-  cursor: pointer;
-}
-
-.botaoPagina:hover:not(:disabled) {
-  border-color: var(--laranja);
-}
-
-.botaoPaginaAtivo {
-  border-color: var(--laranja);
-  background: var(--laranja);
-  color: var(--superficie);
-}
-
-.reticencias {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  min-width: 34px;
-  color: var(--texto-suave);
-}
-
 /* ------------------------------------------------------- Ficha (no modal) */
 
 .secao {
@@ -511,10 +458,5 @@
 
   .totais {
     grid-template-columns: repeat(2, minmax(0, 1fr));
-  }
-
-  .rodape {
-    flex-direction: column;
-    align-items: flex-start;
   }
 }

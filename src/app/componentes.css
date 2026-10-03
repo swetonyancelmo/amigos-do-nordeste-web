@@ -592,6 +592,100 @@
   }
 }
 
+/* -------------------------------------------------------------- Paginação */
+
+/*
+ * Rodapé das listas (<Paginacao>): itens por página à esquerda, o intervalo
+ * no meio e as setas à direita. Quebra em linhas no celular.
+ */
+.paginacao {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: flex-end;
+  gap: var(--e-3) var(--e-6);
+  padding-top: var(--e-4);
+  color: var(--texto-medio);
+  font-size: var(--t-apoio);
+}
+
+.paginacao strong {
+  color: var(--texto-forte);
+  font-weight: 700;
+}
+
+.paginacao__tamanho {
+  display: flex;
+  align-items: center;
+  gap: var(--e-2);
+}
+
+.paginacao__selecao {
+  min-height: 38px;
+  padding: var(--e-1) var(--e-3);
+  border: 1px solid var(--linha-forte);
+  border-radius: var(--raio);
+  background: var(--superficie);
+  color: var(--texto-forte);
+  font: inherit;
+  font-weight: 700;
+  cursor: pointer;
+}
+
+.paginacao__selecao:focus {
+  outline: none;
+  border-color: var(--laranja);
+  box-shadow: 0 0 0 3px var(--laranja-claro);
+}
+
+.paginacao__controles {
+  display: flex;
+  align-items: center;
+  gap: var(--e-1);
+}
+
+.paginacao__atual {
+  padding: 0 var(--e-2);
+  white-space: nowrap;
+}
+
+.paginacao__botao {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 38px;
+  height: 38px;
+  border: 1px solid transparent;
+  border-radius: var(--raio);
+  background: transparent;
+  color: var(--texto-forte);
+  cursor: pointer;
+  transition: border-color var(--transicao), background-color var(--transicao);
+}
+
+.paginacao__botao:hover:not(:disabled) {
+  border-color: var(--linha-forte);
+  background: var(--pagina);
+}
+
+.paginacao__botao:focus-visible {
+  outline: none;
+  border-color: var(--laranja);
+  box-shadow: 0 0 0 3px var(--laranja-claro);
+}
+
+.paginacao__botao:disabled {
+  color: var(--texto-suave);
+  cursor: not-allowed;
+  opacity: 0.5;
+}
+
+@media (max-width: 640px) {
+  .paginacao {
+    justify-content: space-between;
+  }
+}
+
 /* --------------------------------------------------------------- Utilidade */
 
 /* Visível para leitor de tela, invisível na tela. */
@@ -640,6 +734,7 @@
   }
 
   .botao,
+  .paginacao,
   .nao-imprime {
     display: none !important;
   }
