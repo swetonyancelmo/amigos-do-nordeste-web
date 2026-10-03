@@ -2,7 +2,6 @@
   display: grid;
   gap: var(--e-5);
   min-width: 0;
-  max-width: 1180px;
 }
 
 .selo {

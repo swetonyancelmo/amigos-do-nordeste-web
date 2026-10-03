@@ -4,7 +4,6 @@
   display: grid;
   gap: var(--e-4);
   min-width: 0;
-  max-width: 1180px;
 }
 
 /* O .cartao só desenha borda e fundo; o respiro interno é de cada tela. */
