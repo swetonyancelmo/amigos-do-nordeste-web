@@ -1,10 +1,13 @@
 'use client';
 
-import { useMemo, useState } from 'react';
+import { useCallback, useEffect, useMemo, useState } from 'react';
+import { Aviso } from '@/componentes/Aviso';
 import { Botao } from '@/componentes/Botao';
 import { useCabecalho } from '@/componentes/ContextoCabecalho';
 import { ListaPessoas } from '@/componentes/pessoas/ListaPessoas';
-import { ModalPessoa, type PessoaFormulario } from '@/componentes/pessoas/ModalPessoa';
+import { ModalPessoa } from '@/componentes/pessoas/ModalPessoa';
+import { api } from '@/lib/api';
+import type { Comunidade, Pagina, PessoaResumo } from '@/tipos/dominio';
 import styles from './pessoas.module.css';
 
 function IconeFiltro({ tipo }: { tipo: 'busca' | 'comunidade' | 'status' }) {
@@ -19,59 +22,65 @@ function IconeFiltro({ tipo }: { tipo: 'busca' | 'comunidade' | 'status' }) {
   );
 }
 
-const pessoasIniciais: PessoaFormulario[] = [
-  {
-    id: 'p-1',
-    nome: 'Criança de Teste',
-    sexo: 'FEMININO',
-    dataNascimento: '2014-05-11',
-    idadeEstimada: '',
-    parentesco: 'FILHO',
-    estuda: true,
-    serie: 'ANO_7',
-    tamanhoRoupa: 'INFANTIL_12',
-    numeroCalcado: '32/33',
-    gestante: false,
-    observacoes: 'Participa do acompanhamento escolar da comunidade.',
-    familia: 'Família de Teste',
-    comunidade: 'Sítio de Teste',
-    cadastroIncompleto: false,
-    fontesRenda: [],
-  },
-  {
-    id: 'p-2',
-    nome: 'Outra Pessoa de Teste',
-    sexo: 'MASCULINO',
-    dataNascimento: '',
-    idadeEstimada: '11',
-    parentesco: 'FILHO',
-    estuda: false,
-    serie: '',
-    tamanhoRoupa: 'INFANTIL_10',
-    numeroCalcado: '32/33',
-    gestante: false,
-    observacoes: 'Falta confirmar a data de nascimento com a responsável.',
-    familia: 'Família de Teste',
-    comunidade: 'Sítio de Teste',
-    cadastroIncompleto: true,
-    fontesRenda: [],
-  },
-];
+const POR_PAGINA = 20;
+
+type Status = '' | 'incompleto' | 'completo';
+
+/** null = modal fechado; '' = pessoa nova; id = editar. */
+type Aberta = string | null;
 
 export default function PessoasPage() {
-  const [aberto, setAberto] = useState(false);
-  const [lista, setLista] = useState<PessoaFormulario[]>(pessoasIniciais);
+  const [aberta, setAberta] = useState<Aberta>(null);
+  const [busca, setBusca] = useState('');
+  const [nome, setNome] = useState('');
+  const [comunidadeId, setComunidadeId] = useState('');
+  const [status, setStatus] = useState<Status>('');
+  const [pagina, setPagina] = useState(0);
+  const [recarga, setRecarga] = useState(0);
+  const [comunidades, setComunidades] = useState<Comunidade[]>([]);
+  const [dados, setDados] = useState<Pagina<PessoaResumo> | null>(null);
+  const [erro, setErro] = useState<string | null>(null);
+
   const acoes = useMemo(
-    () => <Botao onClick={() => setAberto(true)}>Nova pessoa</Botao>,
+    () => <Botao onClick={() => setAberta('')}>Nova pessoa</Botao>,
     [],
   );
 
   useCabecalho('Pessoas', acoes);
 
-  function handleSalvar(pessoa: PessoaFormulario) {
-    setLista((atual) => [pessoa, ...atual]);
-    setAberto(false);
-  }
+  useEffect(() => {
+    api.get<Comunidade[]>('/comunidades').then(setComunidades).catch(() => setComunidades([]));
+  }, []);
+
+  // Espera a digitação parar antes de buscar; filtro novo volta à página 1.
+  useEffect(() => {
+    const espera = setTimeout(() => {
+      setNome(busca.trim());
+      setPagina(0);
+    }, 300);
+    return () => clearTimeout(espera);
+  }, [busca]);
+
+  useEffect(() => {
+    let ativo = true;
+    const query = new URLSearchParams({ pagina: String(pagina), tamanho: String(POR_PAGINA) });
+    if (nome) query.set('nome', nome);
+    if (comunidadeId) query.set('comunidadeId', comunidadeId);
+    if (status) query.set('cadastroIncompleto', String(status === 'incompleto'));
+
+    api.get<Pagina<PessoaResumo>>(`/pessoas?${query}`)
+      .then((r) => { if (ativo) { setDados(r); setErro(null); } })
+      .catch((e) => { if (ativo) setErro(e instanceof Error ? e.message : 'Não foi possível carregar.'); });
+    return () => { ativo = false; };
+  }, [nome, comunidadeId, status, pagina, recarga]);
+
+  const fechar = useCallback(() => setAberta(null), []);
+  const salvo = useCallback(() => {
+    setAberta(null);
+    setRecarga((n) => n + 1);
+  }, []);
+
+  const totalPaginas = Math.max(dados?.totalPaginas ?? 1, 1);
 
   return (
     <main className={`${styles.pagina} pagina-pessoas`}>
@@ -82,43 +91,61 @@ export default function PessoasPage() {
               <IconeFiltro tipo="busca" />
               Buscar por nome
             </label>
-            <input id="buscar-pessoa" className={styles.filtroEntrada} placeholder="Digite o nome" />
+            <input
+              id="buscar-pessoa"
+              className={styles.filtroEntrada}
+              placeholder="Digite o nome"
+              value={busca}
+              onChange={(e) => setBusca(e.target.value)}
+            />
           </div>
 
           <div className={styles.filtrosInline}>
             <label className={styles.filtroCampo}>
               <span className={styles.filtroRotulo}><IconeFiltro tipo="comunidade" /> Comunidade</span>
-              <select className={`${styles.filtroEntrada} ${styles.select}`} defaultValue="">
-              <option value="">Todas as comunidades</option>
-              <option value="sitio-de-teste">Sítio de Teste</option>
-              <option value="povoado-de-teste">Povoado de Teste</option>
+              <select
+                className={`${styles.filtroEntrada} ${styles.select}`}
+                value={comunidadeId}
+                onChange={(e) => { setComunidadeId(e.target.value); setPagina(0); }}
+              >
+                <option value="">Todas as comunidades</option>
+                {comunidades.map((c) => (
+                  <option key={c.id} value={c.id}>{c.nome} · {c.municipioNome}</option>
+                ))}
               </select>
             </label>
 
             <label className={styles.filtroCampo}>
               <span className={styles.filtroRotulo}><IconeFiltro tipo="status" /> Status</span>
-              <select className={`${styles.filtroEntrada} ${styles.select}`} defaultValue="">
-              <option value="">Todos os status</option>
-              <option value="incompleto">Cadastro incompleto</option>
-              <option value="completo">Completo</option>
+              <select
+                className={`${styles.filtroEntrada} ${styles.select}`}
+                value={status}
+                onChange={(e) => { setStatus(e.target.value as Status); setPagina(0); }}
+              >
+                <option value="">Todos os status</option>
+                <option value="incompleto">Cadastro incompleto</option>
+                <option value="completo">Completo</option>
               </select>
             </label>
           </div>
         </div>
 
-        <ListaPessoas pessoas={lista} />
+        {erro && <Aviso tom="erro" titulo="Não deu para carregar">{erro}</Aviso>}
+        {!erro && dados === null && <p className="texto-apoio" role="status">Carregando…</p>}
+        {dados?.itens.length === 0 && <p className="texto-apoio">Nenhuma pessoa encontrada.</p>}
+        {dados && dados.itens.length > 0 && <ListaPessoas pessoas={dados.itens} onAbrir={setAberta} />}
 
         <nav className={styles.paginacao} aria-label="Paginação da lista de pessoas">
-          <span className={styles.contadorPagina}>Página 1 de 1</span>
+          <span className={styles.contadorPagina}>Página {pagina + 1} de {totalPaginas}</span>
 
           <div className={styles.controlesPagina}>
-            <button type="button" className={styles.botaoPagina} disabled aria-label="Página anterior">
+            <button type="button" className={styles.botaoPagina} disabled={pagina === 0} onClick={() => setPagina((p) => p - 1)} aria-label="Página anterior">
               <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
                 <path d="m15 18-6-6 6-6" />
               </svg>
               Anterior
             </button>
-            <button type="button" className={styles.botaoPagina} disabled aria-label="Próxima página">
+            <button type="button" className={styles.botaoPagina} disabled={pagina + 1 >= totalPaginas} onClick={() => setPagina((p) => p + 1)} aria-label="Próxima página">
               Próxima
               <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
                 <path d="m9 18 6-6-6-6" />
@@ -129,9 +156,10 @@ export default function PessoasPage() {
       </section>
 
       <ModalPessoa
-        aberto={aberto}
-        onFechar={() => setAberto(false)}
-        onSalvar={handleSalvar}
+        aberto={aberta !== null}
+        pessoaId={aberta || null}
+        onFechar={fechar}
+        onSalvo={salvo}
       />
     </main>
   );

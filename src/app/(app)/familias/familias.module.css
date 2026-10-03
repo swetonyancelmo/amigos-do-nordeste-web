@@ -83,6 +83,57 @@
   border-color: var(--laranja);
 }
 
+/* Fica na fileira dos chips, com a mesma altura e forma. A seta nativa sai
+   (encostava na borda da pílula) e entra a mesma do select de Pessoas. */
+.filtroComunidade {
+  appearance: none;
+  -webkit-appearance: none;
+  max-width: 100%;
+  padding: 6px 36px 6px 14px;
+  border: 1px solid var(--linha-forte);
+  border-radius: 999px;
+  background-color: var(--superficie);
+  background-image:
+    linear-gradient(45deg, transparent 50%, var(--texto-medio) 50%),
+    linear-gradient(135deg, var(--texto-medio) 50%, transparent 50%);
+  background-position: calc(100% - 18px) 50%, calc(100% - 13px) 50%;
+  background-size: 5px 5px;
+  background-repeat: no-repeat;
+  color: var(--texto-medio);
+  font: inherit;
+  font-size: var(--t-apoio);
+  line-height: inherit;
+  text-overflow: ellipsis;
+  cursor: pointer;
+  transition:
+    border-color var(--transicao),
+    box-shadow var(--transicao);
+}
+
+.filtroComunidade:hover {
+  border-color: var(--laranja);
+}
+
+.filtroComunidade:focus {
+  outline: none;
+  border-color: var(--laranja);
+  box-shadow: 0 0 0 3px var(--laranja-claro);
+}
+
+/* Comunidade escolhida: mesmo destaque do chip ativo. */
+.filtroComunidadeAtivo {
+  border-color: var(--laranja);
+  background-color: var(--laranja-claro);
+  color: var(--laranja-escuro);
+  font-weight: 700;
+}
+
+.filtroComunidade option {
+  background: var(--superficie);
+  color: var(--texto-forte);
+  font-weight: 400;
+}
+
 .chipAtivo {
   border-color: var(--laranja);
   background: var(--laranja-claro);
@@ -385,7 +436,75 @@
   font-size: var(--t-apoio);
 }
 
+/*
+ * Celular: a tabela de 820px obrigava a arrastar de lado sem nenhum sinal de
+ * que havia mais colunas. Aqui cada linha vira um cartão, com o rótulo de
+ * cada número vindo do data-rotulo da célula.
+ */
 @media (max-width: 640px) {
+  .tabela {
+    min-width: 0;
+  }
+
+  .tabela thead {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    overflow: hidden;
+    clip-path: inset(50%);
+  }
+
+  .tabela tbody,
+  .tabela tr {
+    display: block;
+  }
+
+  .tabela tr {
+    display: grid;
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+    gap: var(--e-2) var(--e-3);
+    padding: var(--e-4);
+    border-bottom: 1px solid var(--linha);
+  }
+
+  .tabela tbody tr:last-child {
+    border-bottom: 0;
+  }
+
+  .tabela td,
+  .tabela tbody tr:last-child td {
+    display: block;
+    padding: 0;
+    border: 0;
+    white-space: normal;
+    overflow-wrap: anywhere;
+  }
+
+  .tabela td[data-rotulo]::before {
+    content: attr(data-rotulo);
+    display: block;
+    color: var(--texto-suave);
+    font-size: var(--t-micro);
+    font-weight: 700;
+    letter-spacing: 0.04em;
+    text-transform: uppercase;
+  }
+
+  .tabela .numero {
+    text-align: left !important;
+  }
+
+  /* Nome, comunidade/município e situação ocupam a linha toda ou meia. */
+  .celulaNome,
+  .celulaSituacao {
+    grid-column: 1 / -1;
+  }
+
+  .tabela td[data-rotulo="Comunidade"],
+  .tabela td[data-rotulo="Município"] {
+    grid-column: span 2;
+  }
+
   .grade {
     grid-template-columns: 1fr;
   }

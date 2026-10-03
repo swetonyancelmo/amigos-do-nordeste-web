@@ -21,8 +21,8 @@ src/app/
   login/                   tela de entrada (POST /api/auth/login)
   (app)/layout.tsx         casco logado: <Navegacao> + cabeçalho via ContextoCabecalho
   (app)/chamados/          fila de pré-cadastros do app; [id] revisa, aprova ou devolve
-  (app)/familias/          esqueleto (TODO)
-  (app)/pessoas/           UI pronta, mas com DADOS MOCK locais, sem chamar a API
+  (app)/familias/          lista com busca, filtros e ficha em modal (API); nova/ cadastra (POST /api/familias)
+  (app)/pessoas/           lista com filtros e modal criar/editar/remover (API)
   (app)/relatorios/        esqueleto (TODO); botão Imprimir já existe
   (app)/perfil/            esqueleto (TODO)
 src/componentes/           Botao, Campo, Selecao, Aviso, Modal, Marca, Sol, Cabecalho,
@@ -79,10 +79,12 @@ Swagger: `http://localhost:3333/swagger-ui.html`. Rotas que interessam ao painel
 listar, ficha em `/{id}`, `/{id}/aprovar`, `/{id}/devolver`), `/api/relatorios/necessidades`,
 `/api/relatorios/situacao`, `/api/auth/trocar-senha`.
 
-**O que ainda falta ou diverge (01/10/2026):**
+**O que ainda falta ou diverge (02/10/2026):**
 
-- `PessoaForm.tsx` tem **comunidade** escrita à mão (lista fictícia); deve vir de
-  `GET /api/comunidades`. A tela `/pessoas` continua com dados mock.
+- `/pessoas` está ligada à API. Pessoa nasce dentro de uma família (busca por
+  responsável em `GET /api/familias?busca=`); a comunidade vem da família. Fonte
+  de renda saiu do modal de pessoa: a API só aceita renda no POST/PUT da família,
+  e `ModalFonteRenda` fica para a tela de família.
 - A API ainda não tem rota de mapa (`/api/relatorios/mapa`) nem de perfil
   (`/api/usuario`). Troca de senha é `POST /api/auth/trocar-senha`.
 - `src/tipos/dominio.ts` foi alinhado com os enums e DTOs Java nesta data. Ao
