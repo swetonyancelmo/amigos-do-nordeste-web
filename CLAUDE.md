@@ -9,8 +9,8 @@ chegam aqui como pré-cadastros para aprovar.
 ## Stack
 
 Next.js 15 (App Router) · React 19 · TypeScript · Node 22 · **pnpm** ·
-CSS puro (variáveis + `componentes.css` + CSS Modules) · Leaflet (instalado,
-ainda sem uso). Sem biblioteca de UI e sem testes.
+CSS puro (variáveis + `componentes.css` + CSS Modules) · Leaflet + react-leaflet
+(mini-mapa da comunidade; carregar com `next/dynamic` e `ssr: false`). Sem biblioteca de UI e sem testes.
 
 ## Estrutura
 
@@ -24,13 +24,16 @@ src/app/
   (app)/agentes/           agentes do app: cadastrar e gerar código de convite (novo código desliga o celular atual)
   (app)/familias/          lista com busca, filtros e ficha em modal (API); nova/ cadastra (POST /api/familias)
   (app)/pessoas/           lista com filtros e modal criar/editar/remover (API)
-  (app)/registro-comunidade/  cadastra comunidade (POST /api/comunidades); ainda sem lista nem edição
+  (app)/registro-comunidade/  cadastra comunidade (POST /api/comunidades) com mini-mapa; ainda sem lista nem edição
   (app)/relatorios/        esqueleto (TODO); botão Imprimir já existe
   (app)/perfil/            esqueleto (TODO)
 src/componentes/           Botao, Campo, Selecao, Aviso, Modal, Marca, Sol, Cabecalho,
                            ContextoCabecalho (useCabecalho), Navegacao, GuardaSessao,
                            pessoas/{ListaPessoas,ModalPessoa,PessoaForm},
-                           fonte-renda/ModalFonteRenda
+                           fonte-renda/ModalFonteRenda,
+                           comunidade/MiniMapa (contorno IBGE, pino, satélite, "Procurar no mapa")
+src/lib/municipios.ts      IBGE: UFs, municípios, malha (contorno); garantirMunicipio
+src/lib/nominatim.ts       sugestão de posição pelo nome (1 busca/s, só no clique, com cache)
 src/lib/api.ts             cliente HTTP (token em memória, renovação automática em 401)
 src/lib/metadados.ts       useMetadados(): GET /api/metadados com cache por sessão
 src/lib/datas.ts           data e data/hora para a tela (fuso America/Recife)

@@ -1,0 +1,110 @@
+.miniMapa {
+  display: grid;
+  gap: var(--e-3);
+  min-width: 0;
+}
+
+/* Contexto de empilhamento próprio: os painéis do Leaflet usam z-index até
+   1000 e passariam por cima do menu do celular e dos modais. */
+.moldura {
+  position: relative;
+  z-index: 0;
+  overflow: hidden;
+  border: 1px solid var(--linha-forte);
+  border-radius: var(--raio);
+}
+
+.mapa {
+  height: 320px;
+  width: 100%;
+  background: var(--pagina);
+  font-family: var(--fonte-texto);
+}
+
+.mapa:focus-visible {
+  outline: 3px solid var(--ambar);
+  outline-offset: -3px;
+}
+
+/* Contorno do município: o Leaflet põe a classe no <path> do SVG e o CSS
+   vence os atributos de cor que ele escreve. */
+.contorno {
+  stroke: var(--verde);
+  stroke-width: 2;
+  fill: var(--verde);
+  fill-opacity: 0.06;
+}
+
+/* Pino em gota. O Leaflet posiciona o ícone com `transform` inline, então a
+   rotação fica num pseudo-elemento para não brigar com ele. Com `className`
+   próprio, o divIcon não leva o fundo branco padrão do Leaflet. */
+.pino::before,
+.pinoSugestao::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  border-radius: 50% 50% 50% 0;
+  transform: rotate(-45deg);
+  box-shadow: var(--sombra);
+}
+
+.pino::before {
+  background: var(--laranja);
+  border: 3px solid var(--superficie);
+}
+
+/* Sugestão: vazada e tracejada, para não ser confundida com o ponto marcado. */
+.pinoSugestao::before {
+  background: var(--superficie);
+  border: 3px dashed var(--ambar);
+}
+
+.busca {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--e-3);
+}
+
+.recados {
+  display: grid;
+  gap: var(--e-2);
+}
+
+.recados:empty {
+  display: none;
+}
+
+.sugestao {
+  display: grid;
+  gap: var(--e-3);
+  padding: var(--e-3) var(--e-4);
+  border: 1px dashed var(--ambar);
+  border-radius: var(--raio);
+  background: var(--ambar-claro);
+}
+
+.sugestaoTexto {
+  margin: 0;
+  color: var(--texto-forte);
+  font-size: var(--t-apoio);
+  overflow-wrap: anywhere;
+}
+
+.sugestaoAcoes {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: flex-end;
+  gap: var(--e-3);
+}
+
+@media (max-width: 899px) {
+  .mapa {
+    height: 280px;
+  }
+
+  .busca > button,
+  .sugestaoAcoes > button {
+    flex: 1 1 100%;
+  }
+}
