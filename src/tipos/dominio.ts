@@ -288,6 +288,17 @@ export interface PossivelDuplicata {
   motivo: MotivoDuplicata;
 }
 
+/** `AgenteResposta` — `GET/POST /api/agentes` e `POST /api/agentes/{id}/novo-convite`. */
+export interface Agente {
+  id: string;
+  nome: string;
+  ativo: boolean;
+  /** Seis dígitos para a agente digitar no app. null depois de usado. */
+  codigoConvite: string | null;
+  /** null enquanto o convite não foi usado. */
+  ativadoEm: string | null;
+}
+
 /** `PreCadastroResumoResposta` — uma linha de `GET /api/pre-cadastros`. */
 export interface PreCadastroResumo {
   id: string;
