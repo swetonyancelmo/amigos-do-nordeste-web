@@ -11,6 +11,45 @@ import { api, guardarToken } from '@/lib/api';
    vira o menu deslizante. */
 const TELA_ESTREITA = '(max-width: 899px)';
 
+/* De quanto em quanto tempo a contagem de chamados é refeita com o painel
+   parado na mesma tela — o app das agentes envia a qualquer hora. */
+const INTERVALO_CHAMADOS = 60_000;
+
+/**
+ * Quantos pré-cadastros esperam revisão, para o contador no item Chamados.
+ * Recontado ao trocar de tela (inclui voltar de um aprovar/devolver), a cada
+ * minuto e quando a aba do navegador volta a ficar visível. Se a API falhar,
+ * fica o último número: o contador é aviso, não pode derrubar a navegação.
+ */
+function useChamadosPendentes(pathname: string): number {
+  const [pendentes, setPendentes] = useState(0);
+
+  useEffect(() => {
+    let ativo = true;
+    function contar() {
+      if (document.visibilityState !== 'visible') return;
+      api.get<unknown[]>('/pre-cadastros?situacao=PENDENTE')
+        .then((lista) => { if (ativo) setPendentes(lista.length); })
+        .catch(() => {});
+    }
+    contar();
+    const relogio = setInterval(contar, INTERVALO_CHAMADOS);
+    document.addEventListener('visibilitychange', contar);
+    return () => {
+      ativo = false;
+      clearInterval(relogio);
+      document.removeEventListener('visibilitychange', contar);
+    };
+  }, [pathname]);
+
+  return pendentes;
+}
+
+/** "99+" a partir de 100, pra caber no círculo. */
+function textoDoContador(n: number): string {
+  return n > 99 ? '99+' : String(n);
+}
+
 /* Ícones desenhados à mão, no estilo do Sol.tsx — traço simples, sem trazer
    uma biblioteca inteira pra cinco ícones. Onde já existe rótulo ao lado,
    o ícone é decorativo (aria-hidden); os dois botões sem rótulo (abrir e
@@ -109,7 +148,7 @@ function IconePerfil() {
 
 const ITENS = [
   { href: '/familias', rotulo: 'Famílias', Icone: IconeCasa },
-  { href: '/chamados', rotulo: 'Chamados', Icone: IconeChamados },
+  { href: '/chamados', rotulo: 'Chamados', Icone: IconeChamados, contaPendentes: true },
   { href: '/agentes', rotulo: 'Agentes', Icone: IconeAgentes },
   { href: '/pessoas', rotulo: 'Pessoas', Icone: IconePessoas },
   { href: '/relatorios', rotulo: 'Relatórios', Icone: IconeRelatorio },
@@ -130,6 +169,7 @@ export function Navegacao() {
   const [aberta, setAberta] = useState(false);
   // Começa como desktop (é o que o servidor renderiza); acerta ao montar.
   const [estreita, setEstreita] = useState(false);
+  const pendentes = useChamadosPendentes(pathname);
 
   // Troca de tela fecha o menu — inclui o clique num link e o "Sair".
   useEffect(() => {
@@ -183,10 +223,13 @@ export function Navegacao() {
           type="button"
           className="navegacao__alternador"
           onClick={() => setAberta(true)}
-          aria-label="Abrir menu"
+          aria-label={pendentes > 0 ? `Abrir menu (${pendentes} chamados para revisar)` : 'Abrir menu'}
           aria-expanded={aberta}
         >
           <IconeMenu />
+          {/* Com o menu fechado no celular, o contador do Chamados fica
+              escondido — este ponto avisa que tem coisa esperando lá dentro. */}
+          {pendentes > 0 && <span className="navegacao__ponto" aria-hidden="true" />}
         </button>
       </div>
 
@@ -221,7 +264,7 @@ export function Navegacao() {
         </div>
 
         <ul className="navegacao__links">
-          {ITENS.map(({ href, rotulo, Icone }) => {
+          {ITENS.map(({ href, rotulo, Icone, contaPendentes }) => {
             const ativo = pathname.startsWith(href);
             return (
               <li key={href}>
@@ -232,6 +275,14 @@ export function Navegacao() {
                 >
                   <Icone />
                   {rotulo}
+                  {contaPendentes && pendentes > 0 && (
+                    <>
+                      <span className="navegacao__contador" aria-hidden="true">
+                        {textoDoContador(pendentes)}
+                      </span>
+                      <span className="so-leitor-de-tela">, {pendentes} para revisar</span>
+                    </>
+                  )}
                 </Link>
               </li>
             );
