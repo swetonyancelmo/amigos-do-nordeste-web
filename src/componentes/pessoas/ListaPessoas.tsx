@@ -32,10 +32,10 @@ export function ListaPessoas({ pessoas, onAbrir }: Props) {
           {pessoas.map((pessoa) => (
             <tr key={pessoa.id}>
               <td className={styles.pessoaNome}>{pessoa.nome ?? 'Sem nome'}</td>
-              <td className={styles.familiaCelula}>Família de {pessoa.familia.responsavelNome}</td>
-              <td>{pessoa.comunidade.nome}</td>
-              <td>{exibirIdade(pessoa)}</td>
-              <td>
+              <td className={styles.familiaCelula} data-rotulo="Família">Família de {pessoa.familia.responsavelNome}</td>
+              <td data-rotulo="Comunidade">{pessoa.comunidade.nome}</td>
+              <td data-rotulo="Idade">{exibirIdade(pessoa)}</td>
+              <td className={styles.statusCelula}>
                 <div className={styles.badges}>
                   {pessoa.cadastroIncompleto && <span className={`${styles.tag} ${styles['tag--incompleto']}`}>Incompleto</span>}
                   {pessoa.estuda && <span className={`${styles.tag} ${styles['tag--estuda']}`}>Estuda</span>}
