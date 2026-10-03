@@ -24,6 +24,7 @@ src/app/
   (app)/agentes/           agentes do app: cadastrar e gerar código de convite (novo código desliga o celular atual)
   (app)/familias/          lista com busca, filtros e ficha em modal (API); nova/ cadastra (POST /api/familias)
   (app)/pessoas/           lista com filtros e modal criar/editar/remover (API)
+  (app)/registro-comunidade/  cadastra comunidade (POST /api/comunidades); ainda sem lista nem edição
   (app)/relatorios/        esqueleto (TODO); botão Imprimir já existe
   (app)/perfil/            esqueleto (TODO)
 src/componentes/           Botao, Campo, Selecao, Aviso, Modal, Marca, Sol, Cabecalho,
