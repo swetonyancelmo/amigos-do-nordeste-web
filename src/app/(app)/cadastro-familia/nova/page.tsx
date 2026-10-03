@@ -1,11 +1,6 @@
 "use client";
 
 import { useMemo, useState } from "react";
-// @ts-ignore
-import "@/app/globals.css";
-// @ts-ignore
-import "@/app/componentes.css";
-
 import {
   MapPin,
   Building2,
@@ -103,26 +98,31 @@ const TEXTOS_RENDA = [
   "Outra",
 ];
 
-const TEXTOS_ROUPA = [
-  "RN",
-  "2",
-  "4",
-  "6",
-  "8",
-  "10",
-  "12",
-  "14",
-  "16",
-  "PP",
-  "P",
-  "M",
-  "G",
-  "GG",
-  "XG",
-  "XGG",
-  "G1",
-  "G2",
-  "G3",
+// Valores iguais aos enums da API (TamanhoRoupa); os que não existem lá (INFANTIL_16,
+// ADULTO_G1..G3) são novos. Na ordem convencional: bebê, infantil, adulto, plus size.
+const OPCOES_ROUPA: Opcao[] = [
+  { valor: "RN", rotulo: "RN (recém-nascido)" },
+  { valor: "BEBE_P", rotulo: "Bebê P" },
+  { valor: "BEBE_M", rotulo: "Bebê M" },
+  { valor: "BEBE_G", rotulo: "Bebê G" },
+  { valor: "INFANTIL_2", rotulo: "Infantil 2" },
+  { valor: "INFANTIL_4", rotulo: "Infantil 4" },
+  { valor: "INFANTIL_6", rotulo: "Infantil 6" },
+  { valor: "INFANTIL_8", rotulo: "Infantil 8" },
+  { valor: "INFANTIL_10", rotulo: "Infantil 10" },
+  { valor: "INFANTIL_12", rotulo: "Infantil 12" },
+  { valor: "INFANTIL_14", rotulo: "Infantil 14" },
+  { valor: "INFANTIL_16", rotulo: "Infantil 16" },
+  { valor: "ADULTO_PP", rotulo: "Adulto PP" },
+  { valor: "ADULTO_P", rotulo: "Adulto P" },
+  { valor: "ADULTO_M", rotulo: "Adulto M" },
+  { valor: "ADULTO_G", rotulo: "Adulto G" },
+  { valor: "ADULTO_GG", rotulo: "Adulto GG" },
+  { valor: "ADULTO_XG", rotulo: "Adulto XG" },
+  { valor: "ADULTO_XGG", rotulo: "Adulto XGG" },
+  { valor: "ADULTO_G1", rotulo: "Adulto G1 (plus size)" },
+  { valor: "ADULTO_G2", rotulo: "Adulto G2 (plus size)" },
+  { valor: "ADULTO_G3", rotulo: "Adulto G3 (plus size)" },
 ];
 
 // Calçado em pares de dois dígitos: 15/16, 17/18 ... 45/46
@@ -248,11 +248,7 @@ const opcoesRendaLocais: Opcao[] = TEXTOS_RENDA.map((t) => ({
   valor: normalizar(t),
   rotulo: t,
 }));
-const opcoesRoupaLocais: Opcao[] = TEXTOS_ROUPA.map((t) => ({
-  valor: t,
-  rotulo:
-    t === "RN" ? "RN (recém-nascido)" : /^\d+$/.test(t) ? `Infantil ${t}` : t,
-}));
+const opcoesRoupaLocais: Opcao[] = OPCOES_ROUPA;
 const opcoesCalcadoLocais: Opcao[] = TEXTOS_CALCADO.map((t) => ({
   valor: t,
   rotulo: t,
@@ -262,11 +258,11 @@ const opcoesCalcado = opcoesCalcadoLocais;
 // Faixa que já é conhecida a partir do tipo de renda (o usuário pode alterar).
 const FAIXA_SUGERIDA: Record<string, FaixaRenda> = {
   NENHUMA: "SEM_RENDA_FIXA",
-  BPC: "ATE_1_SM",
-  BOLSA_FAMILIA: "ATE_1_SM",
-  SEGURO_DEFESO: "ATE_1_SM",
-  GARANTIA_SAFRA: "ATE_1_SM",
-  BOLSA_ESTIAGEM: "ATE_1_SM",
+  BPC: "ATE_1_SALARIO",
+  BOLSA_FAMILIA: "ATE_1_SALARIO",
+  SEGURO_DEFESO: "ATE_1_SALARIO",
+  GARANTIA_SAFRA: "ATE_1_SALARIO",
+  BOLSA_ESTIAGEM: "ATE_1_SALARIO",
 };
 
 // Idade calculada pela data de nascimento (recalcula sozinha a cada dia).
