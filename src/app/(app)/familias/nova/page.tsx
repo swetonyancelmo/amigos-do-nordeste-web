@@ -7,7 +7,9 @@ import { Aviso } from '@/componentes/Aviso';
 import { Botao } from '@/componentes/Botao';
 import { Campo } from '@/componentes/Campo';
 import { useCabecalho } from '@/componentes/ContextoCabecalho';
+import { ResumoErros } from '@/componentes/ResumoErros';
 import { Selecao } from '@/componentes/Selecao';
+import { useErrosDeCampo, type ErroDeCampo } from '@/componentes/useErrosDeCampo';
 import { api } from '@/lib/api';
 import { hoje } from '@/lib/datas';
 import { useMetadados } from '@/lib/metadados';
@@ -174,33 +176,24 @@ const ID_RESPONSAVEL = 'nome-responsavel';
 const ID_COMUNIDADE = 'comunidade-familia';
 const idTipoFonte = (chave: string) => `tipo-fonte-${chave}`;
 
-/** Erro de cada campo obrigatório, mostrado embaixo dele (WCAG 3.3.1). */
-type ErrosCampo = {
-  comunidadeId?: string;
-  responsavelNome?: string;
-  /** Por `chave` da fonte de renda. */
-  fontes?: Record<string, string>;
-};
-
 /** Valida tudo de uma vez, na ordem da tela; o primeiro da lista recebe o foco. */
-function validar(form: Formulario) {
-  const erros: ErrosCampo = {};
-  const lista: { id: string; mensagem: string }[] = [];
+function validar(form: Formulario): ErroDeCampo[] {
+  const erros: ErroDeCampo[] = [];
   if (!form.comunidadeId) {
-    erros.comunidadeId = 'Escolha a comunidade da família.';
-    lista.push({ id: ID_COMUNIDADE, mensagem: erros.comunidadeId });
+    erros.push({ id: ID_COMUNIDADE, mensagem: 'Escolha a comunidade da família.' });
   }
   if (!form.responsavelNome.trim()) {
-    erros.responsavelNome = 'Informe o nome da responsável.';
-    lista.push({ id: ID_RESPONSAVEL, mensagem: erros.responsavelNome });
+    erros.push({ id: ID_RESPONSAVEL, mensagem: 'Informe o nome da responsável.' });
   }
   form.fontes.forEach((f, i) => {
     if (f.tipo !== '') return;
-    const mensagem = 'Escolha o tipo desta fonte de renda, ou remova a linha.';
-    erros.fontes = { ...erros.fontes, [f.chave]: mensagem };
-    lista.push({ id: idTipoFonte(f.chave), mensagem: `Fonte de renda ${i + 1}: escolha o tipo, ou remova a linha.` });
+    erros.push({
+      id: idTipoFonte(f.chave),
+      mensagem: 'Escolha o tipo desta fonte de renda, ou remova a linha.',
+      resumo: `Fonte de renda ${i + 1}: escolha o tipo, ou remova a linha.`,
+    });
   });
-  return { erros, lista };
+  return erros;
 }
 
 const ACOES = (
@@ -227,8 +220,7 @@ export default function NovaFamilia() {
   const [form, setForm] = useState<Formulario>(() => formularioVazio());
   const [enviando, setEnviando] = useState(false);
   const [erro, setErro] = useState<string | null>(null);
-  const [errosCampo, setErrosCampo] = useState<ErrosCampo>({});
-  const [listaErros, setListaErros] = useState<string[]>([]);
+  const validacao = useErrosDeCampo();
   const [salva, setSalva] = useState<FamiliaGravada | null>(null);
 
   useEffect(() => {
@@ -246,11 +238,11 @@ export default function NovaFamilia() {
 
   function mudar<K extends keyof Formulario>(chave: K, valor: Formulario[K]) {
     setForm((atual) => ({ ...atual, [chave]: valor }));
-    if (chave === 'comunidadeId') setErrosCampo((atual) => ({ ...atual, comunidadeId: undefined }));
+    if (chave === 'comunidadeId') validacao.limpar(ID_COMUNIDADE);
   }
 
   function mudarResponsavel(nome: string) {
-    setErrosCampo((atual) => ({ ...atual, responsavelNome: undefined }));
+    validacao.limpar(ID_RESPONSAVEL);
     setForm((atual) => {
       const [primeira, ...resto] = atual.pessoas;
       // A primeira linha acompanha o nome enquanto ninguém o editou ali.
@@ -291,13 +283,7 @@ export default function NovaFamilia() {
   }
 
   function mudarFonte(chave: string, mudanca: Partial<FormFonte>) {
-    if (mudanca.tipo) {
-      setErrosCampo((atual) => {
-        const fontes = { ...atual.fontes };
-        delete fontes[chave];
-        return { ...atual, fontes };
-      });
-    }
+    if (mudanca.tipo) validacao.limpar(idTipoFonte(chave));
     setForm((atual) => ({
       ...atual,
       fontes: atual.fontes.map((f) => (f.chave === chave ? { ...f, ...mudanca } : f)),
@@ -316,13 +302,7 @@ export default function NovaFamilia() {
   async function salvar(evento: FormEvent) {
     evento.preventDefault();
     setErro(null);
-    const { erros, lista } = validar(form);
-    setErrosCampo(erros);
-    setListaErros(lista.map((e) => e.mensagem));
-    if (lista.length > 0) {
-      document.getElementById(lista[0].id)?.focus();
-      return;
-    }
+    if (!validacao.mostrar(validar(form))) return;
 
     setEnviando(true);
     try {
@@ -367,7 +347,7 @@ export default function NovaFamilia() {
             vazio="Escolha a comunidade"
             value={form.comunidadeId}
             onChange={(e) => mudar('comunidadeId', e.target.value)}
-            erro={errosCampo.comunidadeId}
+            erro={validacao.erroDe(ID_COMUNIDADE)}
             required
           />
           <Campo
@@ -376,7 +356,7 @@ export default function NovaFamilia() {
             maxLength={120}
             value={form.responsavelNome}
             onChange={(e) => mudarResponsavel(e.target.value)}
-            erro={errosCampo.responsavelNome}
+            erro={validacao.erroDe(ID_RESPONSAVEL)}
             required
             autoFocus
           />
@@ -573,7 +553,7 @@ export default function NovaFamilia() {
               vazio="Escolha o tipo"
               value={f.tipo}
               onChange={(e) => mudarFonte(f.chave, { tipo: e.target.value as TipoFonteRenda | '' })}
-              erro={errosCampo.fontes?.[f.chave]}
+              erro={validacao.erroDe(idTipoFonte(f.chave))}
             />
             <Selecao
               rotulo="Quem recebe"
@@ -622,14 +602,7 @@ export default function NovaFamilia() {
         </div>
       </div>
 
-      {listaErros.length > 0 && (
-        <Aviso tom="erro" titulo="Não deu para salvar">
-          {listaErros.length === 1 ? 'Corrija o campo marcado:' : `Corrija os ${listaErros.length} campos marcados:`}
-          {listaErros.map((m) => (
-            <span key={m} className={estilos.itemErro}>{m}</span>
-          ))}
-        </Aviso>
-      )}
+      <ResumoErros erros={validacao.resumo} />
       {erro && <Aviso tom="erro" titulo="Não deu para salvar">{erro}</Aviso>}
 
       <div className={`cartao ${estilos.rodape}`}>

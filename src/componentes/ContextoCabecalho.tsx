@@ -6,9 +6,10 @@ import { Cabecalho } from './Cabecalho';
 type EstadoCabecalho = {
   titulo: string;
   acoes: ReactNode;
+  tituloNaPagina: boolean;
 };
 
-const VAZIO: EstadoCabecalho = { titulo: '', acoes: null };
+const VAZIO: EstadoCabecalho = { titulo: '', acoes: null, tituloNaPagina: false };
 
 const ContextoDefinir = createContext<(estado: EstadoCabecalho) => void>(() => {});
 const ContextoEstado = createContext<EstadoCabecalho>(VAZIO);
@@ -32,7 +33,11 @@ export function ProvedorCabecalho({ children }: { children: ReactNode }) {
 /** Renderiza o cabeçalho da tela atual. Vive uma vez só, dentro do layout. */
 export function CabecalhoDaTela() {
   const estado = useContext(ContextoEstado);
-  return <Cabecalho titulo={estado.titulo}>{estado.acoes}</Cabecalho>;
+  return (
+    <Cabecalho titulo={estado.titulo} tituloNaPagina={estado.tituloNaPagina}>
+      {estado.acoes}
+    </Cabecalho>
+  );
 }
 
 /**
@@ -49,13 +54,16 @@ export function CabecalhoDaTela() {
  * novo a cada render, então numa tela que re-renderiza a cada tecla (o
  * cadastro) o cabeçalho re-renderizaria junto — nesse caso declare o JSX
  * fora do componente ou envolva em useMemo.
+ *
+ * `tituloNaPagina`: a tela desenha a própria <h1> no conteúdo, então o
+ * título do cabeçalho não é <h1> (uma <h1> por tela).
  */
-export function useCabecalho(titulo: string, acoes?: ReactNode) {
+export function useCabecalho(titulo: string, acoes?: ReactNode, { tituloNaPagina = false } = {}) {
   const definir = useContext(ContextoDefinir);
 
   useLayoutEffect(() => {
-    definir({ titulo, acoes: acoes ?? null });
-  }, [definir, titulo, acoes]);
+    definir({ titulo, acoes: acoes ?? null, tituloNaPagina });
+  }, [definir, titulo, acoes, tituloNaPagina]);
 
   useLayoutEffect(() => () => definir(VAZIO), [definir]);
 }

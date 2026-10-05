@@ -7,6 +7,8 @@ import { Campo } from '@/componentes/Campo';
 import { useCabecalho } from '@/componentes/ContextoCabecalho';
 import { Modal } from '@/componentes/Modal';
 import { Paginacao, paginarNoCliente } from '@/componentes/Paginacao';
+import { ResumoErros } from '@/componentes/ResumoErros';
+import { useErrosDeCampo } from '@/componentes/useErrosDeCampo';
 import { api, ErroApi } from '@/lib/api';
 import { dataHora } from '@/lib/datas';
 import type { Agente } from '@/tipos/dominio';
@@ -14,12 +16,15 @@ import estilos from './agentes.module.css';
 
 const mensagem = (e: unknown) => (e instanceof Error ? e.message : 'Não foi possível concluir a operação.');
 
+const ID_NOME_AGENTE = 'nome-agente';
+
 const porNome = (a: Agente, b: Agente) => a.nome.localeCompare(b.nome, 'pt-BR');
 
 /** "472916" → "472 916". O app ignora o espaço ao ativar. */
 const agrupado = (codigo: string) => `${codigo.slice(0, 3)} ${codigo.slice(3)}`;
 
-function Codigo({ codigo }: { codigo: string }) {
+/** `nome` dá contexto ao botão para o leitor de tela: há um "Copiar" por agente (WCAG 2.4.6). */
+function Codigo({ codigo, nome }: { codigo: string; nome: string }) {
   const [copiado, setCopiado] = useState(false);
 
   useEffect(() => {
@@ -37,7 +42,12 @@ function Codigo({ codigo }: { codigo: string }) {
       <span className={estilos.codigo} aria-label={`Código ${codigo.split('').join(' ')}`}>
         {agrupado(codigo)}
       </span>
-      <Botao variante="secundario" type="button" onClick={copiar}>
+      <Botao
+        variante="secundario"
+        type="button"
+        onClick={copiar}
+        aria-label={copiado ? `Copiado, código de ${nome}` : `Copiar código de ${nome}`}
+      >
         {copiado ? 'Copiado' : 'Copiar'}
       </Botao>
       <span className="so-leitor-de-tela" role="status">{copiado ? 'Código copiado' : ''}</span>
@@ -59,7 +69,8 @@ export default function Agentes() {
 
   const [novaAberta, setNovaAberta] = useState(false);
   const [nome, setNome] = useState('');
-  const [erroNome, setErroNome] = useState<string | null>(null);
+  const validacao = useErrosDeCampo();
+  const { mostrar: mostrarErros } = validacao;
   const [erroNova, setErroNova] = useState<string | null>(null);
   const [salvando, setSalvando] = useState(false);
   const [criada, setCriada] = useState<Agente | null>(null);
@@ -70,11 +81,11 @@ export default function Agentes() {
 
   const abrirNova = useCallback(() => {
     setNome('');
-    setErroNome(null);
+    mostrarErros([]);
     setErroNova(null);
     setCriada(null);
     setNovaAberta(true);
-  }, []);
+  }, [mostrarErros]);
 
   const acoes = useMemo(() => <Botao onClick={abrirNova}>Nova agente</Botao>, [abrirNova]);
   useCabecalho('Agentes', acoes);
@@ -92,19 +103,15 @@ export default function Agentes() {
 
   async function cadastrar(e: React.FormEvent) {
     e.preventDefault();
-    if (!nome.trim()) {
-      setErroNome('Informe o nome da agente.');
-      return;
-    }
+    if (!mostrarErros(nome.trim() ? [] : [{ id: ID_NOME_AGENTE, mensagem: 'Informe o nome da agente.' }])) return;
     setSalvando(true);
-    setErroNome(null);
     setErroNova(null);
     try {
       const agente = await api.post<Agente>('/agentes', { nome: nome.trim() });
       substituir(agente);
       setCriada(agente);
     } catch (falha) {
-      if (falha instanceof ErroApi && falha.status === 400) setErroNome(falha.message);
+      if (falha instanceof ErroApi && falha.status === 400) mostrarErros([{ id: ID_NOME_AGENTE, mensagem: falha.message }]);
       else setErroNova(mensagem(falha));
     } finally {
       setSalvando(false);
@@ -155,7 +162,7 @@ export default function Agentes() {
                   ) : null}
                 </div>
                 {a.codigoConvite ? (
-                  <Codigo codigo={a.codigoConvite} />
+                  <Codigo codigo={a.codigoConvite} nome={a.nome} />
                 ) : a.ativadoEm ? (
                   <p className="texto-apoio">desde {dataHora(a.ativadoEm)}</p>
                 ) : null}
@@ -163,6 +170,7 @@ export default function Agentes() {
               <Botao
                 variante="secundario"
                 disabled={gerando === a.id}
+                aria-label={gerando === a.id ? undefined : `Gerar novo código para ${a.nome}`}
                 onClick={() => (a.ativadoEm ? setConfirmar(a) : gerarConvite(a))}
               >
                 {gerando === a.id ? 'Gerando…' : 'Gerar novo código'}
@@ -190,7 +198,7 @@ export default function Agentes() {
               Abra o app no celular de <strong>{criada.nome}</strong> e digite este código na tela de
               ativação. Ele vale uma vez.
             </p>
-            <Codigo codigo={criada.codigoConvite} />
+            <Codigo codigo={criada.codigoConvite} nome={criada.nome} />
             <div className={estilos.modalAcoes}>
               <Botao onClick={fecharNova}>Pronto</Botao>
             </div>
@@ -198,15 +206,17 @@ export default function Agentes() {
         ) : (
           <form className={estilos.modalCorpo} onSubmit={cadastrar} noValidate>
             <Campo
+              id={ID_NOME_AGENTE}
               rotulo="Nome da agente"
               ajuda="Como o app vai mostrar para ela."
               value={nome}
               onChange={(e) => setNome(e.target.value)}
-              erro={erroNome ?? undefined}
+              erro={validacao.erroDe(ID_NOME_AGENTE)}
               maxLength={120}
               required
               autoFocus
             />
+            <ResumoErros erros={validacao.resumo} />
             {erroNova && <Aviso tom="erro">{erroNova}</Aviso>}
             <div className={estilos.modalAcoes}>
               <Botao variante="secundario" type="button" onClick={fecharNova}>Cancelar</Botao>

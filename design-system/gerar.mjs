@@ -123,7 +123,8 @@ const GRUPOS_DE_COR = [
       ['laranja-profundo', 'Só para o hover do botão principal.'],
       ['ambar', 'Gradiente do sol. Aparece no token --sol, quase nunca sozinha.'],
       ['verde', 'Cacto. Marca explicação do sistema, não sucesso.'],
-      ['verde-escuro', 'Texto sobre --verde-claro, onde o verde puro não teria contraste.'],
+      ['verde-escuro', 'Texto sobre --verde-claro e fundo do botão de sucesso, onde o verde puro não teria contraste (6,32:1 com branco).'],
+      ['verde-profundo', 'Só para o hover do botão de sucesso (8,18:1 com branco).'],
       ['amarelo', 'Abelha. A ponta mais clara do --sol. Não use como fundo de texto.'],
     ],
   },
@@ -144,7 +145,7 @@ const GRUPOS_DE_COR = [
     itens: [
       ['texto-forte', 'Corpo, título, rótulo de campo.'],
       ['texto-medio', 'Texto de apoio e legenda.'],
-      ['texto-suave', 'Placeholder e campo desabilitado. Não use em texto que precisa ser lido.'],
+      ['texto-suave', 'Metadado, placeholder, rótulo de dado. 5,55:1 sobre --superficie e 5,16:1 sobre --pagina: passa no WCAG 1.4.3 para texto de qualquer tamanho.'],
       ['linha', 'Divisória e borda de cartão.'],
       ['linha-forte', 'Borda de campo, que precisa ser vista.'],
     ],

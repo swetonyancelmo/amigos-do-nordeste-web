@@ -7,6 +7,7 @@ import { useCabecalho } from '@/componentes/ContextoCabecalho';
 import { Aviso } from '@/componentes/Aviso';
 import { Botao } from '@/componentes/Botao';
 import { Campo } from '@/componentes/Campo';
+import { Dado } from '@/componentes/Dados';
 import { Selecao } from '@/componentes/Selecao';
 import { api } from '@/lib/api';
 import { data, dataHora } from '@/lib/datas';
@@ -86,7 +87,9 @@ export default function RevisaoChamado() {
   const [aprovada, setAprovada] = useState<FamiliaGravada | null>(null);
   const [motivo, setMotivo] = useState('');
 
-  useCabecalho(detalhe?.responsavelNome ?? 'Chamado');
+  // Com o chamado carregado, a <h1> é a do conteúdo (nome da responsável);
+  // carregando ou com erro, fica a do cabeçalho.
+  useCabecalho(detalhe?.responsavelNome ?? 'Chamado', undefined, { tituloNaPagina: detalhe !== null });
 
   const carregar = useCallback(() => {
     setErroCarga(null);
@@ -242,12 +245,12 @@ export default function RevisaoChamado() {
         <div className={estilos.colunaPrincipal}>
           <div className={`cartao ${estilos.secao}`}>
             <h2 className={estilos.secaoTitulo}>O que a agente coletou</h2>
-            <div className={estilos.grade}>
-              <Campo rotulo="Responsável" value={detalhe.responsavelNome ?? ''} disabled />
-              <Campo rotulo="Telefone" value={detalhe.telefone ?? '—'} disabled />
-              <Campo rotulo="Comunidade" value={comunidadeColetada} disabled />
-              <Campo rotulo="Ponto de referência" value={detalhe.pontoReferencia ?? '—'} disabled />
-            </div>
+            <dl className="dados">
+              <Dado rotulo="Responsável">{detalhe.responsavelNome}</Dado>
+              <Dado rotulo="Telefone">{detalhe.telefone}</Dado>
+              <Dado rotulo="Comunidade">{comunidadeColetada}</Dado>
+              <Dado rotulo="Ponto de referência">{detalhe.pontoReferencia}</Dado>
+            </dl>
           </div>
 
           {pendente && (
