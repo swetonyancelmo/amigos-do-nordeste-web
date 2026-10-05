@@ -4,6 +4,7 @@ import Link from 'next/link';
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { Aviso } from '@/componentes/Aviso';
 import { useCabecalho } from '@/componentes/ContextoCabecalho';
+import { Dado } from '@/componentes/Dados';
 import { Modal } from '@/componentes/Modal';
 import { Paginacao } from '@/componentes/Paginacao';
 import { api } from '@/lib/api';
@@ -62,15 +63,6 @@ function IconeBusca() {
 
 /* ------------------------------------------------------------------ ficha */
 
-function Dado({ rotulo, children, larga }: { rotulo: string; children: React.ReactNode; larga?: boolean }) {
-  return (
-    <div className={larga ? styles.larga : undefined}>
-      <dt>{rotulo}</dt>
-      <dd>{children || '—'}</dd>
-    </div>
-  );
-}
-
 /** Tudo o que está cadastrado da família: carrega a ficha ao abrir o modal. */
 function DetalhesFamilia({ id }: { id: string }) {
   const { metadados } = useMetadados();
@@ -97,7 +89,7 @@ function DetalhesFamilia({ id }: { id: string }) {
     <>
       <section className={styles.secao}>
         <h3 className={styles.secaoTitulo}>Família</h3>
-        <dl className={styles.grade}>
+        <dl className="dados">
           <Dado rotulo="Responsável">{ficha.responsavelNome}</Dado>
           <Dado rotulo="CPF">{ficha.responsavelCpf}</Dado>
           <Dado rotulo="Telefone">{ficha.telefone}</Dado>
@@ -117,7 +109,7 @@ function DetalhesFamilia({ id }: { id: string }) {
 
       <section className={styles.secao}>
         <h3 className={styles.secaoTitulo}>Moradia</h3>
-        <dl className={styles.grade}>
+        <dl className="dados">
           <Dado rotulo="Abastecimento de água">
             {ficha.abastecimentoAgua.map((v) => rotuloDe(metadados?.abastecimentoAgua, v)).join(', ')}
           </Dado>
@@ -163,7 +155,7 @@ function DetalhesFamilia({ id }: { id: string }) {
                     {pessoa.gestante && <span className={`${styles.tag} ${styles.tagGestante}`}>Gestante</span>}
                   </div>
                 </div>
-                <dl className={styles.grade}>
+                <dl className="dados">
                   <Dado rotulo="Parentesco">{rotuloDe(metadados?.parentesco, pessoa.parentesco)}</Dado>
                   <Dado rotulo="Sexo">{rotuloDe(metadados?.sexo, pessoa.sexo)}</Dado>
                   <Dado rotulo="Idade">{exibirIdade(pessoa)}</Dado>
@@ -186,7 +178,7 @@ function DetalhesFamilia({ id }: { id: string }) {
 
       <section className={styles.secao}>
         <h3 className={styles.secaoTitulo}>Renda</h3>
-        <dl className={styles.grade}>
+        <dl className="dados">
           <Dado rotulo="Quanto entra por mês, somando tudo" larga>
             {rotuloDe(metadados?.faixaRenda, ficha.faixaRenda)}
           </Dado>
@@ -197,7 +189,7 @@ function DetalhesFamilia({ id }: { id: string }) {
           <div className={styles.lista}>
             {fontesRenda.map((renda) => (
               <article key={renda.id} className={styles.cartao}>
-                <dl className={styles.grade}>
+                <dl className="dados">
                   <Dado rotulo="De onde vem">{rotuloDe(metadados?.tipoFonteRenda, renda.tipo)}</Dado>
                   <Dado rotulo="Quem recebe">
                     {renda.pessoaId === null

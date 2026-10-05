@@ -703,6 +703,46 @@
   }
 }
 
+/* ------------------------------------------------------------ Dados (ficha) */
+
+/* Lista de leitura em duas colunas: <dl className="dados"> com <Dado>.
+   Usada na ficha da família e no que a agente coletou no chamado. */
+.dados {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: var(--e-3) var(--e-5);
+  margin: 0;
+}
+
+.dados > div {
+  min-width: 0;
+}
+
+.dados dt {
+  color: var(--texto-suave);
+  font-size: var(--t-micro);
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+}
+
+.dados dd {
+  margin: 2px 0 0;
+  color: var(--texto-forte);
+  font-size: var(--t-base);
+  overflow-wrap: anywhere;
+}
+
+.dados__larga {
+  grid-column: 1 / -1;
+}
+
+@media (max-width: 640px) {
+  .dados {
+    grid-template-columns: 1fr;
+  }
+}
+
 /* --------------------------------------------------------------- Utilidade */
 
 /* Visível para leitor de tela, invisível na tela. */
