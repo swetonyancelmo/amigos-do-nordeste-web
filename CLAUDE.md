@@ -10,7 +10,8 @@ chegam aqui como pré-cadastros para aprovar.
 
 Next.js 15 (App Router) · React 19 · TypeScript · Node 22 · **pnpm** ·
 CSS puro (variáveis + `componentes.css` + CSS Modules) · Leaflet + react-leaflet
-(mini-mapa da comunidade; carregar com `next/dynamic` e `ssr: false`). Sem biblioteca de UI e sem testes.
+(mini-mapa da comunidade; carregar com `next/dynamic` e `ssr: false`). Sem biblioteca de UI.
+Testes: só de acessibilidade, com Playwright + axe em `e2e/` (API falsa, sem dado real).
 
 ## Estrutura
 
@@ -106,6 +107,8 @@ cp .env.example .env.local     # API_URL=http://localhost:3333 (lida pelo Next, 
 pnpm dev                       # http://localhost:3000 (a API precisa estar de pé)
 pnpm typecheck && pnpm lint    # antes do PR; o CI também roda pnpm build
 pnpm design-system             # regenera design-system/site/
+pnpm test                      # Playwright + axe (sobe o Next na 3100; não precisa da API)
+                               # 1ª vez: npx playwright install chromium
 ```
 
 ## Skills

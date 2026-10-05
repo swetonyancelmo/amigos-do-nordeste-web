@@ -65,7 +65,7 @@
 }
 
 .campo__rotulo {
-  font-size: var(--t-apoio);
+  font-size: var(--t-rotulo);
   font-weight: 600;
   color: var(--texto-forte);
 }
@@ -167,12 +167,12 @@
 }
 
 .botao--primario {
-  background: var(--laranja);
+  background: var(--laranja-escuro);
   color: var(--superficie);
 }
 
 .botao--primario:hover:not(:disabled) {
-  background: var(--laranja-escuro);
+  background: var(--laranja-profundo);
 }
 
 .botao--secundario {
@@ -293,6 +293,14 @@
 /* ------------------------------------------------------------------ Navegação */
 
 .navegacao {
+  /* Fixa na altura da janela: sem isso, a coluna estica até o fim da página
+     e, numa tela longa como o Início, Perfil e Sair ficam lá embaixo, fora
+     da vista. No celular, o @media abaixo troca por position: fixed. */
+  position: sticky;
+  top: 0;
+  align-self: start;
+  height: 100dvh;
+  overflow-y: auto;
   display: flex;
   flex-direction: column;
   gap: var(--e-6);
@@ -375,7 +383,7 @@
   height: 22px;
   padding: 0 var(--e-1);
   border-radius: 11px;
-  background: var(--laranja);
+  background: var(--laranja-escuro);
   color: var(--superficie);
   font-size: var(--t-micro);
   font-weight: 700;

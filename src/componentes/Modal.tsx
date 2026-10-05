@@ -9,31 +9,86 @@ type Props = {
 };
 
 // Modais podem abrir um dentro do outro (ex.: fonte de renda dentro de
-// pessoa). O contador garante que o scroll da página só volta quando o
-// último modal fecha.
-let modaisAbertos = 0;
+// pessoa). A pilha garante que o scroll da página só volta quando o último
+// modal fecha, e que só o modal de cima responde ao Tab e ao Esc.
+const pilha: HTMLElement[] = [];
 
+const FOCAVEIS = [
+  'a[href]', 'button:not([disabled])', 'input:not([disabled]):not([type="hidden"])',
+  'select:not([disabled])', 'textarea:not([disabled])', '[tabindex]:not([tabindex="-1"])',
+].join(',');
+
+/**
+ * Janela por cima da tela. O foco é responsabilidade daqui (WCAG 2.4.3):
+ * ao abrir, entra no modal (no campo com `autoFocus`, se houver; senão no
+ * botão de fechar); o Tab fica preso dentro dele; o resto da página vira
+ * `inert`; ao fechar, o foco volta para quem abriu.
+ */
 export function Modal({ aberto, titulo, onFechar, children }: Props) {
   const ref = useRef<HTMLDivElement | null>(null);
+  const refFundo = useRef<HTMLDivElement | null>(null);
+  const refFechar = useRef<HTMLButtonElement | null>(null);
   const idTitulo = useId();
+  // Em ref para o efeito não rodar de novo quando a tela recria o callback
+  // (rodar de novo puxaria o foco de volta para o botão de fechar).
+  const refOnFechar = useRef(onFechar);
+  refOnFechar.current = onFechar;
 
   useEffect(() => {
-    if (!aberto) return;
+    const painel = ref.current;
+    const fundo = refFundo.current;
+    if (!aberto || !painel || !fundo) return;
+
+    const origem = document.activeElement instanceof HTMLElement ? document.activeElement : null;
+
+    // Tudo fora deste modal sai do alcance do Tab e do leitor de tela.
+    const travados: HTMLElement[] = [];
+    for (const irmao of Array.from(document.body.children)) {
+      if (irmao !== fundo && irmao instanceof HTMLElement && !irmao.inert) {
+        irmao.inert = true;
+        travados.push(irmao);
+      }
+    }
+
+    if (!painel.contains(document.activeElement)) refFechar.current?.focus();
 
     const onKeyDown = (event: KeyboardEvent) => {
-      if (event.key === 'Escape') onFechar();
+      if (pilha[pilha.length - 1] !== painel) return;
+      if (event.key === 'Escape') {
+        refOnFechar.current();
+        return;
+      }
+      if (event.key !== 'Tab') return;
+      const focaveis = Array.from(painel.querySelectorAll<HTMLElement>(FOCAVEIS))
+        .filter((el) => el.offsetParent !== null || el === document.activeElement);
+      if (focaveis.length === 0) {
+        event.preventDefault();
+        return;
+      }
+      const primeiro = focaveis[0];
+      const ultimo = focaveis[focaveis.length - 1];
+      const atual = document.activeElement;
+      if (event.shiftKey && (atual === primeiro || !painel.contains(atual))) {
+        event.preventDefault();
+        ultimo.focus();
+      } else if (!event.shiftKey && (atual === ultimo || !painel.contains(atual))) {
+        event.preventDefault();
+        primeiro.focus();
+      }
     };
 
-    modaisAbertos += 1;
+    pilha.push(painel);
     document.body.style.overflow = 'hidden';
     document.addEventListener('keydown', onKeyDown);
 
     return () => {
-      modaisAbertos -= 1;
-      if (modaisAbertos === 0) document.body.style.overflow = '';
+      pilha.splice(pilha.indexOf(painel), 1);
+      if (pilha.length === 0) document.body.style.overflow = '';
       document.removeEventListener('keydown', onKeyDown);
+      for (const el of travados) el.inert = false;
+      if (origem?.isConnected) origem.focus();
     };
-  }, [aberto, onFechar]);
+  }, [aberto]);
 
   if (!aberto) return null;
   if (typeof document === 'undefined') return null;
@@ -41,6 +96,7 @@ export function Modal({ aberto, titulo, onFechar, children }: Props) {
   return createPortal(
     (
     <div
+      ref={refFundo}
       role="presentation"
       onClick={onFechar}
       style={{
@@ -92,6 +148,7 @@ export function Modal({ aberto, titulo, onFechar, children }: Props) {
           </h2>
 
           <button
+            ref={refFechar}
             type="button"
             aria-label="Fechar modal"
             onClick={onFechar}

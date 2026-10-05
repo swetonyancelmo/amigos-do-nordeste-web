@@ -81,7 +81,7 @@ export default function PessoasPage() {
   }, []);
 
   return (
-    <main className={`${styles.pagina} pagina-pessoas`}>
+    <div className={`${styles.pagina} pagina-pessoas`}>
       <section className={styles.conteudo}>
         <div className={styles.toolbar}>
           <div className={styles.busca}>
@@ -151,6 +151,6 @@ export default function PessoasPage() {
         onFechar={fechar}
         onSalvo={salvo}
       />
-    </main>
+    </div>
   );
 }

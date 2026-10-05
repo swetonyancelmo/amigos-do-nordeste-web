@@ -323,7 +323,12 @@ export function ConteudoDashboard() {
             const mapa = L.map(elementoMapaRef.current, {
                 center: [-8.7, -37.8], // sertão de Pernambuco, ponto de partida
                 zoom: 8,
+                zoomControl: false,
             });
+
+            // O controle padrão vem com "Zoom in"/"Zoom out" em inglês, e é
+            // isso que o leitor de tela lê (WCAG 3.1.2).
+            L.control.zoom({ zoomInTitle: 'Aproximar', zoomOutTitle: 'Afastar' }).addTo(mapa);
 
             L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
                 maxZoom: 18,
@@ -465,9 +470,9 @@ export function ConteudoDashboard() {
     const maiorTotalFamilias = Math.max(1, ...comunidadesMapa.map((c) => c.totalFamilias));
 
     return (
-        <main className={styles.pagina}>
+        <div className={styles.pagina}>
             <section className={styles.cabecalho} aria-labelledby="titulo-dashboard">
-                <h1 id="titulo-dashboard">Visão geral</h1>
+                <h2 id="titulo-dashboard">Visão geral</h2>
                 <p>Famílias e comunidades atendidas pela associação.</p>
                 {carregando && (
                     <span className="campo__ajuda" aria-live="polite">
@@ -700,6 +705,6 @@ export function ConteudoDashboard() {
                     </div>
                 )}
             </section>
-        </main>
+        </div>
     );
 }

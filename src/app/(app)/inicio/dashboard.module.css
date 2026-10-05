@@ -11,7 +11,7 @@
   gap: var(--e-3);
 }
 
-.cabecalho h1 {
+.cabecalho h2 {
   margin: 0;
   font-family: var(--fonte-marca);
   font-size: var(--t-titulo);
@@ -298,7 +298,7 @@
   color: #fff;
   font-family: var(--fonte-marca);
   font-weight: 800;
-  font-size: 0.75rem;
+  font-size: var(--t-micro);
 }
 
 .lista {

@@ -206,7 +206,9 @@
 }
 
 .nomeBotao {
-  padding: 0;
+  /* Alvo mínimo de 24px de altura (WCAG 2.5.8): só o texto dava 19px. */
+  min-height: 24px;
+  padding: 3px 0;
   border: 0;
   background: none;
   color: var(--texto-forte);
@@ -238,7 +240,7 @@
   align-items: center;
   padding: 4px 10px;
   border-radius: 999px;
-  font-size: 0.7rem;
+  font-size: var(--t-micro);
   font-weight: 700;
   letter-spacing: 0.04em;
   text-transform: uppercase;

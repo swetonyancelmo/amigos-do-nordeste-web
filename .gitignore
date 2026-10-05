@@ -20,3 +20,7 @@ next-env.d.ts
 .vscode/*
 !.vscode/extensions.json
 *.log
+
+# Playwright (pnpm test)
+test-results/
+playwright-report/

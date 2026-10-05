@@ -14,7 +14,12 @@
 :root {
   /* --- Marca ------------------------------------------------------------ */
   --laranja: #e54314;
-  --laranja-escuro: #c93a11;
+  /* Tom de texto e de fundo de texto: #e54314 com branco dá 4,08:1, abaixo
+     dos 4,5:1 do WCAG 1.4.3. Este dá 5,97:1 com branco e 5,15:1 sobre
+     --laranja-claro. */
+  --laranja-escuro: #b8330f;
+  /* Hover de quem já usa --laranja-escuro (botão principal). */
+  --laranja-profundo: #9a2b0c;
   --ambar: #f49924;
   --verde: #119037;
   --verde-escuro: #0c6f2a;
@@ -62,12 +67,17 @@
   /* --fonte-marca é injetada pelo next/font no layout.tsx (Nunito). */
   --fonte-marca: var(--fonte-nunito), var(--fonte-texto);
 
-  --t-micro: 0.75rem;   /* 12px — etiqueta, legenda de rodapé */
-  --t-apoio: 0.8125rem; /* 13px — texto de apoio */
-  --t-base: 0.9375rem;  /* 15px — corpo */
-  --t-medio: 1.0625rem; /* 17px — entrada de formulário */
-  --t-titulo: 1.375rem; /* 22px — título de cartão */
-  --t-marca: 1.75rem;   /* 28px — assinatura da marca */
+  /*
+   * Atenção: o <html> usa --t-base (15px), então aqui 1rem = 15px, não 16px.
+   * Os px nos comentários já são os reais, medidos no navegador.
+   */
+  --t-micro: 0.8rem;    /* 12px — etiqueta, cabeçalho de tabela, legenda. Menor que isso, não. */
+  --t-apoio: 0.8125rem; /* 12,2px — texto de apoio */
+  --t-rotulo: 0.9375rem; /* 14px — rótulo de campo (mínimo recomendado no teste de acessibilidade) */
+  --t-base: 0.9375rem;  /* 15px no <html>; 14px dentro dele — corpo */
+  --t-medio: 1.0625rem; /* 16px — entrada de formulário */
+  --t-titulo: 1.375rem; /* 20,6px — título de cartão */
+  --t-marca: 1.75rem;   /* 26,25px — assinatura da marca */
 
   /* --- Forma ------------------------------------------------------------ */
   --raio-p: 6px;
@@ -97,7 +107,7 @@ body {
 }
 
 a {
-  color: var(--laranja);
+  color: var(--laranja-escuro);
 }
 
 /* Foco sempre visível: a usuária pode navegar boa parte do cadastro no teclado,

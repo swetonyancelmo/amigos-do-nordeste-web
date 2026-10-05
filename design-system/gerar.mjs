@@ -118,8 +118,9 @@ const GRUPOS_DE_COR = [
     titulo: 'Marca',
     nota: 'Saíram do logo. São as únicas cores com carga de identidade — use com parcimônia e nunca duas em disputa no mesmo bloco.',
     itens: [
-      ['laranja', 'Raios do sol e tipografia do logo. É a cor de ação: botão principal, foco, link.'],
-      ['laranja-escuro', 'Só para o hover do laranja.'],
+      ['laranja', 'Raios do sol e tipografia do logo. Ícone, borda, foco, barra. Não serve para texto pequeno nem para fundo de texto (4,08:1 com branco).'],
+      ['laranja-escuro', 'Laranja de texto e de fundo de texto: botão principal, link, item ativo, etiqueta. 5,97:1 com branco, 5,15:1 sobre --laranja-claro.'],
+      ['laranja-profundo', 'Só para o hover do botão principal.'],
       ['ambar', 'Gradiente do sol. Aparece no token --sol, quase nunca sozinha.'],
       ['verde', 'Cacto. Marca explicação do sistema, não sucesso.'],
       ['verde-escuro', 'Texto sobre --verde-claro, onde o verde puro não teria contraste.'],
