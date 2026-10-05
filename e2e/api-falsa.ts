@@ -76,14 +76,33 @@ function responder(caminho: string, metodo: string): unknown {
   if (caminho === '/familias' && metodo === 'GET') return pagina(FAMILIAS);
   if (caminho === '/pessoas') return pagina(PESSOAS);
   if (caminho === '/agentes') {
-    return [{ id: 'ag-1', nome: 'Agente Teste', ativo: true, codigoConvite: null, ativadoEm: '2026-09-01T10:00:00Z' }];
+    return [
+      { id: 'ag-1', nome: 'Agente Teste', ativo: true, codigoConvite: null, ativadoEm: '2026-09-01T10:00:00Z' },
+      { id: 'ag-2', nome: 'Agente Fictícia Dois', ativo: true, codigoConvite: '123456', ativadoEm: null },
+    ];
   }
   if (caminho === '/pre-cadastros') {
     return [{
       id: 'pre-1', responsavelNome: 'Responsável Fictícia C', comunidadeId: 'com-1',
       comunidadeNome: 'Sítio Fictício', totalPessoas: 2, agenteNome: 'Agente Teste',
       recebidoEm: '2026-10-01T12:00:00Z', situacao: 'PENDENTE', possivelDuplicata: null,
+    }, {
+      id: 'pre-2', responsavelNome: 'Responsável Fictícia E', comunidadeId: 'com-2',
+      comunidadeNome: 'Povoado Exemplo', totalPessoas: 1, agenteNome: 'Agente Teste',
+      recebidoEm: '2026-09-28T12:00:00Z', situacao: 'APROVADO', possivelDuplicata: null,
     }];
+  }
+  if (caminho === '/pre-cadastros/pre-1') {
+    return {
+      id: 'pre-1', situacao: 'PENDENTE', agenteNome: 'Agente Teste', recebidoEm: '2026-10-01T12:00:00Z',
+      avaliadoEm: null, criadoEm: '2026-10-01T11:50:00Z', motivoDevolucao: null, familiaId: null,
+      responsavelNome: 'Responsável Fictícia C', telefone: null, pontoReferencia: 'Perto da cisterna',
+      comunidadeId: 'com-1', comunidadeNome: 'Sítio Fictício', possivelDuplicata: null,
+      pessoas: [{
+        indice: 0, nome: 'Responsável Fictícia C', cadastroIncompleto: false, sexo: 'FEMININO',
+        dataNascimento: null, idadeEstimada: 40, idadeEstimadaEm: '2026-10-01', idade: 40,
+      }],
+    };
   }
   if (caminho === '/relatorios/situacao') {
     return {
