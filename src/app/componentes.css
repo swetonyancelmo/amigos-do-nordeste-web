@@ -189,12 +189,12 @@
 /* Só para a decisão que cria um registro (aprovar um chamado): precisa ser
    impossível de confundir com a que devolve, parada ao lado dela. */
 .botao--sucesso {
-  background: var(--verde);
+  background: var(--verde-escuro);
   color: var(--superficie);
 }
 
 .botao--sucesso:hover:not(:disabled) {
-  background: var(--verde-escuro);
+  background: var(--verde-profundo);
 }
 
 .botao--largo {

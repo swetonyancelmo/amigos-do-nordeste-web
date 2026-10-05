@@ -22,7 +22,11 @@
   --laranja-profundo: #9a2b0c;
   --ambar: #f49924;
   --verde: #119037;
+  /* Texto sobre --verde-claro e fundo do botão de sucesso: #119037 com
+     branco dá 4,14:1; este, 6,32:1. */
   --verde-escuro: #0c6f2a;
+  /* Hover do botão de sucesso. */
+  --verde-profundo: #0a5c23;
   --amarelo: #ffc728;
 
   /* --- Superfícies ------------------------------------------------------ */
