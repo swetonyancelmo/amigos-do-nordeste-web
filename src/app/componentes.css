@@ -232,6 +232,15 @@
   line-height: 1.45;
 }
 
+/* Uma linha de lista dentro do aviso (o texto do aviso é um <p>, então nada de <ul>). */
+.aviso__item {
+  display: block;
+}
+
+.aviso__item::before {
+  content: "• ";
+}
+
 .aviso--erro {
   border-left-color: var(--erro);
   background: var(--erro-claro);

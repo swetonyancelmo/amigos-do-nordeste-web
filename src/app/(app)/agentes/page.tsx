@@ -7,12 +7,16 @@ import { Campo } from '@/componentes/Campo';
 import { useCabecalho } from '@/componentes/ContextoCabecalho';
 import { Modal } from '@/componentes/Modal';
 import { Paginacao, paginarNoCliente } from '@/componentes/Paginacao';
+import { ResumoErros } from '@/componentes/ResumoErros';
+import { useErrosDeCampo } from '@/componentes/useErrosDeCampo';
 import { api, ErroApi } from '@/lib/api';
 import { dataHora } from '@/lib/datas';
 import type { Agente } from '@/tipos/dominio';
 import estilos from './agentes.module.css';
 
 const mensagem = (e: unknown) => (e instanceof Error ? e.message : 'Não foi possível concluir a operação.');
+
+const ID_NOME_AGENTE = 'nome-agente';
 
 const porNome = (a: Agente, b: Agente) => a.nome.localeCompare(b.nome, 'pt-BR');
 
@@ -59,7 +63,8 @@ export default function Agentes() {
 
   const [novaAberta, setNovaAberta] = useState(false);
   const [nome, setNome] = useState('');
-  const [erroNome, setErroNome] = useState<string | null>(null);
+  const validacao = useErrosDeCampo();
+  const { mostrar: mostrarErros } = validacao;
   const [erroNova, setErroNova] = useState<string | null>(null);
   const [salvando, setSalvando] = useState(false);
   const [criada, setCriada] = useState<Agente | null>(null);
@@ -70,11 +75,11 @@ export default function Agentes() {
 
   const abrirNova = useCallback(() => {
     setNome('');
-    setErroNome(null);
+    mostrarErros([]);
     setErroNova(null);
     setCriada(null);
     setNovaAberta(true);
-  }, []);
+  }, [mostrarErros]);
 
   const acoes = useMemo(() => <Botao onClick={abrirNova}>Nova agente</Botao>, [abrirNova]);
   useCabecalho('Agentes', acoes);
@@ -92,19 +97,15 @@ export default function Agentes() {
 
   async function cadastrar(e: React.FormEvent) {
     e.preventDefault();
-    if (!nome.trim()) {
-      setErroNome('Informe o nome da agente.');
-      return;
-    }
+    if (!mostrarErros(nome.trim() ? [] : [{ id: ID_NOME_AGENTE, mensagem: 'Informe o nome da agente.' }])) return;
     setSalvando(true);
-    setErroNome(null);
     setErroNova(null);
     try {
       const agente = await api.post<Agente>('/agentes', { nome: nome.trim() });
       substituir(agente);
       setCriada(agente);
     } catch (falha) {
-      if (falha instanceof ErroApi && falha.status === 400) setErroNome(falha.message);
+      if (falha instanceof ErroApi && falha.status === 400) mostrarErros([{ id: ID_NOME_AGENTE, mensagem: falha.message }]);
       else setErroNova(mensagem(falha));
     } finally {
       setSalvando(false);
@@ -198,15 +199,17 @@ export default function Agentes() {
         ) : (
           <form className={estilos.modalCorpo} onSubmit={cadastrar} noValidate>
             <Campo
+              id={ID_NOME_AGENTE}
               rotulo="Nome da agente"
               ajuda="Como o app vai mostrar para ela."
               value={nome}
               onChange={(e) => setNome(e.target.value)}
-              erro={erroNome ?? undefined}
+              erro={validacao.erroDe(ID_NOME_AGENTE)}
               maxLength={120}
               required
               autoFocus
             />
+            <ResumoErros erros={validacao.resumo} />
             {erroNova && <Aviso tom="erro">{erroNova}</Aviso>}
             <div className={estilos.modalAcoes}>
               <Botao variante="secundario" type="button" onClick={fecharNova}>Cancelar</Botao>
