@@ -7,6 +7,10 @@
 
 .conteudo {
   display: grid;
+  /* Sem o minmax(0, …) a coluna não encolhe abaixo do conteúdo mais largo e,
+     em 320px, a borda direita da busca e dos cartões era cortada pelo
+     overflow-x: clip da página (WCAG 1.4.10). */
+  grid-template-columns: minmax(0, 1fr);
   gap: var(--e-4);
   min-width: 0;
 }
@@ -369,6 +373,22 @@
 @media (max-width: 640px) {
   .tabela {
     min-width: 0;
+  }
+
+  /* Alvos de toque de 44px (WCAG 2.5.5) e campos com 16px, para o Safari do
+     iPhone não dar zoom ao focar. */
+  .buscaEntrada,
+  .filtroComunidade {
+    font-size: 16px;
+  }
+
+  .chip,
+  .filtroComunidade {
+    min-height: 44px;
+  }
+
+  .nomeBotao {
+    min-height: 44px;
   }
 
   .tabela thead {

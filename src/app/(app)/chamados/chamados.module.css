@@ -234,6 +234,11 @@
     grid-template-columns: 1fr;
   }
 
+  /* Alvo de toque de 44px (WCAG 2.5.5). */
+  .aba {
+    min-height: 44px;
+  }
+
   .colunaLateral {
     position: static;
   }

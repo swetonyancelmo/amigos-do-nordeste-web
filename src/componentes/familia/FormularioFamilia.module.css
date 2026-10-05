@@ -150,6 +150,17 @@
     padding: var(--e-4);
   }
 
+  /* Caixa de marcar com o rótulo: alvo de toque de 44px (WCAG 2.5.5). */
+  .marcar {
+    min-height: 44px;
+  }
+
+  /* Com o teclado aberto sobra pouca tela: o campo focado rola com folga
+     acima e abaixo, em vez de parar colado na borda. */
+  .pagina :is(input, select, textarea) {
+    scroll-margin-block: var(--e-6);
+  }
+
   .linhaRenda {
     grid-template-columns: 1fr;
   }

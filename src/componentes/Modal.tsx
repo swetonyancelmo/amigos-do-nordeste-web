@@ -88,8 +88,10 @@ export function Modal({ aberto, titulo, onFechar, children }: Props) {
               background: 'var(--superficie)',
               color: 'var(--texto-forte)',
               borderRadius: 'var(--raio)',
-              width: 34,
-              height: 34,
+              // 44px: alvo de toque confortável no celular (WCAG 2.5.5).
+              width: 44,
+              height: 44,
+              flexShrink: 0,
               cursor: 'pointer',
               fontSize: 20,
               lineHeight: 1,

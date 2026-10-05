@@ -82,7 +82,8 @@
   --t-apoio: 0.8125rem; /* 12,2px — texto de apoio */
   --t-rotulo: 0.9375rem; /* 14px — rótulo de campo (mínimo recomendado no teste de acessibilidade) */
   --t-base: 0.9375rem;  /* 15px no <html>; 14px dentro dele — corpo */
-  --t-medio: 1.0625rem; /* 16px — entrada de formulário */
+  --t-medio: calc(16rem / 15); /* 16px exatos — entrada de formulário. Abaixo de 16px
+                                   o Safari do iPhone dá zoom sozinho ao focar o campo. */
   --t-titulo: 1.375rem; /* 20,6px — título de cartão */
   --t-marca: 1.75rem;   /* 26,25px — assinatura da marca */
 
