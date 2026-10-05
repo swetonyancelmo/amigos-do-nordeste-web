@@ -467,7 +467,7 @@ export function ConteudoDashboard() {
     return (
         <div className={styles.pagina}>
             <section className={styles.cabecalho} aria-labelledby="titulo-dashboard">
-                <h1 id="titulo-dashboard">Visão geral</h1>
+                <h2 id="titulo-dashboard">Visão geral</h2>
                 <p>Famílias e comunidades atendidas pela associação.</p>
                 {carregando && (
                     <span className="campo__ajuda" aria-live="polite">

@@ -11,7 +11,7 @@
   gap: var(--e-3);
 }
 
-.cabecalho h1 {
+.cabecalho h2 {
   margin: 0;
   font-family: var(--fonte-marca);
   font-size: var(--t-titulo);
