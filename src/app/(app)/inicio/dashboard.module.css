@@ -298,7 +298,7 @@
   color: #fff;
   font-family: var(--fonte-marca);
   font-weight: 800;
-  font-size: 0.75rem;
+  font-size: var(--t-micro);
 }
 
 .lista {

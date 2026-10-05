@@ -65,7 +65,7 @@
 }
 
 .campo__rotulo {
-  font-size: var(--t-apoio);
+  font-size: var(--t-rotulo);
   font-weight: 600;
   color: var(--texto-forte);
 }
