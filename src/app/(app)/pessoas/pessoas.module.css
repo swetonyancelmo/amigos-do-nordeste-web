@@ -73,7 +73,7 @@
   cursor: pointer;
 }
 
-.botaoAdicionar { color: var(--laranja); }
+.botaoAdicionar { color: var(--laranja-escuro); }
 .botaoRemover { color: var(--texto-medio); }
 
 .linhaDoisColunas,

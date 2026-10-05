@@ -14,7 +14,12 @@
 :root {
   /* --- Marca ------------------------------------------------------------ */
   --laranja: #e54314;
-  --laranja-escuro: #c93a11;
+  /* Tom de texto e de fundo de texto: #e54314 com branco dá 4,08:1, abaixo
+     dos 4,5:1 do WCAG 1.4.3. Este dá 5,97:1 com branco e 5,15:1 sobre
+     --laranja-claro. */
+  --laranja-escuro: #b8330f;
+  /* Hover de quem já usa --laranja-escuro (botão principal). */
+  --laranja-profundo: #9a2b0c;
   --ambar: #f49924;
   --verde: #119037;
   --verde-escuro: #0c6f2a;
@@ -97,7 +102,7 @@ body {
 }
 
 a {
-  color: var(--laranja);
+  color: var(--laranja-escuro);
 }
 
 /* Foco sempre visível: a usuária pode navegar boa parte do cadastro no teclado,

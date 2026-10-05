@@ -167,12 +167,12 @@
 }
 
 .botao--primario {
-  background: var(--laranja);
+  background: var(--laranja-escuro);
   color: var(--superficie);
 }
 
 .botao--primario:hover:not(:disabled) {
-  background: var(--laranja-escuro);
+  background: var(--laranja-profundo);
 }
 
 .botao--secundario {
@@ -375,7 +375,7 @@
   height: 22px;
   padding: 0 var(--e-1);
   border-radius: 11px;
-  background: var(--laranja);
+  background: var(--laranja-escuro);
   color: var(--superficie);
   font-size: var(--t-micro);
   font-weight: 700;
