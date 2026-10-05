@@ -7,6 +7,8 @@ const TELAS = [
   { rota: '/inicio', titulo: 'Início' },
   { rota: '/familias', titulo: 'Famílias' },
   { rota: '/familias/nova', titulo: 'Nova família' },
+  { rota: '/familias/fam-1/editar', titulo: 'Editar família de Responsável Fictícia A' },
+  { rota: '/familias/nao-existe/editar', titulo: 'Editar família' },
   { rota: '/chamados', titulo: 'Chamados' },
   { rota: '/agentes', titulo: 'Agentes' },
   { rota: '/pessoas', titulo: 'Pessoas' },

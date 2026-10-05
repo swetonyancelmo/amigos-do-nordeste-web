@@ -260,6 +260,32 @@ export interface FamiliaGravada extends CamposFamilia {
   totais: TotaisFamiliaGravada;
 }
 
+/**
+ * `AtualizarFamiliaRequisicao` — corpo de `PUT /api/familias/{id}`. Em
+ * `pessoas` e `fontesRenda`: com id = atualiza · sem id (null) = cria · sumiu
+ * do array = remove. `pessoaId` só aceita pessoa já salva que continua no array.
+ */
+export interface AtualizarFamiliaRequisicao {
+  comunidadeId: string;
+  responsavelNome: string;
+  responsavelCpf: string | null;
+  telefone: string | null;
+  pontoReferencia: string | null;
+  temBanheiro: boolean | null;
+  escoamentoSanitario: EscoamentoSanitario | null;
+  tratamentoAgua: TratamentoAgua | null;
+  abastecimentoAgua: AbastecimentoAgua[];
+  faixaRenda: FaixaRenda | null;
+  pessoas: (PessoaRequisicao & { id: string | null })[];
+  fontesRenda: {
+    id: string | null;
+    tipo: TipoFonteRenda;
+    pessoaId: string | null;
+    observacao: string | null;
+  }[];
+  observacoes: string | null;
+}
+
 /** `FamiliaResumoResponse` — uma linha de `GET /api/familias` (e a resposta de inativar/reativar). */
 export interface FamiliaResumo {
   id: string;

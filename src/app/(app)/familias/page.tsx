@@ -9,6 +9,7 @@ import { Modal } from '@/componentes/Modal';
 import { Paginacao } from '@/componentes/Paginacao';
 import { api } from '@/lib/api';
 import { data } from '@/lib/datas';
+import { pegarRecado } from '@/lib/recado';
 import { useMetadados } from '@/lib/metadados';
 import type { Comunidade, FamiliaDetalhe, FamiliaResumo, Opcao, Pagina, Pessoa } from '@/tipos/dominio';
 import styles from './familias.module.css';
@@ -87,6 +88,16 @@ function DetalhesFamilia({ id }: { id: string }) {
 
   return (
     <>
+      <div className={styles.fichaAcoes}>
+        <Link
+          href={`/familias/${ficha.id}/editar`}
+          className="botao botao--secundario"
+          aria-label={`Editar família de ${ficha.responsavelNome}`}
+        >
+          Editar
+        </Link>
+      </div>
+
       <section className={styles.secao}>
         <h3 className={styles.secaoTitulo}>Família</h3>
         <dl className="dados">
@@ -235,7 +246,15 @@ export default function Familias() {
   const [erro, setErro] = useState('');
   const [comunidades, setComunidades] = useState<Comunidade[]>([]);
   const [selecionada, setSelecionada] = useState<FamiliaResumo | null>(null);
+  const [recado, setRecado] = useState<string | null>(null);
   const ultimaRequisicao = useRef(0);
+
+  // Recado de quem mandou para cá (ex.: "Família atualizada"). Lido depois de
+  // montar, para a região role="status" já existir e o leitor de tela anunciar.
+  useEffect(() => {
+    const texto = pegarRecado();
+    if (texto) setRecado(texto);
+  }, []);
 
   // Espera a pessoa parar de digitar antes de buscar
   useEffect(() => {
@@ -292,6 +311,8 @@ export default function Familias() {
   return (
     <div className={`${styles.pagina} pagina-pessoas`}>
       <section className={styles.conteudo}>
+        <div role="status">{recado && <Aviso>{recado}</Aviso>}</div>
+
         <p className={styles.resumo}>
           {resposta ? `${formatarNumero(total)} ${total === 1 ? 'família' : 'famílias'}` : 'Carregando famílias…'}
         </p>

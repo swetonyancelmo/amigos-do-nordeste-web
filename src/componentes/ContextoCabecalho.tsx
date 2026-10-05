@@ -1,6 +1,6 @@
 'use client';
 
-import { createContext, useCallback, useContext, useLayoutEffect, useState, type ReactNode } from 'react';
+import { Fragment, createContext, useCallback, useContext, useLayoutEffect, useState, type ReactNode } from 'react';
 import { Cabecalho } from './Cabecalho';
 
 type EstadoCabecalho = {
@@ -33,9 +33,13 @@ export function ProvedorCabecalho({ children }: { children: ReactNode }) {
 /** Renderiza o cabeçalho da tela atual. Vive uma vez só, dentro do layout. */
 export function CabecalhoDaTela() {
   const estado = useContext(ContextoEstado);
+  // `key` pelo título: cada tela ganha botões novos. Sem isso o React
+  // reaproveita o mesmo <a> ("Voltar para a lista" vira "Nova família") e a
+  // transição de 3s do fundo do .botao deixa texto branco em fundo claro
+  // enquanto a cor muda (WCAG 1.4.3).
   return (
     <Cabecalho titulo={estado.titulo} tituloNaPagina={estado.tituloNaPagina}>
-      {estado.acoes}
+      {estado.acoes && <Fragment key={estado.titulo}>{estado.acoes}</Fragment>}
     </Cabecalho>
   );
 }
