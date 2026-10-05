@@ -509,8 +509,8 @@
     display: flex;
     align-items: center;
     justify-content: center;
-    width: 40px;
-    height: 40px;
+    width: 44px;
+    height: 44px;
     padding: 0;
     border: 1px solid var(--linha-forte);
     border-radius: var(--raio);
@@ -542,9 +542,9 @@
     z-index: 50;
     width: min(280px, 84vw);
     height: 100dvh;
-    /* Um pouco de transparência aqui, diferente da barra fixa do desktop —
-       dá pra notar que ainda tem conteúdo por trás do menu. */
-    background: color-mix(in srgb, var(--superficie) 94%, transparent);
+    /* Fundo opaco: com transparência, o texto da tela aparecia misturado
+       aos itens do menu. O fundo escurecido já mostra que há tela por trás. */
+    background: var(--superficie);
     box-shadow: var(--sombra-alta);
     transform: translateX(100%);
     transition: transform 220ms ease;
@@ -572,8 +572,8 @@
     display: flex;
     align-items: center;
     justify-content: center;
-    width: 32px;
-    height: 32px;
+    width: 44px;
+    height: 44px;
     padding: 0;
     border: none;
     border-radius: var(--raio-p);
@@ -700,6 +700,31 @@
 @media (max-width: 640px) {
   .paginacao {
     justify-content: space-between;
+  }
+
+  /* Alvos de toque de 44px (WCAG 2.5.5) e, em tela estreita, o "Página x de
+     y" numa linha própria: as quatro setas e o texto juntos não cabiam em
+     320px e eram cortados. */
+  .paginacao__selecao {
+    min-height: 44px;
+    font-size: 16px;
+  }
+
+  .paginacao__controles {
+    flex-wrap: wrap;
+    justify-content: center;
+    width: 100%;
+  }
+
+  .paginacao__atual {
+    order: -1;
+    flex-basis: 100%;
+    text-align: center;
+  }
+
+  .paginacao__botao {
+    width: 44px;
+    height: 44px;
   }
 }
 

@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import Link from 'next/link';
 import { usePathname, useRouter } from 'next/navigation';
 import { Marca } from './Marca';
@@ -196,6 +196,11 @@ export function Navegacao() {
   // Começa como desktop (é o que o servidor renderiza); acerta ao montar.
   const [estreita, setEstreita] = useState(false);
   const pendentes = useChamadosPendentes(pathname);
+  const refAlternador = useRef<HTMLButtonElement>(null);
+  const refMenu = useRef<HTMLElement>(null);
+  // Só devolve o foco ao botão quando o menu fecha depois de ter aberto
+  // (não na primeira montagem).
+  const refFoiAberto = useRef(false);
 
   // Troca de tela fecha o menu — inclui o clique num link e o "Sair".
   useEffect(() => {
@@ -216,16 +221,50 @@ export function Navegacao() {
     return () => consulta.removeEventListener('change', aoMudar);
   }, []);
 
+  // Menu aberto no celular funciona como diálogo (WCAG 2.4.3): o foco entra
+  // nele, o resto da tela vira `inert` (sai do Tab e do leitor de tela), o
+  // Tab dá a volta dentro do menu e, ao fechar, o foco volta ao botão.
   useEffect(() => {
-    if (!aberta) return;
+    if (!aberta) {
+      if (refFoiAberto.current) {
+        refFoiAberto.current = false;
+        // Fechou pelo X, pelo fundo, pelo Esc ou por um link: o menu ficou
+        // `inert` e o foco ia parar no <body>.
+        refAlternador.current?.focus();
+      }
+      return;
+    }
+    refFoiAberto.current = true;
+
+    const menu = refMenu.current;
+    const resto = Array.from(document.querySelectorAll<HTMLElement>('.navegacao__barra-mobile, .app__conteudo'));
+    for (const el of resto) el.inert = true;
+    menu?.querySelector<HTMLElement>('a[href], button')?.focus();
 
     document.body.style.overflow = 'hidden';
     function aoTeclar(e: KeyboardEvent) {
-      if (e.key === 'Escape') setAberta(false);
+      if (e.key === 'Escape') {
+        setAberta(false);
+        return;
+      }
+      if (e.key !== 'Tab' || !menu) return;
+      const focaveis = Array.from(menu.querySelectorAll<HTMLElement>('a[href], button:not([disabled])'))
+        .filter((el) => el.offsetParent !== null);
+      const primeiro = focaveis[0];
+      const ultimo = focaveis[focaveis.length - 1];
+      const atual = document.activeElement;
+      if (e.shiftKey && (atual === primeiro || !menu.contains(atual))) {
+        e.preventDefault();
+        ultimo?.focus();
+      } else if (!e.shiftKey && (atual === ultimo || !menu.contains(atual))) {
+        e.preventDefault();
+        primeiro?.focus();
+      }
     }
     document.addEventListener('keydown', aoTeclar);
 
     return () => {
+      for (const el of resto) el.inert = false;
       document.body.style.overflow = '';
       document.removeEventListener('keydown', aoTeclar);
     };
@@ -246,9 +285,11 @@ export function Navegacao() {
       <div className="navegacao__barra-mobile">
         <Marca largura={32} />
         <button
+          ref={refAlternador}
           type="button"
           className="navegacao__alternador"
           onClick={() => setAberta(true)}
+          aria-controls="navegacao-principal"
           aria-label={pendentes > 0 ? `Abrir menu (${pendentes} chamados para revisar)` : 'Abrir menu'}
           aria-expanded={aberta}
         >
@@ -271,6 +312,8 @@ export function Navegacao() {
       {/* Fechado no mobile, o menu só está fora da tela — `inert` tira ele do
           Tab e do leitor de tela, senão o foco ia parar em botão invisível. */}
       <nav
+        ref={refMenu}
+        id="navegacao-principal"
         className={aberta ? 'navegacao navegacao--aberta' : 'navegacao'}
         aria-label="Navegação principal"
         inert={estreita && !aberta}

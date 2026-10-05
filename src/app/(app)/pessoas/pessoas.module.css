@@ -536,7 +536,9 @@
     grid-column: 1 / -1;
   }
 
+  /* No cartão, "Ver" ocupa a largura toda e ganha 44px de altura (WCAG 2.5.5). */
   .acoes button {
     width: 100%;
+    min-height: 44px;
   }
 }

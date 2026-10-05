@@ -218,6 +218,11 @@
   overflow: hidden; /* sem isso, o mapa "vaza" das bordas arredondadas */
 }
 
+/* Crédito do mapa: o Leaflet usa 11px; o mínimo do painel é 12px (--t-micro). */
+.mapa :global(.leaflet-control-attribution) {
+  font-size: var(--t-micro);
+}
+
 .legendaMapa {
   position: absolute;
   left: var(--e-3);
@@ -425,6 +430,13 @@
   .mapa,
   .mapaCarregando {
     height: 280px;
+  }
+
+  /* Aproximar/Afastar: o Leaflet desenha 30px; no toque, 44px (WCAG 2.5.5). */
+  .mapa :global(.leaflet-bar a) {
+    width: 44px;
+    height: 44px;
+    line-height: 44px;
   }
 }
 
