@@ -14,10 +14,21 @@ type Props = Omit<React.SelectHTMLAttributes<HTMLSelectElement>, 'children'> & {
  * O par do `<Campo>` para lista fechada: rótulo e `<select>` já ligados,
  * mesmo visual da entrada de texto. As opções vêm da API.
  */
-export function Selecao({ rotulo, opcoes, vazio, erro, id, ...resto }: Props) {
+export function Selecao({
+  rotulo,
+  opcoes,
+  vazio,
+  erro,
+  id,
+  'aria-describedby': descritoPor,
+  'aria-invalid': invalido,
+  ...resto
+}: Props) {
   const idGerado = useId();
   const idCampo = id ?? idGerado;
   const idErro = `${idCampo}-erro`;
+  // Mesma regra do `<Campo>`: a descrição que a tela passou convive com a do erro.
+  const descricoes = [descritoPor, erro ? idErro : null].filter(Boolean).join(' ') || undefined;
 
   return (
     <div className="campo">
@@ -28,8 +39,8 @@ export function Selecao({ rotulo, opcoes, vazio, erro, id, ...resto }: Props) {
         {...resto}
         id={idCampo}
         className="campo__entrada"
-        aria-invalid={erro ? true : undefined}
-        aria-describedby={erro ? idErro : undefined}
+        aria-invalid={erro ? true : invalido}
+        aria-describedby={descricoes}
       >
         {vazio !== undefined && <option value="">{vazio}</option>}
         {opcoes?.map((opcao) => (

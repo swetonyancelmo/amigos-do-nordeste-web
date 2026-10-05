@@ -162,3 +162,12 @@
     flex: 1;
   }
 }
+
+/* Cada erro da validação numa linha do aviso (o aviso é um <p>, então nada de <ul>). */
+.itemErro {
+  display: block;
+}
+
+.itemErro::before {
+  content: "• ";
+}
