@@ -53,6 +53,34 @@ const FAMILIAS = [
   },
 ];
 
+/** Ficha completa de `fam-1` (`GET /api/familias/fam-1`), com tudo o que a edição preenche. */
+export const FICHA_FAM_1 = {
+  id: 'fam-1', responsavelNome: 'Responsável Fictícia A', responsavelCpf: null, telefone: '(87) 90000-0000',
+  pontoReferencia: 'Depois da cisterna fictícia', temBanheiro: false, escoamentoSanitario: 'CEU_ABERTO',
+  tratamentoAgua: 'FERVIDA', abastecimentoAgua: ['CISTERNA'], faixaRenda: 'ATE_1_SALARIO',
+  observacoes: null, ativa: true, comunidade: COMUNIDADES[0],
+  criadoEm: '2026-09-01T10:00:00Z', atualizadoEm: '2026-09-01T10:00:00Z',
+  pessoas: [
+    {
+      id: 'pes-1', nome: 'Responsável Fictícia A', cadastroIncompleto: false, sexo: 'FEMININO',
+      dataNascimento: '1992-01-01', idadeEstimada: null, idadeEstimadaEm: null, idade: 34,
+      parentesco: 'RESPONSAVEL', estuda: false, serie: null, tamanhoRoupa: 'ADULTO_M',
+      numeroCalcado: '38', gestante: false, observacoes: null,
+    },
+    {
+      id: 'pes-2', nome: 'Criança Teste', cadastroIncompleto: false, sexo: 'MASCULINO',
+      dataNascimento: null, idadeEstimada: 6, idadeEstimadaEm: '2025-09-01', idade: 7,
+      parentesco: 'FILHO', estuda: true, serie: 'ANO_1', tamanhoRoupa: 'INFANTIL_4',
+      numeroCalcado: '30', gestante: null, observacoes: 'Observação fictícia',
+    },
+  ],
+  fontesRenda: [{ id: 'ren-1', tipo: 'BOLSA_FAMILIA', pessoaId: 'pes-1', observacao: null }],
+  totais: {
+    totalPessoas: 2, totalAte12Anos: 1, totalDe13A59Anos: 1, total60AnosOuMais: 0,
+    totalSemIdadeConhecida: 0, totalPessoasEstudando: 1, totalFontesRenda: 1,
+  },
+};
+
 const PESSOAS = [
   {
     id: 'pes-1', nome: 'Pessoa Teste Um', cadastroIncompleto: false, idade: 34, idadeEstimada: false,
@@ -74,6 +102,11 @@ function responder(caminho: string, metodo: string): unknown {
   if (caminho === '/municipios') return [MUNICIPIO];
   if (caminho === '/comunidades') return COMUNIDADES;
   if (caminho === '/familias' && metodo === 'GET') return pagina(FAMILIAS);
+  if (caminho === '/familias/fam-1' && metodo === 'GET') return FICHA_FAM_1;
+  // Qualquer outro id de família cai no 404 do fim, como a API faz.
+  if (caminho === '/familias/fam-1' && metodo === 'PUT') {
+    return { ...FICHA_FAM_1, comunidadeId: 'com-1', totais: { totalPessoas: 2, totalPessoasEstudando: 1, totalFontesRenda: 1 } };
+  }
   if (caminho === '/pessoas') return pagina(PESSOAS);
   if (caminho === '/agentes') {
     return [

@@ -23,7 +23,8 @@ src/app/
   (app)/layout.tsx         casco logado: <Navegacao> + cabeçalho via ContextoCabecalho
   (app)/chamados/          fila de pré-cadastros do app; [id] revisa, aprova ou devolve
   (app)/agentes/           agentes do app: cadastrar e gerar código de convite (novo código desliga o celular atual)
-  (app)/familias/          lista com busca, filtros e ficha em modal (API); nova/ cadastra (POST /api/familias)
+  (app)/familias/          lista com busca, filtros e ficha em modal (API); nova/ cadastra (POST /api/familias);
+                           [id]/editar edita (PUT /api/familias/{id}); o formulário é src/componentes/familia/
   (app)/pessoas/           lista com filtros e modal criar/editar/remover (API)
   (app)/comunidades/       lista com busca e ficha em modal (GET /api/comunidades); nova/ cadastra com mini-mapa; ainda sem edição
   (app)/relatorios/        esqueleto (TODO); botão Imprimir já existe
@@ -32,12 +33,14 @@ src/componentes/           Botao, Campo, Selecao, Aviso, Modal, Paginacao, Marca
                            ContextoCabecalho (useCabecalho), Navegacao, GuardaSessao,
                            pessoas/{ListaPessoas,ModalPessoa,PessoaForm},
                            fonte-renda/ModalFonteRenda,
+                           familia/{FormularioFamilia,formularioFamilia} (cadastro e edição),
                            comunidade/MiniMapa (contorno IBGE, pino, satélite, "Procurar no mapa")
 src/lib/municipios.ts      IBGE: UFs, municípios, malha (contorno); garantirMunicipio
 src/lib/nominatim.ts       sugestão de posição pelo nome (1 busca/s, só no clique, com cache)
 src/lib/api.ts             cliente HTTP (token em memória, renovação automática em 401)
 src/lib/metadados.ts       useMetadados(): GET /api/metadados com cache por sessão
 src/lib/datas.ts           data e data/hora para a tela (fuso America/Recife)
+src/lib/recado.ts          recado em memória para a próxima tela ("Família atualizada")
 src/tipos/dominio.ts       só tipos, espelhando os enums/DTOs do backend
 design-system/             gerador da vitrine (pnpm design-system)
 .claude/contextos/guia-cadastro-familia.md   guia longo da tela de cadastro de família
