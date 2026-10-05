@@ -283,6 +283,12 @@
   margin-bottom: var(--e-5);
 }
 
+.fichaAcoes {
+  display: flex;
+  justify-content: flex-end;
+  margin-bottom: var(--e-4);
+}
+
 .secaoTitulo {
   margin: 0 0 var(--e-3);
   padding-bottom: var(--e-2);
