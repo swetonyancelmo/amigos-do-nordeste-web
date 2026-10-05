@@ -9,24 +9,11 @@ import { Modal } from '@/componentes/Modal';
 import { Paginacao, paginarNoCliente } from '@/componentes/Paginacao';
 import { api } from '@/lib/api';
 import { useMetadados } from '@/lib/metadados';
-import type { TipoComunidade } from '@/tipos/dominio';
+import type { Comunidade, TipoComunidade } from '@/tipos/dominio';
 import styles from './comunidades.module.css';
 
-type ComunidadeLista = {
-  id: string;
-  nome: string;
-  municipioId: string;
-  municipioNome: string;
-  tipo: TipoComunidade;
-  liderNome: string | null;
-  liderTelefone: string | null;
-  latitude: number | null;
-  longitude: number | null;
-  observaces: string | null;
-};
-
 const ACOES = (
-  <Link href="/registro-comunidade" className="botao botao--primario">
+  <Link href="/comunidades/nova" className="botao botao--primario">
     Nova comunidade
   </Link>
 );
@@ -34,8 +21,8 @@ const ACOES = (
 const mensagemDeErro = (e: unknown) =>
   e instanceof Error ? e.message : 'Não foi possível carregar as comunidades.';
 
-const normalizar = (valor: string) =>
-  valor.normalize('NFD').replace(/[\u0300-\u036f]/g, '').toLocaleLowerCase('pt-BR');
+const normalizar = (valor: string | null | undefined) =>
+  (valor ?? '').normalize('NFD').replace(/[\u0300-\u036f]/g, '').toLocaleLowerCase('pt-BR');
 
 const formatarCoordenada = (valor: number | null) =>
   valor === null ? '—' : valor.toLocaleString('pt-BR', { maximumFractionDigits: 6 });
@@ -74,16 +61,16 @@ export default function Comunidades() {
   useCabecalho('Comunidades', ACOES);
   const { metadados, erro: erroMetadados } = useMetadados();
 
-  const [comunidades, setComunidades] = useState<ComunidadeLista[] | null>(null);
+  const [comunidades, setComunidades] = useState<Comunidade[] | null>(null);
   const [erro, setErro] = useState('');
   const [busca, setBusca] = useState('');
   const [pagina, setPagina] = useState(0);
   const [porPagina, setPorPagina] = useState(20);
-  const [selecionada, setSelecionada] = useState<ComunidadeLista | null>(null);
+  const [selecionada, setSelecionada] = useState<Comunidade | null>(null);
 
   useEffect(() => {
     let ativa = true;
-    api.get<ComunidadeLista[]>('/comunidades')
+    api.get<Comunidade[]>('/comunidades')
       .then((dados) => { if (ativa) setComunidades(dados); })
       .catch((falha) => { if (ativa) setErro(mensagemDeErro(falha)); });
     return () => { ativa = false; };
@@ -93,7 +80,7 @@ export default function Comunidades() {
     const termo = normalizar(busca.trim());
     if (!termo) return comunidades ?? [];
     return (comunidades ?? []).filter((comunidade) =>
-      [comunidade.nome, comunidade.municipioNome, comunidade.liderNome ?? '']
+      [comunidade.nome, comunidade.municipioNome, comunidade.liderNome]
         .some((valor) => normalizar(valor).includes(termo)),
     );
   }, [busca, comunidades]);
@@ -152,7 +139,7 @@ export default function Comunidades() {
                         {comunidade.nome}
                       </button>
                     </td>
-                    <td data-rotulo="Tipo">{tipoComunidade(comunidade.tipo)}</td>
+                    <td data-rotulo="Tipo">{tipoComunidade(comunidade.tipoComunidade)}</td>
                     <td data-rotulo="Município">{comunidade.municipioNome}</td>
                     <td data-rotulo="Liderança">{comunidade.liderNome ?? '—'}</td>
                     <td data-rotulo="Telefone">{comunidade.liderTelefone ?? '—'}</td>
@@ -196,13 +183,13 @@ export default function Comunidades() {
               <h3 className={styles.secaoTitulo}>Comunidade</h3>
               <dl className={styles.grade}>
                 <Dado rotulo="Nome">{selecionada.nome}</Dado>
-                <Dado rotulo="Tipo">{tipoComunidade(selecionada.tipo)}</Dado>
+                <Dado rotulo="Tipo">{tipoComunidade(selecionada.tipoComunidade)}</Dado>
                 <Dado rotulo="Município">{selecionada.municipioNome}</Dado>
                 <Dado rotulo="Liderança">{selecionada.liderNome}</Dado>
                 <Dado rotulo="Telefone">{selecionada.liderTelefone}</Dado>
                 <Dado rotulo="Latitude">{formatarCoordenada(selecionada.latitude)}</Dado>
                 <Dado rotulo="Longitude">{formatarCoordenada(selecionada.longitude)}</Dado>
-                <Dado rotulo="Observações">{selecionada.observaces}</Dado>
+                <Dado rotulo="Observações">{selecionada.observacoes}</Dado>
               </dl>
             </section>
           </>

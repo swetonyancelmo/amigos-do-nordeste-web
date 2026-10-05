@@ -176,7 +176,7 @@ const ITENS = [
   { href: '/chamados', rotulo: 'Chamados', Icone: IconeChamados, contaPendentes: true },
   { href: '/agentes', rotulo: 'Agentes', Icone: IconeAgentes },
   { href: '/pessoas', rotulo: 'Pessoas', Icone: IconePessoas },
-  { href: '/registro-comunidade', rotulo: 'Comunidades', Icone: IconeComunidade },
+  { href: '/comunidades', rotulo: 'Comunidades', Icone: IconeComunidade },
   { href: '/relatorios', rotulo: 'Relatórios', Icone: IconeRelatorio },
 ];
 

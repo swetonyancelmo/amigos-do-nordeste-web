@@ -229,3 +229,38 @@
     grid-template-columns: 1fr;
   }
 }
+
+/* Na folha sai só a tabela: a busca fica de fora e nada é cortado pela
+   rolagem lateral. A paginação já some pelo componentes.css. */
+@media print {
+  .busca {
+    display: none;
+  }
+
+  .cartaoTabela,
+  .tabelaRolagem {
+    overflow: visible;
+  }
+
+  .tabela {
+    min-width: 0;
+  }
+
+  .tabela th,
+  .tabela td {
+    padding: 8px 10px;
+    white-space: normal;
+  }
+
+  .tabela tr {
+    break-inside: avoid;
+  }
+
+  .tabela tbody tr:hover {
+    background: none;
+  }
+
+  .nomeBotao {
+    font-size: var(--t-apoio);
+  }
+}
