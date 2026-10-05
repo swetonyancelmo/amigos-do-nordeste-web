@@ -23,7 +23,8 @@ const porNome = (a: Agente, b: Agente) => a.nome.localeCompare(b.nome, 'pt-BR');
 /** "472916" → "472 916". O app ignora o espaço ao ativar. */
 const agrupado = (codigo: string) => `${codigo.slice(0, 3)} ${codigo.slice(3)}`;
 
-function Codigo({ codigo }: { codigo: string }) {
+/** `nome` dá contexto ao botão para o leitor de tela: há um "Copiar" por agente (WCAG 2.4.6). */
+function Codigo({ codigo, nome }: { codigo: string; nome: string }) {
   const [copiado, setCopiado] = useState(false);
 
   useEffect(() => {
@@ -41,7 +42,12 @@ function Codigo({ codigo }: { codigo: string }) {
       <span className={estilos.codigo} aria-label={`Código ${codigo.split('').join(' ')}`}>
         {agrupado(codigo)}
       </span>
-      <Botao variante="secundario" type="button" onClick={copiar}>
+      <Botao
+        variante="secundario"
+        type="button"
+        onClick={copiar}
+        aria-label={copiado ? `Copiado, código de ${nome}` : `Copiar código de ${nome}`}
+      >
         {copiado ? 'Copiado' : 'Copiar'}
       </Botao>
       <span className="so-leitor-de-tela" role="status">{copiado ? 'Código copiado' : ''}</span>
@@ -156,7 +162,7 @@ export default function Agentes() {
                   ) : null}
                 </div>
                 {a.codigoConvite ? (
-                  <Codigo codigo={a.codigoConvite} />
+                  <Codigo codigo={a.codigoConvite} nome={a.nome} />
                 ) : a.ativadoEm ? (
                   <p className="texto-apoio">desde {dataHora(a.ativadoEm)}</p>
                 ) : null}
@@ -164,6 +170,7 @@ export default function Agentes() {
               <Botao
                 variante="secundario"
                 disabled={gerando === a.id}
+                aria-label={gerando === a.id ? undefined : `Gerar novo código para ${a.nome}`}
                 onClick={() => (a.ativadoEm ? setConfirmar(a) : gerarConvite(a))}
               >
                 {gerando === a.id ? 'Gerando…' : 'Gerar novo código'}
@@ -191,7 +198,7 @@ export default function Agentes() {
               Abra o app no celular de <strong>{criada.nome}</strong> e digite este código na tela de
               ativação. Ele vale uma vez.
             </p>
-            <Codigo codigo={criada.codigoConvite} />
+            <Codigo codigo={criada.codigoConvite} nome={criada.nome} />
             <div className={estilos.modalAcoes}>
               <Botao onClick={fecharNova}>Pronto</Botao>
             </div>

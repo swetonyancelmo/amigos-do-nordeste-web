@@ -18,6 +18,12 @@ const ABAS: Aba[] = [
   { valor: 'DEVOLVIDO', rotulo: 'Devolvidos' },
 ];
 
+/** "Revisar"/"Ver" com contexto para o leitor de tela: há um por card (WCAG 2.4.6). */
+function rotuloAcao(c: PreCadastroResumo) {
+  const acao = c.situacao === 'PENDENTE' ? 'Revisar' : 'Ver';
+  return c.responsavelNome ? `${acao} chamado de ${c.responsavelNome}` : `${acao} chamado sem nome de responsável`;
+}
+
 /**
  * Chamados: a fila dos pré-cadastros que as agentes enviaram pelo app.
  * "Esperando você" é a aba padrão — é o que espera a associação. Cada card
@@ -105,7 +111,11 @@ export default function Chamados() {
                   enviado por {c.agenteNome} · {dataHora(c.recebidoEm)}
                 </p>
               </div>
-              <Link href={`/chamados/${c.id}`} className="botao botao--primario">
+              <Link
+                href={`/chamados/${c.id}`}
+                className="botao botao--primario"
+                aria-label={rotuloAcao(c)}
+              >
                 {c.situacao === 'PENDENTE' ? 'Revisar' : 'Ver'}
               </Link>
             </div>
