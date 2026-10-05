@@ -144,7 +144,7 @@ const GRUPOS_DE_COR = [
     itens: [
       ['texto-forte', 'Corpo, título, rótulo de campo.'],
       ['texto-medio', 'Texto de apoio e legenda.'],
-      ['texto-suave', 'Placeholder e campo desabilitado. Não use em texto que precisa ser lido.'],
+      ['texto-suave', 'Metadado, placeholder, rótulo de dado. 5,55:1 sobre --superficie e 5,16:1 sobre --pagina: passa no WCAG 1.4.3 para texto de qualquer tamanho.'],
       ['linha', 'Divisória e borda de cartão.'],
       ['linha-forte', 'Borda de campo, que precisa ser vista.'],
     ],

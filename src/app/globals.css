@@ -35,7 +35,10 @@
   /* --- Texto e linha ---------------------------------------------------- */
   --texto-forte: #1f1b18;
   --texto-medio: #6b6259;
-  --texto-suave: #9c938a;
+  /* Metadado, placeholder, rótulo de dado. Era #9c938a (3,02:1 sobre branco,
+     abaixo do WCAG 1.4.3); agora 5,55:1 sobre --superficie e 5,16:1 sobre
+     --pagina. */
+  --texto-suave: #6f6760;
   --linha: #e8e0d8;
   --linha-forte: #d6cabc;
 
