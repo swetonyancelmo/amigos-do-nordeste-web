@@ -29,3 +29,14 @@ test('início: botões de zoom do mapa em português', async ({ page }) => {
   await expect(page.getByRole('button', { name: 'Aproximar' })).toBeVisible();
   await expect(page.getByRole('button', { name: 'Afastar' })).toBeVisible();
 });
+
+test('início: Perfil e Sair continuam à vista depois de rolar a página', async ({ page }) => {
+  await page.setViewportSize({ width: 1366, height: 768 });
+  await usarApiFalsa(page);
+  await page.goto('/inicio');
+  await page.waitForLoadState('networkidle');
+  await page.mouse.wheel(0, 2000);
+
+  await expect(page.getByRole('button', { name: 'Sair' })).toBeInViewport();
+  await expect(page.getByRole('link', { name: /perfil/i })).toBeInViewport();
+});
