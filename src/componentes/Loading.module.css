@@ -1,0 +1,85 @@
+.loading {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: var(--e-3);
+  color: var(--texto-medio);
+  text-align: center;
+}
+
+.sol {
+  display: block;
+  width: 112px;
+  height: 112px;
+  overflow: visible;
+}
+
+.raio {
+  opacity: 0.2;
+  animation: piscar-raio 1.28s linear infinite;
+  animation-delay: calc(var(--indice-raio) * -80ms);
+}
+
+.cacto {
+  transform-origin: center;
+}
+
+.mensagem {
+  font-size: var(--t-apoio);
+}
+
+.compacto {
+  flex-direction: row;
+  justify-content: flex-start;
+  gap: var(--e-2);
+  min-height: 40px;
+  text-align: left;
+}
+
+.compacto .sol {
+  width: 36px;
+  height: 36px;
+  flex: 0 0 auto;
+}
+
+.normal {
+  min-height: 160px;
+}
+
+.grande {
+  min-height: min(55vh, 420px);
+}
+
+.grande .sol {
+  width: 144px;
+  height: 144px;
+}
+
+.telaCheia {
+  position: fixed;
+  z-index: 1000;
+  inset: 0;
+  min-height: 100vh;
+  min-height: 100dvh;
+  background: var(--pagina);
+}
+
+@keyframes piscar-raio {
+  0%,
+  5% {
+    opacity: 1;
+  }
+
+  12%,
+  100% {
+    opacity: 0.2;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .raio {
+    animation: none;
+    opacity: 0.75;
+  }
+}

@@ -88,6 +88,19 @@ function IconeAgentes() {
   );
 }
 
+function IconePainel() {
+  return (
+    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+         strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"
+         aria-hidden="true" focusable="false">
+      <rect x="4" y="4" width="6" height="6" rx="1" />
+      <rect x="14" y="4" width="6" height="6" rx="1" />
+      <rect x="4" y="14" width="6" height="6" rx="1" />
+      <rect x="14" y="14" width="6" height="6" rx="1" />
+    </svg>
+  );
+}
+
 function IconeRelatorio() {
   return (
     <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor"
@@ -158,11 +171,12 @@ function IconePerfil() {
 }
 
 const ITENS = [
+  { href: '/inicio', rotulo: 'Início', Icone: IconePainel },
   { href: '/familias', rotulo: 'Famílias', Icone: IconeCasa },
   { href: '/chamados', rotulo: 'Chamados', Icone: IconeChamados, contaPendentes: true },
   { href: '/agentes', rotulo: 'Agentes', Icone: IconeAgentes },
   { href: '/pessoas', rotulo: 'Pessoas', Icone: IconePessoas },
-  { href: '/registro-comunidade', rotulo: 'Comunidades', Icone: IconeComunidade },
+  { href: '/comunidades', rotulo: 'Comunidades', Icone: IconeComunidade },
   { href: '/relatorios', rotulo: 'Relatórios', Icone: IconeRelatorio },
 ];
 

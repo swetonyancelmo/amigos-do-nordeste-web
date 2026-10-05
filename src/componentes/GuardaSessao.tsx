@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
+import { Loading } from '@/componentes/Loading';
 import { aoPerderSessao, garantirSessao } from '@/lib/api';
 
 /**
@@ -29,7 +30,7 @@ export function GuardaSessao({ children }: { children: React.ReactNode }) {
   }, [router]);
 
   if (!liberado) {
-    return <p className="texto-apoio" role="status">Carregando…</p>;
+    return <Loading mensagem="Verificando sessão…" tamanho="grande" telaCheia />;
   }
   return <>{children}</>;
 }

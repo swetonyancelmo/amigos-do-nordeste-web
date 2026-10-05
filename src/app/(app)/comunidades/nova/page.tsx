@@ -1,10 +1,12 @@
 'use client';
 
 import dynamic from 'next/dynamic';
+import Link from 'next/link';
 import { useCallback, useEffect, useMemo, useState } from 'react';
 import { Aviso } from '@/componentes/Aviso';
 import { Botao } from '@/componentes/Botao';
 import { Campo } from '@/componentes/Campo';
+import { Loading } from '@/componentes/Loading';
 import type { Ponto } from '@/componentes/comunidade/MiniMapa';
 import { useCabecalho } from '@/componentes/ContextoCabecalho';
 import { Selecao } from '@/componentes/Selecao';
@@ -50,8 +52,14 @@ const ID_NOME = 'nome-comunidade';
 /* Leaflet usa `window`, então o mapa só existe no navegador. */
 const MiniMapa = dynamic(() => import('@/componentes/comunidade/MiniMapa'), {
   ssr: false,
-  loading: () => <p className="texto-apoio">Carregando o mapa…</p>,
+  loading: () => <Loading mensagem="Carregando o mapa…" tamanho="compacto" />,
 });
+
+const ACOES = (
+  <Link href="/comunidades" className="botao botao--secundario">
+    Voltar para a lista
+  </Link>
+);
 
 const mensagem = (e: unknown) => (e instanceof Error ? e.message : 'Não foi possível concluir a operação.');
 
@@ -105,7 +113,7 @@ function validar(form: Formulario): Erros {
  * cadastrar várias comunidades do mesmo município em sequência.
  */
 export default function RegistroComunidade() {
-  useCabecalho('Nova comunidade');
+  useCabecalho('Nova comunidade', ACOES);
   const { metadados, erro: erroMetadados } = useMetadados();
 
   const [ufs, setUfs] = useState<UfIbge[] | null>(null);
