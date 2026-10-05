@@ -1,7 +1,7 @@
 import type { ErroDeCampo } from '@/componentes/useErrosDeCampo';
 import { hoje } from '@/lib/datas';
 import type {
-  AbastecimentoAgua, EscoamentoSanitario, FaixaRenda, Opcao, Parentesco, Serie, Sexo,
+  AbastecimentoAgua, AtualizarFamiliaRequisicao, EscoamentoSanitario, FaixaRenda, FamiliaDetalhe, Opcao, Parentesco, Serie, Sexo,
   TamanhoRoupa, TipoFonteRenda, TratamentoAgua,
 } from '@/tipos/dominio';
 
@@ -15,9 +15,28 @@ const paraBooleano = (v: TresEstados) => (v === '' ? null : v === 'true');
 const ouNulo = <T extends string>(v: T | '') => (v === '' ? null : v);
 const textoOuNulo = (v: string) => v.trim() || null;
 
-/** `chave` só existe na tela: liga a fonte de renda à pessoa mesmo se a ordem mudar. */
+/**
+ * O que a pessoa já salva tinha e a tela não mostra (ou mostra de outro
+ * jeito): volta como veio no PUT, para editar não apagar nem mudar nada sem
+ * querer.
+ */
+type PessoaOriginal = {
+  observacoes: string | null;
+  /** Idade estimada como a API guarda: o número e o dia em que foi estimada. */
+  idadeEstimada: number | null;
+  idadeEstimadaEm: string | null;
+  /** O que o campo "Idade estimada" mostrou ao abrir (a idade de hoje). */
+  idadeExibida: string;
+};
+
+/**
+ * `chave` só existe na tela: liga a fonte de renda à pessoa mesmo se a ordem
+ * mudar. `id` e `original` só existem na edição, para pessoa já salva.
+ */
 export type FormPessoa = {
   chave: string;
+  id?: string;
+  original?: PessoaOriginal;
   nome: string;
   sexo: Sexo | '';
   dataNascimento: string;
@@ -33,6 +52,8 @@ export type FormPessoa = {
 /** De onde vem o dinheiro. Quanto entra é a faixa da família, não da fonte (ADR-0003). */
 export type FormFonte = {
   chave: string;
+  /** Só na edição, para fonte já salva. */
+  id?: string;
   tipo: TipoFonteRenda | '';
   /** '' = renda da família; senão, a `chave` de quem recebe. */
   pessoa: string;
@@ -127,7 +148,7 @@ function corpoPessoa(p: FormPessoa) {
     tamanhoRoupa: ouNulo(p.tamanhoRoupa),
     numeroCalcado: p.numeroCalcado || null,
     gestante: p.sexo === 'MASCULINO' ? null : paraBooleano(p.gestante),
-    observacoes: null as string | null,
+    observacoes: p.original?.observacoes ?? null,
   };
 }
 
@@ -190,4 +211,92 @@ export function validar(form: Formulario): ErroDeCampo[] {
     });
   });
   return erros;
+}
+
+const paraTresEstados = (v: boolean | null): TresEstados => (v === null ? '' : v ? 'true' : 'false');
+
+/**
+ * A ficha da API (`GET /api/familias/{id}`) no formato da tela. A pessoa com
+ * idade estimada aparece com a idade de hoje, não com a do dia da estimativa.
+ */
+export function formularioDaFicha(ficha: FamiliaDetalhe): Formulario {
+  const pessoas: FormPessoa[] = ficha.pessoas.map((p) => {
+    const idadeExibida = !p.dataNascimento && p.idade !== null ? String(p.idade) : '';
+    return {
+      chave: novaChave(),
+      id: p.id,
+      original: {
+        observacoes: p.observacoes,
+        idadeEstimada: p.idadeEstimada,
+        idadeEstimadaEm: p.idadeEstimadaEm,
+        idadeExibida,
+      },
+      nome: p.nome ?? '',
+      sexo: p.sexo ?? '',
+      dataNascimento: p.dataNascimento ?? '',
+      idadeEstimada: idadeExibida,
+      parentesco: p.parentesco ?? '',
+      estuda: paraTresEstados(p.estuda),
+      serie: p.serie ?? '',
+      tamanhoRoupa: p.tamanhoRoupa ?? '',
+      numeroCalcado: p.numeroCalcado ?? '',
+      gestante: paraTresEstados(p.gestante),
+    };
+  });
+  const chavePorId = new Map(pessoas.map((p) => [p.id, p.chave]));
+
+  return {
+    comunidadeId: ficha.comunidade.id,
+    responsavelNome: ficha.responsavelNome,
+    responsavelCpf: ficha.responsavelCpf ?? '',
+    telefone: ficha.telefone ?? '',
+    pontoReferencia: ficha.pontoReferencia ?? '',
+    temBanheiro: paraTresEstados(ficha.temBanheiro),
+    escoamentoSanitario: ficha.escoamentoSanitario ?? '',
+    tratamentoAgua: ficha.tratamentoAgua ?? '',
+    abastecimentoAgua: ficha.abastecimentoAgua,
+    faixaRenda: ficha.faixaRenda ?? '',
+    observacoes: ficha.observacoes ?? '',
+    pessoas,
+    fontes: ficha.fontesRenda.map((f) => ({
+      chave: novaChave(),
+      id: f.id,
+      tipo: f.tipo,
+      pessoa: (f.pessoaId && chavePorId.get(f.pessoaId)) || '',
+      observacao: f.observacao ?? '',
+    })),
+  };
+}
+
+/**
+ * Monta o `AtualizarFamiliaRequisicao` (`PUT /api/familias/{id}`). Para a API,
+ * com id = atualiza, sem id = cria e quem some do array é removido. Por isso
+ * pessoa já salva nunca cai no filtro de linha em branco: ela só sai pelo
+ * botão Remover. A fonte aponta para a pessoa pelo id, que só a pessoa já
+ * salva tem; pessoa nova ainda não pode receber renda (fica com a família).
+ */
+export function montarCorpoAtualizacao(form: Formulario): AtualizarFamiliaRequisicao {
+  const pessoas = form.pessoas.filter((p) => p.id || !pessoaEmBranco(p));
+  const idPorChave = new Map(pessoas.filter((p) => p.id).map((p) => [p.chave, p.id as string]));
+
+  return {
+    ...corpoFamilia(form),
+    pessoas: pessoas.map((p) => {
+      const corpo = corpoPessoa(p);
+      // Estimativa intocada: volta o par original, para a idade não "rejuvenescer".
+      const original = p.original;
+      if (original && original.idadeEstimada !== null && !p.dataNascimento
+        && p.idadeEstimada.trim() === original.idadeExibida) {
+        corpo.idadeEstimada = original.idadeEstimada;
+        corpo.idadeEstimadaEm = original.idadeEstimadaEm;
+      }
+      return { id: p.id ?? null, ...corpo };
+    }),
+    fontesRenda: form.fontes.map((f) => ({
+      id: f.id ?? null,
+      tipo: f.tipo as TipoFonteRenda,
+      pessoaId: idPorChave.get(f.pessoa) ?? null,
+      observacao: textoOuNulo(f.observacao),
+    })),
+  };
 }

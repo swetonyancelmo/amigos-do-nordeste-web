@@ -33,6 +33,11 @@ type Props = {
   aoEnviar: (form: Formulario) => Promise<Formulario | void>;
   /** Recado no topo, ex.: "Família cadastrada". */
   acima?: ReactNode;
+  /**
+   * Edição de família já salva: o foco começa no topo da página, e só pessoa
+   * já salva pode receber renda (o PUT liga a fonte pelo id da pessoa).
+   */
+  edicao?: boolean;
 };
 
 /**
@@ -42,7 +47,7 @@ type Props = {
  * depois. Os totais do rodapé são só conferência: quem conta é a API, nada
  * calculado é enviado.
  */
-export function FormularioFamilia({ inicial, rotuloSalvar, aoEnviar, acima }: Props) {
+export function FormularioFamilia({ inicial, rotuloSalvar, aoEnviar, acima, edicao = false }: Props) {
   const { metadados } = useMetadados();
   const [comunidades, setComunidades] = useState<Comunidade[]>([]);
   const [form, setForm] = useState<Formulario>(inicial);
@@ -58,9 +63,13 @@ export function FormularioFamilia({ inicial, rotuloSalvar, aoEnviar, acima }: Pr
     [comunidades],
   );
   const opcoesPessoa = useMemo<Opcao[]>(
-    () => form.pessoas.map((p, i) => ({ valor: p.chave, rotulo: p.nome.trim() || `Pessoa ${i + 1} (sem nome)` })),
-    [form.pessoas],
+    () => form.pessoas
+      .map((p, i) => ({ p, opcao: { valor: p.chave, rotulo: p.nome.trim() || `Pessoa ${i + 1} (sem nome)` } }))
+      .filter(({ p }) => !edicao || p.id)
+      .map(({ opcao }) => opcao),
+    [form.pessoas, edicao],
   );
+  const temPessoaNova = edicao && form.pessoas.some((p) => !p.id && !pessoaEmBranco(p));
 
   function mudar<K extends keyof Formulario>(chave: K, valor: Formulario[K]) {
     setForm((atual) => ({ ...atual, [chave]: valor }));
@@ -178,7 +187,7 @@ export function FormularioFamilia({ inicial, rotuloSalvar, aoEnviar, acima }: Pr
             onChange={(e) => mudarResponsavel(e.target.value)}
             erro={validacao.erroDe(ID_RESPONSAVEL)}
             required
-            autoFocus
+            autoFocus={!edicao}
           />
           <Campo
             rotulo="CPF da responsável"
@@ -363,6 +372,11 @@ export function FormularioFamilia({ inicial, rotuloSalvar, aoEnviar, acima }: Pr
         />
 
         <p className={estilos.subtitulo}>De onde vem</p>
+        {temPessoaNova && (
+          <p className="texto-apoio">
+            Pessoa incluída agora só aparece em &quot;Quem recebe&quot; depois de salvar a família.
+          </p>
+        )}
         {form.fontes.length === 0 && <p className="texto-apoio">Nenhuma fonte de renda informada.</p>}
         {form.fontes.map((f) => (
           <div key={f.chave} className={estilos.linhaRenda}>
