@@ -86,7 +86,9 @@ export default function RevisaoChamado() {
   const [aprovada, setAprovada] = useState<FamiliaGravada | null>(null);
   const [motivo, setMotivo] = useState('');
 
-  useCabecalho(detalhe?.responsavelNome ?? 'Chamado');
+  // Com o chamado carregado, a <h1> é a do conteúdo (nome da responsável);
+  // carregando ou com erro, fica a do cabeçalho.
+  useCabecalho(detalhe?.responsavelNome ?? 'Chamado', undefined, { tituloNaPagina: detalhe !== null });
 
   const carregar = useCallback(() => {
     setErroCarga(null);
