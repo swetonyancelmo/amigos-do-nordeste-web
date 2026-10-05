@@ -354,6 +354,9 @@ export default function Familias() {
         <div className={styles.cartaoTabela}>
           <div className={`${styles.tabelaRolagem} ${carregando && resposta ? styles.carregando : ''}`} aria-busy={carregando}>
             <table className={styles.tabela}>
+              <caption className="so-leitor-de-tela">
+                Famílias cadastradas. Ative o nome da responsável para abrir a ficha.
+              </caption>
               <thead>
                 <tr>
                   <th>Responsável</th>
