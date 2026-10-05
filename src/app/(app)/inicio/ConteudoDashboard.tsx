@@ -323,7 +323,12 @@ export function ConteudoDashboard() {
             const mapa = L.map(elementoMapaRef.current, {
                 center: [-8.7, -37.8], // sertão de Pernambuco, ponto de partida
                 zoom: 8,
+                zoomControl: false,
             });
+
+            // O controle padrão vem com "Zoom in"/"Zoom out" em inglês, e é
+            // isso que o leitor de tela lê (WCAG 3.1.2).
+            L.control.zoom({ zoomInTitle: 'Aproximar', zoomOutTitle: 'Afastar' }).addTo(mapa);
 
             L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
                 maxZoom: 18,

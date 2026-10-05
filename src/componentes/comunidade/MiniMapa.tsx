@@ -3,7 +3,7 @@
 import 'leaflet/dist/leaflet.css';
 import L from 'leaflet';
 import { useEffect, useId, useMemo, useRef, useState } from 'react';
-import { LayersControl, MapContainer, Marker, TileLayer, useMap, useMapEvents } from 'react-leaflet';
+import { LayersControl, MapContainer, Marker, TileLayer, useMap, useMapEvents, ZoomControl } from 'react-leaflet';
 import { Botao } from '@/componentes/Botao';
 import { buscarMalhaMunicipio, type MalhaMunicipio } from '@/lib/municipios';
 import { procurarComunidade, type LugarEncontrado, type Limites } from '@/lib/nominatim';
@@ -189,7 +189,10 @@ export default function MiniMapa({ codigoIbge, municipioNome, uf, nomeComunidade
           center={CENTRO_INICIAL}
           zoom={ZOOM_INICIAL}
           scrollWheelZoom={false}
+          zoomControl={false}
         >
+          {/* O padrão diz "Zoom in"/"Zoom out" ao leitor de tela (WCAG 3.1.2). */}
+          <ZoomControl position="topleft" zoomInTitle="Aproximar" zoomOutTitle="Afastar" />
           <LayersControl position="topright">
             <LayersControl.BaseLayer checked name="Ruas">
               <TileLayer
