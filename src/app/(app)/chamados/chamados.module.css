@@ -1,4 +1,5 @@
-.pagina {
+.pagina,
+.painel {
   display: grid;
   gap: var(--e-5);
   min-width: 0;
