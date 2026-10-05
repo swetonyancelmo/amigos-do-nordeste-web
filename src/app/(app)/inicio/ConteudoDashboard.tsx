@@ -465,7 +465,7 @@ export function ConteudoDashboard() {
     const maiorTotalFamilias = Math.max(1, ...comunidadesMapa.map((c) => c.totalFamilias));
 
     return (
-        <main className={styles.pagina}>
+        <div className={styles.pagina}>
             <section className={styles.cabecalho} aria-labelledby="titulo-dashboard">
                 <h1 id="titulo-dashboard">Visão geral</h1>
                 <p>Famílias e comunidades atendidas pela associação.</p>
@@ -700,6 +700,6 @@ export function ConteudoDashboard() {
                     </div>
                 )}
             </section>
-        </main>
+        </div>
     );
 }

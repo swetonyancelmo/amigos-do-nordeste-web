@@ -18,7 +18,7 @@ export default function LayoutApp({ children }: { children: React.ReactNode }) {
           <Navegacao />
           <div className="app__conteudo">
             <CabecalhoDaTela />
-            <div className="app__corpo">{children}</div>
+            <main className="app__corpo">{children}</main>
           </div>
         </div>
       </ProvedorCabecalho>

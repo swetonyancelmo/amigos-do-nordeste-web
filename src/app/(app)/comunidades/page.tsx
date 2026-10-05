@@ -89,7 +89,7 @@ export default function Comunidades() {
     metadados?.tipoComunidade.find((opcao) => opcao.valor === tipo)?.rotulo ?? tipo;
 
   return (
-    <main className={styles.pagina}>
+    <div className={styles.pagina}>
       <section className={styles.conteudo}>
         <p className={styles.resumo}>
           {comunidades
@@ -195,6 +195,6 @@ export default function Comunidades() {
           </>
         )}
       </Modal>
-    </main>
+    </div>
   );
 }

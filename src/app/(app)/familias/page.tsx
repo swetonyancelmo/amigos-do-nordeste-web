@@ -298,7 +298,7 @@ export default function Familias() {
   const total = resposta?.total ?? 0;
 
   return (
-    <main className={`${styles.pagina} pagina-pessoas`}>
+    <div className={`${styles.pagina} pagina-pessoas`}>
       <section className={styles.conteudo}>
         <p className={styles.resumo}>
           {resposta ? `${formatarNumero(total)} ${total === 1 ? 'família' : 'famílias'}` : 'Carregando famílias…'}
@@ -425,6 +425,6 @@ export default function Familias() {
       >
         {selecionada && <DetalhesFamilia key={selecionada.id} id={selecionada.id} />}
       </Modal>
-    </main>
+    </div>
   );
 }
