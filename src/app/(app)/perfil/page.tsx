@@ -18,7 +18,7 @@ import styles from './perfil.module.css';
  * tela não repete nome nenhum no corpo: entra direto nos dados.
  *
  * A API não tem rota de perfil (não existe /api/usuario): nome e e-mail vêm
- * da resposta do login e aqui são só leitura. Editar dados ou trocar foto
+ * da resposta do login ou da renovação e aqui são só leitura. Editar dados ou trocar foto
  * pede essa rota no repositório da API antes.
  */
 
@@ -38,7 +38,8 @@ const SENHAS_VAZIAS: Senhas = { atual: '', nova: '', confirmacao: '' };
 export default function Perfil() {
   useCabecalho('Perfil');
 
-  // Lido uma vez: o usuário da sessão só muda no login, que é outra tela.
+  // Lido uma vez: a GuardaSessao só monta a tela depois do login ou da
+  // renovação, então o usuário já está em memória.
   const [usuario] = useState(usuarioDaSessao);
   const [redefinindoSenha, setRedefinindoSenha] = useState(false);
   const [senhas, setSenhas] = useState(SENHAS_VAZIAS);
@@ -133,9 +134,8 @@ export default function Perfil() {
         </div>
 
         <p className="texto-apoio">
-          {usuario
-            ? 'Nome e e-mail são definidos na instalação do sistema e ainda não podem ser alterados por aqui.'
-            : 'Entre de novo para ver nome e e-mail: eles só chegam no momento do login.'}
+          Nome e e-mail são definidos na instalação do sistema e ainda não podem
+          ser alterados por aqui.
         </p>
       </section>
 

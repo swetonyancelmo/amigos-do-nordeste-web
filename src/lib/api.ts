@@ -26,9 +26,9 @@ export const guardarToken = (t: string | null) => {
 };
 
 /**
- * Nome e e-mail de quem entrou, também só em memória. A API só os devolve no
- * login (não há `/api/usuario`), então depois de recarregar a página isto
- * volta `null` até o próximo login.
+ * Nome e e-mail de quem entrou, também só em memória. Chegam no login e em
+ * cada renovação (não há `/api/usuario`), então sobrevivem a recarregar a
+ * página: a guarda renova antes de mostrar a tela.
  */
 export const guardarUsuario = (u: UsuarioResumo | null) => { usuario = u; };
 export const usuarioDaSessao = () => usuario;
@@ -98,9 +98,11 @@ let renovando: Promise<boolean> | null = null;
  * vários 401 juntos, e todos esperam a mesma renovação.
  */
 function renovar(): Promise<boolean> {
-  renovando ??= chamar<{ accessToken: string }>('/auth/renovar', { method: 'POST' }, true)
-    .then(({ accessToken: novo }) => {
+  renovando ??= chamar<{ accessToken: string; usuario?: UsuarioResumo }>('/auth/renovar', { method: 'POST' }, true)
+    .then(({ accessToken: novo, usuario: quem }) => {
       guardarToken(novo);
+      // API antiga não devolvia o usuário: aí fica o que já havia.
+      if (quem) guardarUsuario(quem);
       return true;
     })
     .catch(() => {
