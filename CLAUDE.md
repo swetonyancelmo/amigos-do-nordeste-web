@@ -11,6 +11,7 @@ chegam aqui como pré-cadastros para aprovar.
 Next.js 15 (App Router) · React 19 · TypeScript · Node 22 · **pnpm** ·
 CSS puro (variáveis + `componentes.css` + CSS Modules) · Leaflet + react-leaflet
 (mini-mapa da comunidade; carregar com `next/dynamic` e `ssr: false`). Sem biblioteca de UI.
+@react-pdf/renderer só para o PDF do relatório, carregado sob demanda no clique.
 Testes: só de acessibilidade, com Playwright + axe em `e2e/` (API falsa, sem dado real).
 
 ## Estrutura
@@ -27,17 +28,20 @@ src/app/
                            [id]/editar edita (PUT /api/familias/{id}); o formulário é src/componentes/familia/
   (app)/pessoas/           lista com filtros e modal criar/editar/remover (API)
   (app)/comunidades/       lista com busca e ficha em modal (GET /api/comunidades); nova/ cadastra com mini-mapa; ainda sem edição
-  (app)/relatorios/        esqueleto (TODO); botão Imprimir já existe
+  (app)/relatorios/        necessidades (roupa/calçado por tamanho), situação das famílias e qualidade do cadastro;
+                           exporta .xlsx (API) e PDF (gerado no navegador, src/componentes/relatorios/)
   (app)/perfil/            nome e e-mail do login (só leitura) e troca de senha (POST /api/auth/trocar-senha)
 src/componentes/           Botao, Campo, Selecao, Aviso, Modal, Paginacao, Marca, Sol, Cabecalho,
                            ContextoCabecalho (useCabecalho), Navegacao, GuardaSessao,
                            pessoas/{ListaPessoas,ModalPessoa,PessoaForm},
                            fonte-renda/ModalFonteRenda,
                            familia/{FormularioFamilia,formularioFamilia} (cadastro e edição),
-                           comunidade/MiniMapa (contorno IBGE, pino, satélite, "Procurar no mapa")
+                           comunidade/MiniMapa (contorno IBGE, pino, satélite, "Procurar no mapa"),
+                           relatorios/{PdfNecessidades,gerarPdfNecessidades} (@react-pdf, carregado só no clique)
 src/lib/municipios.ts      IBGE: UFs, municípios, malha (contorno); garantirMunicipio
 src/lib/nominatim.ts       sugestão de posição pelo nome (1 busca/s, só no clique, com cache)
-src/lib/api.ts             cliente HTTP (token em memória, renovação automática em 401)
+src/lib/api.ts             cliente HTTP (token em memória, renovação automática em 401; api.baixar para arquivo)
+src/lib/arquivo.ts         salvarArquivo(blob, nome): download sem abrir aba
 src/lib/metadados.ts       useMetadados(): GET /api/metadados com cache por sessão
 src/lib/datas.ts           data e data/hora para a tela (fuso America/Recife)
 src/lib/recado.ts          recado em memória para a próxima tela ("Família atualizada")

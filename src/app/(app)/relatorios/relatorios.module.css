@@ -1,0 +1,441 @@
+/* Layout da tela Relatórios · Necessidades. Cor e medida só por token. */
+
+.pagina {
+  display: grid;
+  gap: var(--e-5);
+  min-width: 0;
+}
+
+/* ------------------------------------------------------------------ Filtros */
+
+.filtros {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 260px));
+  gap: var(--e-3);
+}
+
+/* Caixa com o rótulo pequeno dentro, como no Figma. */
+.filtro {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  gap: 2px;
+  min-height: 56px;
+  padding: var(--e-2) var(--e-4);
+  border: 1px solid var(--linha-forte);
+  border-radius: var(--raio);
+  background: var(--superficie);
+  cursor: pointer;
+  transition: border-color var(--transicao), box-shadow var(--transicao);
+}
+
+.filtro:hover {
+  border-color: var(--texto-suave);
+}
+
+.filtro:focus-within {
+  border-color: var(--laranja);
+  box-shadow: 0 0 0 3px var(--laranja-claro);
+}
+
+/* Seta desenhada com borda; o select nativo tem a dele escondida. */
+.filtro::after {
+  content: "";
+  position: absolute;
+  right: var(--e-4);
+  top: 50%;
+  width: 6px;
+  height: 6px;
+  border-right: 1.5px solid var(--texto-medio);
+  border-bottom: 1.5px solid var(--texto-medio);
+  transform: translateY(-70%) rotate(45deg);
+  pointer-events: none;
+}
+
+.filtroRotulo {
+  font-size: var(--t-micro);
+  font-weight: 600;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  color: var(--texto-medio);
+}
+
+.filtroSelect {
+  appearance: none;
+  width: 100%;
+  padding: 0 var(--e-5) 0 0;
+  border: none;
+  background: transparent;
+  color: var(--texto-forte);
+  font-family: inherit;
+  font-size: var(--t-base);
+  font-weight: 700;
+  text-overflow: ellipsis;
+  cursor: pointer;
+}
+
+/* O foco aparece na caixa inteira (.filtro:focus-within). */
+.filtroSelect:focus {
+  outline: none;
+}
+
+/* ------------------------------------------------------------------ Resumo */
+
+.resumos {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: var(--e-4);
+  margin: 0;
+}
+
+/* Faixa de cor no topo, como uma etiqueta: o número é o que importa. */
+.resumo {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  padding: var(--e-4) var(--e-5);
+  border-top: 3px solid var(--ambar);
+}
+
+.resumo dd {
+  margin: 0;
+}
+
+.resumoRotulo {
+  font-size: var(--t-micro);
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  color: var(--texto-medio);
+}
+
+.resumoValor {
+  font-family: var(--fonte-marca);
+  font-size: var(--t-marca);
+  font-weight: 800;
+  line-height: 1.15;
+  font-variant-numeric: tabular-nums;
+  color: var(--texto-forte);
+}
+
+.resumoApoio {
+  font-size: var(--t-apoio);
+  color: var(--texto-medio);
+}
+
+/* ------------------------------------------------------------------- Grupos */
+
+.grupos {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: var(--e-5);
+  align-items: start;
+}
+
+.grupo {
+  padding: var(--e-5);
+  min-width: 0;
+}
+
+.grupoCabecalho {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: var(--e-4);
+  margin-bottom: var(--e-4);
+}
+
+.grupoTitulo {
+  margin: 0;
+  font-family: var(--fonte-marca);
+  font-size: var(--t-medio);
+  font-weight: 800;
+  color: var(--texto-forte);
+}
+
+.grupoApoio {
+  margin: 0;
+  font-size: var(--t-apoio);
+  color: var(--texto-medio);
+}
+
+/* Total do cartão ("12 peças"), no canto. */
+.selo {
+  flex-shrink: 0;
+  padding: var(--e-1) var(--e-3);
+  border-radius: 999px;
+  background: var(--pagina);
+  border: 1px solid var(--linha);
+  font-size: var(--t-apoio);
+  font-weight: 800;
+  font-variant-numeric: tabular-nums;
+  white-space: nowrap;
+  color: var(--texto-forte);
+}
+
+.acaoGrupo {
+  flex-shrink: 0;
+  display: inline-flex;
+  align-items: center;
+  min-height: 44px;
+  font-size: var(--t-apoio);
+  font-weight: 700;
+  color: var(--laranja-escuro);
+}
+
+.lista {
+  display: grid;
+  gap: var(--e-3);
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+/* rótulo | barra | quantidade | parte. Os rótulos vêm da API ("Infantil 10"). */
+.linha {
+  display: grid;
+  grid-template-columns: 5.5rem minmax(0, 1fr) minmax(2.5rem, auto) 2.75rem;
+  align-items: center;
+  gap: var(--e-3);
+}
+
+.rotulo {
+  font-size: var(--t-apoio);
+  color: var(--texto-medio);
+}
+
+.trilho {
+  display: block;
+  height: 8px;
+  border-radius: var(--raio-p);
+  background: var(--pagina);
+  overflow: hidden;
+}
+
+.barra {
+  display: block;
+  height: 100%;
+  min-width: 4px;
+  border-radius: var(--raio-p);
+  -webkit-print-color-adjust: exact;
+  print-color-adjust: exact;
+}
+
+.barraLaranja { background: var(--laranja); }
+.barraAmbar   { background: var(--ambar); }
+.barraVerde   { background: var(--verde); }
+
+.quantidade {
+  text-align: right;
+  font-size: var(--t-apoio);
+  font-weight: 800;
+  font-variant-numeric: tabular-nums;
+  color: var(--texto-forte);
+}
+
+.parte {
+  text-align: right;
+  font-size: var(--t-micro);
+  font-variant-numeric: tabular-nums;
+  color: var(--texto-medio);
+}
+
+.semInformacao {
+  margin-top: var(--e-4);
+  padding-top: var(--e-3);
+  border-top: 1px dashed var(--linha);
+}
+
+/* ------------------------------------------------------ Situação das famílias */
+
+.situacao {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: var(--e-4);
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.destaque {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  gap: var(--e-1);
+  padding: var(--e-4);
+  border-radius: var(--raio);
+  -webkit-print-color-adjust: exact;
+  print-color-adjust: exact;
+}
+
+.tomLaranja { background: var(--laranja-claro); --cor: var(--laranja); }
+.tomAmbar   { background: var(--ambar-claro);   --cor: var(--ambar); }
+.tomVerde   { background: var(--verde-claro);   --cor: var(--verde); }
+
+/* No canto, para não empurrar o número e desalinhar dos cartões vizinhos. */
+.destaqueSelo {
+  position: absolute;
+  top: var(--e-3);
+  right: var(--e-3);
+  padding: 2px var(--e-2);
+  border-radius: 999px;
+  background: var(--superficie);
+  font-size: var(--t-micro);
+  font-weight: 800;
+  color: var(--texto-forte);
+}
+
+.destaqueValor {
+  font-family: var(--fonte-marca);
+  font-size: var(--t-marca);
+  font-weight: 800;
+  line-height: 1.1;
+  font-variant-numeric: tabular-nums;
+  color: var(--cor);
+}
+
+.destaqueTexto {
+  font-size: var(--t-apoio);
+  font-weight: 700;
+  color: var(--texto-forte);
+}
+
+/* Barra do percentual, na cor do cartão. */
+.medidor {
+  display: block;
+  height: 6px;
+  margin-top: var(--e-2);
+  border-radius: var(--raio-p);
+  background: var(--superficie);
+  overflow: hidden;
+}
+
+.medidor > span {
+  display: block;
+  height: 100%;
+  background: var(--cor);
+  -webkit-print-color-adjust: exact;
+  print-color-adjust: exact;
+}
+
+.destaquePct {
+  font-size: var(--t-micro);
+  color: var(--texto-medio);
+}
+
+/* ----------------------------------------------------- Qualidade do cadastro */
+
+.completudes {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: var(--e-5);
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.completude {
+  display: grid;
+  gap: var(--e-2);
+}
+
+.completudeTexto {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  font-size: var(--t-apoio);
+  color: var(--texto-forte);
+}
+
+.completudeNumero {
+  font-size: var(--t-micro);
+  font-variant-numeric: tabular-nums;
+  color: var(--texto-medio);
+}
+
+.completudeNumero strong {
+  color: var(--texto-forte);
+}
+
+/* ---------------------------------------------------------------- Responsivo */
+
+@media (max-width: 1099px) {
+  .resumos,
+  .situacao {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
+@media (max-width: 899px) {
+  /* Abaixo de 16px o iPhone dá zoom ao tocar no select. */
+  .filtroSelect {
+    font-size: max(16px, var(--t-base));
+  }
+
+  .filtros {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
+
+  .grupos,
+  .completudes {
+    grid-template-columns: 1fr;
+  }
+}
+
+@media (max-width: 640px) {
+  .filtros {
+    grid-template-columns: 1fr;
+  }
+
+  .linha {
+    grid-template-columns: 4.5rem minmax(0, 1fr) minmax(2rem, auto) 2.5rem;
+    gap: var(--e-2);
+  }
+}
+
+@media (max-width: 480px) {
+  .situacao {
+    grid-template-columns: 1fr;
+  }
+
+  .resumo {
+    padding: var(--e-3) var(--e-4);
+  }
+
+  .resumoValor {
+    font-size: var(--t-titulo);
+  }
+
+  .grupo {
+    padding: var(--e-4);
+  }
+
+  .grupoCabecalho {
+    flex-direction: column;
+    gap: var(--e-2);
+  }
+}
+
+/* ----------------------------------------------------------------- Impressão */
+
+@media print {
+  .grupo,
+  .resumo,
+  .destaque {
+    break-inside: avoid;
+  }
+
+  /* A folha A4 cai no layout de celular: resumo em 4, situação em 2. */
+  .resumos {
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+  }
+
+  .situacao {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .completudes {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
+}

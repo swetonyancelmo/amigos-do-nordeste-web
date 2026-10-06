@@ -16,6 +16,8 @@ import type { UsuarioResumo } from '@/tipos/dominio';
  *    se nem a renovação passa, a sessão acabou e quem estiver ouvindo
  *    `aoPerderSessao` (o layout logado) manda para o login.
  */
+import { salvarArquivo } from './arquivo';
+
 let accessToken: string | null = null;
 let usuario: UsuarioResumo | null = null;
 
@@ -47,7 +49,8 @@ class ErroApi extends Error {
   }
 }
 
-async function chamar<T>(caminho: string, init: RequestInit = {}, jaRenovou = false): Promise<T> {
+/** Faz a chamada e devolve a resposta já conferida: lança `ErroApi` se não for 2xx. */
+async function requisitar(caminho: string, init: RequestInit = {}, jaRenovou = false): Promise<Response> {
   let resposta: Response;
   try {
     resposta = await fetch(`/api${caminho}`, {
@@ -71,7 +74,7 @@ async function chamar<T>(caminho: string, init: RequestInit = {}, jaRenovou = fa
   const rotaDeEntrada = caminho === '/auth/login' || caminho === '/auth/renovar';
   if (resposta.status === 401 && !jaRenovou && !rotaDeEntrada) {
     const renovado = await renovar();
-    if (renovado) return chamar<T>(caminho, init, true);
+    if (renovado) return requisitar(caminho, init, true);
     aoPerder?.();
   }
 
@@ -88,7 +91,30 @@ async function chamar<T>(caminho: string, init: RequestInit = {}, jaRenovou = fa
     throw new ErroApi(resposta.status, corpo.message ?? padrao);
   }
 
+  return resposta;
+}
+
+async function chamar<T>(caminho: string, init: RequestInit = {}, jaRenovou = false): Promise<T> {
+  const resposta = await requisitar(caminho, init, jaRenovou);
   return resposta.status === 204 ? (undefined as T) : resposta.json();
+}
+
+/** Nome do arquivo no `Content-Disposition` (o `filename*` em UTF-8 tem preferência). */
+function nomeDoArquivo(disposicao: string | null): string | null {
+  if (!disposicao) return null;
+  const utf8 = /filename\*=UTF-8''([^;]+)/i.exec(disposicao);
+  if (utf8) return decodeURIComponent(utf8[1]);
+  const simples = /filename="?([^";]+)"?/i.exec(disposicao);
+  return simples ? simples[1] : null;
+}
+
+/**
+ * Baixa um arquivo gerado pela API (a planilha do relatório). Não dá para
+ * usar um `<a href>` direto: o link não levaria o token, que está em memória.
+ */
+async function baixar(caminho: string, nomePadrao: string): Promise<void> {
+  const resposta = await requisitar(caminho);
+  salvarArquivo(await resposta.blob(), nomeDoArquivo(resposta.headers.get('Content-Disposition')) ?? nomePadrao);
 }
 
 let renovando: Promise<boolean> | null = null;
@@ -130,6 +156,7 @@ export const api = {
   put: <T>(caminho: string, corpo: unknown) =>
     chamar<T>(caminho, { method: 'PUT', body: JSON.stringify(corpo) }),
   delete: <T = void>(caminho: string) => chamar<T>(caminho, { method: 'DELETE' }),
+  baixar,
 };
 
 export { ErroApi };

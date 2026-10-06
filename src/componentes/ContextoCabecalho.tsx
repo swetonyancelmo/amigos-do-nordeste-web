@@ -7,6 +7,7 @@ type EstadoCabecalho = {
   titulo: string;
   acoes: ReactNode;
   tituloNaPagina: boolean;
+  subtitulo?: string;
 };
 
 const VAZIO: EstadoCabecalho = { titulo: '', acoes: null, tituloNaPagina: false };
@@ -38,7 +39,7 @@ export function CabecalhoDaTela() {
   // transição de 3s do fundo do .botao deixa texto branco em fundo claro
   // enquanto a cor muda (WCAG 1.4.3).
   return (
-    <Cabecalho titulo={estado.titulo} tituloNaPagina={estado.tituloNaPagina}>
+    <Cabecalho titulo={estado.titulo} tituloNaPagina={estado.tituloNaPagina} subtitulo={estado.subtitulo}>
       {estado.acoes && <Fragment key={estado.titulo}>{estado.acoes}</Fragment>}
     </Cabecalho>
   );
@@ -61,13 +62,19 @@ export function CabecalhoDaTela() {
  *
  * `tituloNaPagina`: a tela desenha a própria <h1> no conteúdo, então o
  * título do cabeçalho não é <h1> (uma <h1> por tela).
+ *
+ * `subtitulo`: linha abaixo do título (o filtro de um relatório).
  */
-export function useCabecalho(titulo: string, acoes?: ReactNode, { tituloNaPagina = false } = {}) {
+export function useCabecalho(
+  titulo: string,
+  acoes?: ReactNode,
+  { tituloNaPagina = false, subtitulo }: { tituloNaPagina?: boolean; subtitulo?: string } = {},
+) {
   const definir = useContext(ContextoDefinir);
 
   useLayoutEffect(() => {
-    definir({ titulo, acoes: acoes ?? null, tituloNaPagina });
-  }, [definir, titulo, acoes, tituloNaPagina]);
+    definir({ titulo, acoes: acoes ?? null, tituloNaPagina, subtitulo });
+  }, [definir, titulo, acoes, tituloNaPagina, subtitulo]);
 
   useLayoutEffect(() => () => definir(VAZIO), [definir]);
 }

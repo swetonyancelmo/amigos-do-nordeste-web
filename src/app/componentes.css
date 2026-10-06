@@ -476,6 +476,12 @@
   color: var(--texto-forte);
 }
 
+.cabecalho-pagina__subtitulo {
+  margin: var(--e-1) 0 0;
+  font-size: var(--t-apoio);
+  color: var(--texto-medio);
+}
+
 .cabecalho-pagina__acoes {
   display: flex;
   gap: var(--e-3);

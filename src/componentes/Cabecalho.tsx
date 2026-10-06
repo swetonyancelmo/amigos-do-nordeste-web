@@ -9,18 +9,23 @@ type Props = {
    * página não ter duas <h1> (WCAG 1.3.1).
    */
   tituloNaPagina?: boolean;
+  /** Linha curta abaixo do título: o recorte que a tela mostra (relatórios). */
+  subtitulo?: string;
 };
 
 /**
  * Cabeçalho de cada tela logada. A navegação fica fixa em `Navegacao`; isto
  * aqui é o que muda de tela para tela — nome e as ações daquela tela.
  */
-export function Cabecalho({ titulo, children, tituloNaPagina = false }: Props) {
+export function Cabecalho({ titulo, children, tituloNaPagina = false, subtitulo }: Props) {
   const Titulo = tituloNaPagina ? 'p' : 'h1';
 
   return (
     <header className="cabecalho-pagina">
-      <Titulo className="cabecalho-pagina__titulo">{titulo}</Titulo>
+      <div>
+        <Titulo className="cabecalho-pagina__titulo">{titulo}</Titulo>
+        {subtitulo && <p className="cabecalho-pagina__subtitulo">{subtitulo}</p>}
+      </div>
       {children && <div className="cabecalho-pagina__acoes">{children}</div>}
     </header>
   );
