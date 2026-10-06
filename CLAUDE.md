@@ -30,7 +30,7 @@ src/app/
   (app)/comunidades/       lista com busca e ficha em modal (GET /api/comunidades); nova/ cadastra com mini-mapa; ainda sem edição
   (app)/relatorios/        necessidades (roupa/calçado por tamanho), situação das famílias e qualidade do cadastro;
                            exporta .xlsx (API) e PDF (gerado no navegador, src/componentes/relatorios/)
-  (app)/perfil/            esqueleto (TODO)
+  (app)/perfil/            nome e e-mail do login (só leitura) e troca de senha (POST /api/auth/trocar-senha)
 src/componentes/           Botao, Campo, Selecao, Aviso, Modal, Paginacao, Marca, Sol, Cabecalho,
                            ContextoCabecalho (useCabecalho), Navegacao, GuardaSessao,
                            pessoas/{ListaPessoas,ModalPessoa,PessoaForm},
@@ -43,9 +43,9 @@ src/lib/nominatim.ts       sugestão de posição pelo nome (1 busca/s, só no c
 src/lib/api.ts             cliente HTTP (token em memória, renovação automática em 401; api.baixar para arquivo)
 src/lib/arquivo.ts         salvarArquivo(blob, nome): download sem abrir aba
 src/lib/metadados.ts       useMetadados(): GET /api/metadados com cache por sessão
-src/lib/arquivo.ts          salvarArquivo(blob, nome): download sem abrir aba
 src/lib/datas.ts           data e data/hora para a tela (fuso America/Recife)
 src/lib/recado.ts          recado em memória para a próxima tela ("Família atualizada")
+src/lib/useRecado.ts       recado passageiro de sucesso na mesma tela (some em 4 s)
 src/tipos/dominio.ts       só tipos, espelhando os enums/DTOs do backend
 design-system/             gerador da vitrine (pnpm design-system)
 .claude/contextos/guia-cadastro-familia.md   guia longo da tela de cadastro de família

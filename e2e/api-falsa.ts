@@ -96,7 +96,10 @@ const indicador = (valor: number) => ({ valor, percentual: valor * 10 });
 
 /** Resposta de cada rota, pelo caminho depois de `/api` (sem a query). */
 function responder(caminho: string, metodo: string): unknown {
-  if (caminho === '/auth/renovar') return { accessToken: 'token-de-teste' };
+  if (caminho === '/auth/renovar') return {
+    accessToken: 'token-de-teste',
+    usuario: { id: 'usuario-1', nome: 'Usuária de Teste', email: 'usuaria@teste.local' },
+  };
   if (caminho === '/auth/sair') return {};
   if (caminho === '/metadados') return METADADOS;
   if (caminho === '/municipios') return [MUNICIPIO];
