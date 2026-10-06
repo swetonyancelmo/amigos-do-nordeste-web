@@ -1,0 +1,133 @@
+/*
+ * Arranjo da tela de perfil — só layout.
+ *
+ * Cor, tipografia, forma e espaçamento vêm do design system (globals.css +
+ * componentes.css): aqui não entra hex, só var(--token). O cartão, o campo e
+ * o botão são as classes .cartao/.campo/.botao de lá.
+ */
+
+.tela {
+  display: flex;
+  flex-direction: column;
+  gap: var(--e-5);
+}
+
+.bloco {
+  display: flex;
+  flex-direction: column;
+  gap: var(--e-5);
+  padding: var(--e-6);
+}
+
+/* ---------------------------------------------------------------- Identidade */
+
+.quem {
+  display: flex;
+  align-items: center;
+  gap: var(--e-4);
+  min-width: 0;
+}
+
+/*
+ * O avatar é a mesma silhueta da navegação — no marrom do sistema, sobre o
+ * laranja claro da identidade. Foto só quando a API tiver upload.
+ */
+.avatar {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex: 0 0 auto;
+  width: 96px;
+  height: 96px;
+  border: 1px solid var(--linha);
+  border-radius: 50%;
+  background: var(--laranja-claro);
+  color: var(--texto-medio);
+}
+
+.quem h2 {
+  margin: 0 0 var(--e-1);
+  font-family: var(--fonte-marca);
+  font-size: var(--t-titulo);
+  color: var(--texto-forte);
+  /* Nome ou e-mail longo sem espaço empurraria o cartão para fora da tela
+     em vez de quebrar. */
+  overflow-wrap: anywhere;
+}
+
+.quem p {
+  margin: 0;
+  overflow-wrap: anywhere;
+  color: var(--texto-medio);
+  font-size: var(--t-apoio);
+}
+
+/* ------------------------------------------------------------------- Formas */
+
+.grade {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: var(--e-4) var(--e-5);
+}
+
+/* Campo que ocupa a linha inteira dentro da grade de dois. */
+.campoLargo {
+  grid-column: 1 / -1;
+}
+
+.acoes {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: var(--e-3);
+}
+
+/* -------------------------------------------------------------------- Senha */
+
+.tituloSecao {
+  margin: 0 0 var(--e-2);
+  font-family: var(--fonte-marca);
+  font-size: var(--t-titulo);
+  color: var(--texto-forte);
+}
+
+.senha {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: var(--e-4);
+  padding: var(--e-4);
+  border: 1px dashed var(--linha-forte);
+  border-radius: var(--raio);
+  background: var(--pagina);
+}
+
+.pontos {
+  font-size: var(--t-titulo);
+  letter-spacing: 0.18em;
+  color: var(--texto-medio);
+}
+
+.formSenha {
+  display: flex;
+  flex-direction: column;
+  gap: var(--e-5);
+}
+
+/* ----------------------------------------------------------- Tela estreita */
+
+@media (max-width: 700px) {
+  .bloco {
+    padding: var(--e-5);
+  }
+
+  .grade {
+    grid-template-columns: 1fr;
+  }
+
+  .quem {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+}

@@ -410,3 +410,10 @@ export interface AprovarPreCadastro {
  * que o Swagger definir. Lembrete: um ponto por comunidade, nunca por família
  * (ADR-0005).
  */
+
+/** `LoginResposta.UsuarioResumo` — quem entrou (vem só na resposta do login). */
+export interface UsuarioResumo {
+  id: string;
+  nome: string;
+  email: string;
+}

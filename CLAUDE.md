@@ -28,7 +28,7 @@ src/app/
   (app)/pessoas/           lista com filtros e modal criar/editar/remover (API)
   (app)/comunidades/       lista com busca e ficha em modal (GET /api/comunidades); nova/ cadastra com mini-mapa; ainda sem edição
   (app)/relatorios/        esqueleto (TODO); botão Imprimir já existe
-  (app)/perfil/            esqueleto (TODO)
+  (app)/perfil/            nome e e-mail do login (só leitura) e troca de senha (POST /api/auth/trocar-senha)
 src/componentes/           Botao, Campo, Selecao, Aviso, Modal, Paginacao, Marca, Sol, Cabecalho,
                            ContextoCabecalho (useCabecalho), Navegacao, GuardaSessao,
                            pessoas/{ListaPessoas,ModalPessoa,PessoaForm},
@@ -41,6 +41,7 @@ src/lib/api.ts             cliente HTTP (token em memória, renovação automát
 src/lib/metadados.ts       useMetadados(): GET /api/metadados com cache por sessão
 src/lib/datas.ts           data e data/hora para a tela (fuso America/Recife)
 src/lib/recado.ts          recado em memória para a próxima tela ("Família atualizada")
+src/lib/useRecado.ts       recado passageiro de sucesso na mesma tela (some em 4 s)
 src/tipos/dominio.ts       só tipos, espelhando os enums/DTOs do backend
 design-system/             gerador da vitrine (pnpm design-system)
 .claude/contextos/guia-cadastro-familia.md   guia longo da tela de cadastro de família
