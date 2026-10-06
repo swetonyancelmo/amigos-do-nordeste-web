@@ -5,7 +5,6 @@ import Link from 'next/link';
 import { usePathname, useRouter, useSearchParams } from 'next/navigation';
 import type * as Leaflet from 'leaflet';
 import 'leaflet/dist/leaflet.css';
-import { Botao } from '@/componentes/Botao';
 import { useCabecalho } from '@/componentes/ContextoCabecalho';
 import { api } from '@/lib/api';
 import { buscarMalhaMunicipio } from '@/lib/municipios';
@@ -143,14 +142,9 @@ function IconeComunidadeFiltro() {
 }
 
 const ACOES_CABECALHO = (
-    <>
-        <Botao type="button" variante="secundario" onClick={() => window.print()}>
-            Imprimir
-        </Botao>
-        <Link href="/familias/nova" className="botao botao--primario">
-            Nova família
-        </Link>
-    </>
+    <Link href="/familias/nova" className="botao botao--primario">
+        Nova família
+    </Link>
 );
 
 export function ConteudoDashboard() {

@@ -404,6 +404,43 @@ export interface AprovarPreCadastro {
   observacoes?: string | null;
 }
 
+/* -------------------------------------------------------------- relatórios */
+
+/** `ItemContagem`: `chave` é o valor do enum (tamanho de roupa ou número de calçado). */
+export interface ItemContagem {
+  chave: string;
+  quantidade: number;
+}
+
+/** `NecessidadesResponse` — `GET /api/relatorios/necessidades`. Só vêm tamanhos com quantidade. */
+export interface Necessidades {
+  totalFamilias: number;
+  totalPessoas: number;
+  totalCriancasAte12: number;
+  roupa: ItemContagem[];
+  calcado: ItemContagem[];
+  /** Entraram na contagem mas não têm tamanho/calçado: nunca somam a uma faixa. */
+  semTamanhoInformado: number;
+  semCalcadoInformado: number;
+  /** Sem data de nascimento nem idade estimada; fora da conta "até 12 anos". */
+  semIdadeInformada: number;
+}
+
+/** `Indicador`: `percentual` de 0 a 100, com duas casas, sobre o total de famílias do filtro. */
+export interface Indicador {
+  valor: number;
+  percentual: number;
+}
+
+/** `SituacaoResponse` — `GET /api/relatorios/situacao`. */
+export interface Situacao {
+  totalFamilias: number;
+  semBanheiro: Indicador;
+  soCarroPipa: Indicador;
+  soBolsaFamilia: Indicador;
+  semTratamentoAgua: Indicador;
+}
+
 /*
  * Mapa: a API ainda não tem a rota (o painel citava `GET /api/relatorios/mapa`,
  * que não existe). O tipo entra aqui quando ela for criada lá, com o formato
