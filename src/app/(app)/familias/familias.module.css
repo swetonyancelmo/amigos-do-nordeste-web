@@ -289,6 +289,8 @@
 
 .fichaAcoes {
   display: flex;
+  flex-wrap: wrap;
+  gap: var(--e-2);
   justify-content: flex-end;
   margin-bottom: var(--e-4);
 }

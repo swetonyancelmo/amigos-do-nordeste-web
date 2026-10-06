@@ -24,7 +24,7 @@ src/app/
   (app)/layout.tsx         casco logado: <Navegacao> + cabeçalho via ContextoCabecalho
   (app)/chamados/          fila de pré-cadastros do app; [id] revisa, aprova ou devolve
   (app)/agentes/           agentes do app: cadastrar e gerar código de convite (novo código desliga o celular atual)
-  (app)/familias/          lista com busca, filtros e ficha em modal (API); nova/ cadastra (POST /api/familias);
+  (app)/familias/          lista com busca, filtros e ficha em modal (API), que inativa/reativa; nova/ cadastra (POST /api/familias);
                            [id]/editar edita (PUT /api/familias/{id}); o formulário é src/componentes/familia/
   (app)/pessoas/           lista com filtros e modal criar/editar/remover (API)
   (app)/comunidades/       lista com busca e ficha em modal (GET /api/comunidades); nova/ cadastra com mini-mapa; ainda sem edição

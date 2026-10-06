@@ -3,6 +3,7 @@
 import Link from 'next/link';
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { Aviso } from '@/componentes/Aviso';
+import { Botao } from '@/componentes/Botao';
 import { useCabecalho } from '@/componentes/ContextoCabecalho';
 import { Dado } from '@/componentes/Dados';
 import { Modal } from '@/componentes/Modal';
@@ -64,11 +65,17 @@ function IconeBusca() {
 
 /* ------------------------------------------------------------------ ficha */
 
-/** Tudo o que está cadastrado da família: carrega a ficha ao abrir o modal. */
-function DetalhesFamilia({ id }: { id: string }) {
+/**
+ * Tudo o que está cadastrado da família: carrega a ficha ao abrir o modal.
+ * Daqui também se inativa e reativa (família não se apaga, issue #43 da API);
+ * `onSituacaoMudou` recebe o recado para a lista.
+ */
+function DetalhesFamilia({ id, onSituacaoMudou }: { id: string; onSituacaoMudou: (recado: string) => void }) {
   const { metadados } = useMetadados();
   const [ficha, setFicha] = useState<FamiliaDetalhe | null>(null);
   const [erro, setErro] = useState('');
+  const [mudandoSituacao, setMudandoSituacao] = useState(false);
+  const [erroSituacao, setErroSituacao] = useState('');
 
   useEffect(() => {
     let ativo = true;
@@ -86,9 +93,36 @@ function DetalhesFamilia({ id }: { id: string }) {
 
   const { totais, pessoas, fontesRenda } = ficha;
 
+  async function alternarSituacao() {
+    if (!ficha) return;
+    const inativar = ficha.ativa;
+    const pergunta = inativar
+      ? `Inativar a família de ${ficha.responsavelNome}? Ela sai das listas e dos relatórios, mas não é apagada: dá para reativar depois, em "Incluir inativas".`
+      : `Reativar a família de ${ficha.responsavelNome}? Ela volta para as listas e os relatórios.`;
+    if (!window.confirm(pergunta)) return;
+
+    setMudandoSituacao(true);
+    setErroSituacao('');
+    try {
+      await api.post(`/familias/${ficha.id}/${inativar ? 'inativar' : 'reativar'}`);
+      onSituacaoMudou(inativar ? 'Família inativada.' : 'Família reativada.');
+    } catch (e) {
+      setErroSituacao(mensagemDeErro(e, 'Não foi possível mudar a situação da família.'));
+      setMudandoSituacao(false);
+    }
+  }
+
   return (
     <>
       <div className={styles.fichaAcoes}>
+        <Botao
+          variante="secundario"
+          onClick={alternarSituacao}
+          disabled={mudandoSituacao}
+          aria-label={`${ficha.ativa ? 'Inativar' : 'Reativar'} família de ${ficha.responsavelNome}`}
+        >
+          {ficha.ativa ? 'Inativar' : 'Reativar'}
+        </Botao>
         <Link
           href={`/familias/${ficha.id}/editar`}
           className="botao botao--secundario"
@@ -97,6 +131,7 @@ function DetalhesFamilia({ id }: { id: string }) {
           Editar
         </Link>
       </div>
+      {erroSituacao && <Aviso tom="erro">{erroSituacao}</Aviso>}
 
       <section className={styles.secao}>
         <h3 className={styles.secaoTitulo}>Família</h3>
@@ -247,6 +282,8 @@ export default function Familias() {
   const [comunidades, setComunidades] = useState<Comunidade[]>([]);
   const [selecionada, setSelecionada] = useState<FamiliaResumo | null>(null);
   const [recado, setRecado] = useState<string | null>(null);
+  // sobe quando a lista precisa vir de novo sem mudar filtro (ex.: inativou)
+  const [recarga, setRecarga] = useState(0);
   const ultimaRequisicao = useRef(0);
 
   // Recado de quem mandou para cá (ex.: "Família atualizada"). Lido depois de
@@ -288,9 +325,14 @@ export default function Familias() {
       .then((dado) => atual() && setResposta(dado))
       .catch((e) => atual() && setErro(mensagemDeErro(e, 'Não foi possível carregar as famílias.')))
       .finally(() => atual() && setCarregando(false));
-  }, [busca, comunidadeId, semBanheiro, incluirInativas, pagina, porPagina]);
+  }, [busca, comunidadeId, semBanheiro, incluirInativas, pagina, porPagina, recarga]);
 
   const fecharModal = useCallback(() => setSelecionada(null), []);
+  const aoMudarSituacao = useCallback((texto: string) => {
+    setSelecionada(null);
+    setRecado(texto);
+    setRecarga((n) => n + 1);
+  }, []);
 
   const escolherComunidade = (id: string) => {
     setComunidadeId(id);
@@ -439,7 +481,9 @@ export default function Familias() {
         titulo={selecionada ? `Família de ${selecionada.responsavelNome}` : 'Família'}
         onFechar={fecharModal}
       >
-        {selecionada && <DetalhesFamilia key={selecionada.id} id={selecionada.id} />}
+        {selecionada && (
+          <DetalhesFamilia key={selecionada.id} id={selecionada.id} onSituacaoMudou={aoMudarSituacao} />
+        )}
       </Modal>
     </div>
   );
