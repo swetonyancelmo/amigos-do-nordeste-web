@@ -1,0 +1,64 @@
+/* Mesmo desenho do cadastro de família: cartões empilhados, campos em grade. */
+
+.pagina {
+  display: grid;
+  gap: var(--e-4);
+  min-width: 0;
+}
+
+/* O .cartao só desenha borda e fundo; o respiro interno é de cada tela.
+   Como fieldset, zera a margem e a largura mínima que o navegador põe. */
+.secao {
+  display: grid;
+  gap: var(--e-4);
+  min-width: 0;
+  margin: 0;
+  padding: var(--e-5);
+}
+
+/* <legend> não entra no grid do fieldset; flutuar faz ele ocupar a linha. */
+.legenda {
+  float: left;
+  width: 100%;
+  margin: 0;
+  padding: 0;
+  color: var(--texto-forte);
+  font-family: var(--fonte-marca);
+  font-size: var(--t-medio);
+  font-weight: 700;
+}
+
+.grade {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+  gap: var(--e-4);
+}
+
+.avisoComAcao {
+  display: grid;
+  justify-items: start;
+  gap: var(--e-3);
+}
+
+.textoLongo {
+  width: 100%;
+  min-height: 96px;
+  resize: vertical;
+}
+
+.acoes {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: flex-end;
+  gap: var(--e-3);
+}
+
+@media (max-width: 899px) {
+  .secao {
+    padding: var(--e-4);
+  }
+
+  .acoes > button {
+    flex: 1 1 100%;
+  }
+}

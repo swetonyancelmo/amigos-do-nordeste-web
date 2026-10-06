@@ -1,0 +1,105 @@
+.pagina {
+  display: grid;
+  gap: var(--e-5);
+  min-width: 0;
+}
+
+.selo {
+  display: inline-block;
+  padding: 2px var(--e-2);
+  border-radius: 999px;
+  font-size: var(--t-micro);
+  font-weight: 600;
+  white-space: nowrap;
+}
+
+.seloPendente {
+  background: var(--ambar-claro);
+  color: var(--texto-forte);
+}
+
+.seloAtivo {
+  background: var(--verde-claro);
+  color: var(--verde-escuro);
+}
+
+/* -------------------------------------------------------------- cards */
+
+.cards {
+  display: grid;
+  gap: var(--e-3);
+}
+
+.card {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--e-4);
+  padding: var(--e-4) var(--e-5);
+}
+
+.cardCorpo {
+  display: grid;
+  gap: var(--e-2);
+  min-width: 0;
+}
+
+.cardTitulo {
+  display: flex;
+  align-items: center;
+  gap: var(--e-3);
+  flex-wrap: wrap;
+}
+
+.cardNome {
+  margin: 0;
+  color: var(--texto-forte);
+  font-weight: 700;
+}
+
+/* ------------------------------------------------------------- código */
+
+.codigoLinha {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: var(--e-3);
+}
+
+.codigo {
+  color: var(--texto-forte);
+  font-family: var(--fonte-marca);
+  font-size: var(--t-titulo);
+  font-weight: 800;
+  font-variant-numeric: tabular-nums;
+  letter-spacing: 0.08em;
+}
+
+/* -------------------------------------------------------------- modal */
+
+.modalCorpo {
+  display: grid;
+  gap: var(--e-4);
+}
+
+.modalCorpo p {
+  margin: 0;
+}
+
+.modalAcoes {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: flex-end;
+  gap: var(--e-3);
+}
+
+@media (max-width: 899px) {
+  .card {
+    padding: var(--e-4);
+  }
+
+  .card > button {
+    width: 100%;
+  }
+}

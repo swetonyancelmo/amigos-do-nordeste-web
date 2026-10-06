@@ -1,0 +1,175 @@
+/* Mesmo desenho da revisão de chamado: cartões empilhados, campos em grade. */
+
+.pagina {
+  display: grid;
+  gap: var(--e-4);
+  min-width: 0;
+}
+
+/* O .cartao só desenha borda e fundo; o respiro interno é de cada tela. */
+.secao {
+  display: grid;
+  gap: var(--e-4);
+  padding: var(--e-5);
+}
+
+.secaoCabecalho {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: var(--e-2);
+}
+
+.secaoTitulo {
+  margin: 0;
+  color: var(--texto-forte);
+  font-family: var(--fonte-marca);
+  font-size: var(--t-medio);
+}
+
+.subtitulo {
+  margin: 0;
+  font-size: var(--t-apoio);
+  font-weight: 600;
+  color: var(--texto-forte);
+}
+
+.grade {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+  gap: var(--e-4);
+}
+
+.opcoesMarcar {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--e-2) var(--e-4);
+  margin: 0;
+  padding: 0;
+  border: 0;
+}
+
+.opcoesMarcar legend {
+  margin-bottom: var(--e-2);
+  font-size: var(--t-apoio);
+  font-weight: 600;
+  color: var(--texto-forte);
+}
+
+.marcar {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--e-2);
+  min-height: 32px;
+  color: var(--texto-forte);
+}
+
+.pessoa {
+  display: grid;
+  gap: var(--e-3);
+  padding: var(--e-4);
+  border: 1px solid var(--linha);
+  border-radius: var(--raio);
+}
+
+.pessoaCabecalho {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--e-2);
+}
+
+.pessoaNome {
+  margin: 0;
+  color: var(--texto-forte);
+  font-weight: 600;
+}
+
+.linhaRenda {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr)) auto;
+  align-items: end;
+  gap: var(--e-3);
+  padding: var(--e-3);
+  border: 1px solid var(--linha);
+  border-radius: var(--raio);
+}
+
+.textoLongo {
+  width: 100%;
+  min-height: 96px;
+  resize: vertical;
+}
+
+/* ------------------------------------------------------------- rodapé */
+
+.rodape {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--e-4);
+  padding: var(--e-4) var(--e-5);
+}
+
+.resumo {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--e-5);
+  margin: 0;
+}
+
+.resumoItem {
+  display: flex;
+  flex-direction: column-reverse;
+}
+
+.resumoItem dt {
+  color: var(--texto-medio);
+  font-size: var(--t-micro);
+}
+
+.resumoItem dd {
+  margin: 0;
+  color: var(--laranja);
+  font-family: var(--fonte-marca);
+  font-size: var(--t-titulo);
+  font-weight: 800;
+}
+
+.rodapeAcoes {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--e-3);
+}
+
+@media (max-width: 899px) {
+  .secao {
+    padding: var(--e-4);
+  }
+
+  /* Caixa de marcar com o rótulo: alvo de toque de 44px (WCAG 2.5.5). */
+  .marcar {
+    min-height: 44px;
+  }
+
+  /* Com o teclado aberto sobra pouca tela: o campo focado rola com folga
+     acima e abaixo, em vez de parar colado na borda. */
+  .pagina :is(input, select, textarea) {
+    scroll-margin-block: var(--e-6);
+  }
+
+  .linhaRenda {
+    grid-template-columns: 1fr;
+  }
+
+  .rodapeAcoes {
+    width: 100%;
+  }
+
+  .rodapeAcoes > * {
+    flex: 1;
+  }
+}

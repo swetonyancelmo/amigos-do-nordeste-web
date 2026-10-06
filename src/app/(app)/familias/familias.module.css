@@ -1,0 +1,456 @@
+.pagina {
+  width: 100%;
+  max-width: 100%;
+  min-width: 0;
+  overflow-x: clip;
+}
+
+.conteudo {
+  display: grid;
+  /* Sem o minmax(0, …) a coluna não encolhe abaixo do conteúdo mais largo e,
+     em 320px, a borda direita da busca e dos cartões era cortada pelo
+     overflow-x: clip da página (WCAG 1.4.10). */
+  grid-template-columns: minmax(0, 1fr);
+  gap: var(--e-4);
+  min-width: 0;
+}
+
+.resumo {
+  margin: 0;
+  color: var(--texto-medio);
+  font-size: var(--t-apoio);
+}
+
+/* ------------------------------------------------------------------ Busca */
+
+.busca {
+  position: relative;
+}
+
+.buscaIcone {
+  position: absolute;
+  top: 50%;
+  left: 14px;
+  transform: translateY(-50%);
+  color: var(--texto-suave);
+  pointer-events: none;
+}
+
+.buscaEntrada {
+  width: 100%;
+  min-height: 46px;
+  padding: 12px 14px 12px 42px;
+  border: 1px solid var(--linha-forte);
+  border-radius: var(--raio);
+  background: var(--superficie);
+  color: var(--texto-forte);
+  font: inherit;
+  font-size: var(--t-base);
+  transition:
+    border-color var(--transicao),
+    box-shadow var(--transicao);
+}
+
+.buscaEntrada::placeholder {
+  color: var(--texto-suave);
+}
+
+.buscaEntrada:focus {
+  outline: none;
+  border-color: var(--laranja);
+  box-shadow: 0 0 0 3px var(--laranja-claro);
+}
+
+/* ------------------------------------------------------------------ Chips */
+
+.chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--e-2);
+}
+
+.chip {
+  padding: 6px 14px;
+  border: 1px solid var(--linha-forte);
+  border-radius: 999px;
+  background: var(--superficie);
+  color: var(--texto-medio);
+  font: inherit;
+  font-size: var(--t-apoio);
+  cursor: pointer;
+  transition:
+    border-color var(--transicao),
+    background-color var(--transicao);
+}
+
+.chip:hover {
+  border-color: var(--laranja);
+}
+
+/* Fica na fileira dos chips, com a mesma altura e forma. A seta nativa sai
+   (encostava na borda da pílula) e entra a mesma do select de Pessoas. */
+.filtroComunidade {
+  appearance: none;
+  -webkit-appearance: none;
+  max-width: 100%;
+  padding: 6px 36px 6px 14px;
+  border: 1px solid var(--linha-forte);
+  border-radius: 999px;
+  background-color: var(--superficie);
+  background-image:
+    linear-gradient(45deg, transparent 50%, var(--texto-medio) 50%),
+    linear-gradient(135deg, var(--texto-medio) 50%, transparent 50%);
+  background-position: calc(100% - 18px) 50%, calc(100% - 13px) 50%;
+  background-size: 5px 5px;
+  background-repeat: no-repeat;
+  color: var(--texto-medio);
+  font: inherit;
+  font-size: var(--t-apoio);
+  line-height: inherit;
+  text-overflow: ellipsis;
+  cursor: pointer;
+  transition:
+    border-color var(--transicao),
+    box-shadow var(--transicao);
+}
+
+.filtroComunidade:hover {
+  border-color: var(--laranja);
+}
+
+.filtroComunidade:focus {
+  outline: none;
+  border-color: var(--laranja);
+  box-shadow: 0 0 0 3px var(--laranja-claro);
+}
+
+/* Comunidade escolhida: mesmo destaque do chip ativo. */
+.filtroComunidadeAtivo {
+  border-color: var(--laranja);
+  background-color: var(--laranja-claro);
+  color: var(--laranja-escuro);
+  font-weight: 700;
+}
+
+.filtroComunidade option {
+  background: var(--superficie);
+  color: var(--texto-forte);
+  font-weight: 400;
+}
+
+.chipAtivo {
+  border-color: var(--laranja);
+  background: var(--laranja-claro);
+  color: var(--laranja-escuro);
+  font-weight: 700;
+}
+
+/* ----------------------------------------------------------------- Tabela */
+
+.cartaoTabela {
+  border: 1px solid var(--linha);
+  border-radius: var(--raio);
+  background: var(--superficie);
+  overflow: hidden;
+}
+
+.tabelaRolagem {
+  width: 100%;
+  overflow-x: auto;
+  overscroll-behavior-x: contain;
+  scrollbar-color: var(--linha-forte) transparent;
+  transition: opacity var(--transicao);
+}
+
+.carregando {
+  opacity: 0.55;
+}
+
+.tabela {
+  width: 100%;
+  min-width: 820px;
+  border-collapse: collapse;
+  color: var(--texto-medio);
+  font-size: var(--t-apoio);
+}
+
+.tabela th,
+.tabela td {
+  padding: 14px 16px;
+  border-bottom: 1px solid var(--linha);
+  text-align: left;
+  vertical-align: middle;
+  white-space: nowrap;
+}
+
+.tabela th {
+  background: var(--pagina);
+  color: var(--texto-medio);
+  font-family: var(--fonte-marca);
+  font-size: var(--t-micro);
+  font-weight: 800;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+}
+
+.tabela tbody tr:last-child td {
+  border-bottom: 0;
+}
+
+.linha {
+  cursor: pointer;
+}
+
+.linha:hover {
+  background: color-mix(in srgb, var(--laranja-claro) 35%, transparent);
+}
+
+.numero {
+  text-align: center !important;
+}
+
+.nomeBotao {
+  /* Alvo mínimo de 24px de altura (WCAG 2.5.8): só o texto dava 19px. */
+  min-height: 24px;
+  padding: 3px 0;
+  border: 0;
+  background: none;
+  color: var(--texto-forte);
+  font-family: var(--fonte-marca);
+  font-size: var(--t-base);
+  font-weight: 800;
+  text-align: left;
+  cursor: pointer;
+}
+
+.nomeBotao:hover {
+  color: var(--laranja-escuro);
+  text-decoration: underline;
+}
+
+.nomeBotao:focus-visible {
+  outline: 2px solid var(--laranja);
+  outline-offset: 2px;
+}
+
+.badges {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--e-2);
+}
+
+.tag {
+  display: inline-flex;
+  align-items: center;
+  padding: 4px 10px;
+  border-radius: 999px;
+  font-size: var(--t-micro);
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+}
+
+.tagInativa {
+  background: var(--erro-claro);
+  color: var(--erro);
+}
+
+.tagSemBanheiro {
+  background: var(--laranja-claro);
+  color: var(--laranja-escuro);
+}
+
+.tagIncompleto {
+  background: var(--erro-claro);
+  color: var(--erro);
+}
+
+.tagEstuda {
+  background: var(--verde-claro);
+  color: var(--verde-escuro);
+}
+
+.tagGestante {
+  background: var(--ambar-claro);
+  color: var(--laranja-escuro);
+}
+
+.estado {
+  padding: var(--e-6) var(--e-4);
+  color: var(--texto-medio);
+  text-align: center;
+}
+
+/* ------------------------------------------------------- Ficha (no modal) */
+
+.secao {
+  margin-bottom: var(--e-5);
+}
+
+.fichaAcoes {
+  display: flex;
+  justify-content: flex-end;
+  margin-bottom: var(--e-4);
+}
+
+.secaoTitulo {
+  margin: 0 0 var(--e-3);
+  padding-bottom: var(--e-2);
+  border-bottom: 1px solid var(--linha);
+  color: var(--laranja-escuro);
+  font-family: var(--fonte-marca);
+  font-size: var(--t-apoio);
+  font-weight: 800;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+}
+
+.totais {
+  display: grid;
+  grid-template-columns: repeat(5, minmax(0, 1fr));
+  gap: var(--e-2);
+}
+
+.totalCaixa {
+  padding: var(--e-3) var(--e-2);
+  border: 1px solid var(--linha);
+  border-radius: var(--raio);
+  text-align: center;
+}
+
+.totalNumero {
+  display: block;
+  color: var(--laranja);
+  font-family: var(--fonte-marca);
+  font-size: var(--t-titulo);
+  font-weight: 800;
+}
+
+.totalRotulo {
+  color: var(--texto-medio);
+  font-size: var(--t-micro);
+}
+
+.lista {
+  display: grid;
+  gap: var(--e-3);
+}
+
+.cartao {
+  display: grid;
+  gap: var(--e-3);
+  padding: var(--e-4);
+  border: 1px solid var(--linha);
+  border-radius: var(--raio);
+}
+
+.cartaoTopo {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: var(--e-2);
+}
+
+.cartaoNome {
+  color: var(--texto-forte);
+  font-family: var(--fonte-marca);
+  font-size: var(--t-base);
+  font-weight: 800;
+}
+
+.vazio {
+  margin: 0;
+  color: var(--texto-suave);
+  font-size: var(--t-apoio);
+}
+
+/*
+ * Celular: a tabela de 820px obrigava a arrastar de lado sem nenhum sinal de
+ * que havia mais colunas. Aqui cada linha vira um cartão, com o rótulo de
+ * cada número vindo do data-rotulo da célula.
+ */
+@media (max-width: 640px) {
+  .tabela {
+    min-width: 0;
+  }
+
+  /* Alvos de toque de 44px (WCAG 2.5.5) e campos com 16px, para o Safari do
+     iPhone não dar zoom ao focar. */
+  .buscaEntrada,
+  .filtroComunidade {
+    font-size: 16px;
+  }
+
+  .chip,
+  .filtroComunidade {
+    min-height: 44px;
+  }
+
+  .nomeBotao {
+    min-height: 44px;
+  }
+
+  .tabela thead {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    overflow: hidden;
+    clip-path: inset(50%);
+  }
+
+  .tabela tbody,
+  .tabela tr {
+    display: block;
+  }
+
+  .tabela tr {
+    display: grid;
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+    gap: var(--e-2) var(--e-3);
+    padding: var(--e-4);
+    border-bottom: 1px solid var(--linha);
+  }
+
+  .tabela tbody tr:last-child {
+    border-bottom: 0;
+  }
+
+  .tabela td,
+  .tabela tbody tr:last-child td {
+    display: block;
+    padding: 0;
+    border: 0;
+    white-space: normal;
+    overflow-wrap: anywhere;
+  }
+
+  .tabela td[data-rotulo]::before {
+    content: attr(data-rotulo);
+    display: block;
+    color: var(--texto-suave);
+    font-size: var(--t-micro);
+    font-weight: 700;
+    letter-spacing: 0.04em;
+    text-transform: uppercase;
+  }
+
+  .tabela .numero {
+    text-align: left !important;
+  }
+
+  /* Nome, comunidade/município e situação ocupam a linha toda ou meia. */
+  .celulaNome,
+  .celulaSituacao {
+    grid-column: 1 / -1;
+  }
+
+  .tabela td[data-rotulo="Comunidade"],
+  .tabela td[data-rotulo="Município"] {
+    grid-column: span 2;
+  }
+
+  .totais {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}

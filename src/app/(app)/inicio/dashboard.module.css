@@ -1,0 +1,457 @@
+.pagina {
+  display: flex;
+  flex-direction: column;
+  gap: var(--e-5);
+  min-width: 0;
+}
+
+.cabecalho {
+  display: flex;
+  flex-direction: column;
+  gap: var(--e-3);
+}
+
+.cabecalho h2 {
+  margin: 0;
+  font-family: var(--fonte-marca);
+  font-size: var(--t-titulo);
+  color: var(--texto-forte);
+}
+
+.cabecalho > p {
+  margin: 0;
+  color: var(--texto-medio);
+}
+
+.filtros {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: var(--e-4);
+}
+
+.rotuloFiltro {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--e-2);
+  font-family: var(--fonte-marca);
+  font-weight: 700;
+}
+
+.rotuloFiltro svg {
+  display: block;
+  flex: 0 0 16px;
+  width: 16px;
+  height: 16px;
+  color: var(--laranja);
+}
+
+.selectEnvoltorio {
+  position: relative;
+  width: 100%;
+}
+
+.selectEnvoltorio .selectComSeta {
+  appearance: none;
+  -webkit-appearance: none;
+  -moz-appearance: none;
+  padding-right: calc(var(--e-4) + 20px);
+  cursor: pointer;
+}
+
+.selectEnvoltorio::after {
+  content: '';
+  position: absolute;
+  top: 50%;
+  right: var(--e-4);
+  width: 7px;
+  height: 7px;
+  border-right: 1.5px solid var(--texto-medio);
+  border-bottom: 1.5px solid var(--texto-medio);
+  transform: translateY(-70%) rotate(45deg);
+  pointer-events: none;
+}
+
+.cartoes {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: var(--e-4);
+}
+
+.cartaoIndicador {
+  display: flex;
+  flex-direction: column;
+  gap: var(--e-3);
+  padding: var(--e-5);
+  min-width: 0;
+}
+
+.cartaoCabecalho {
+  display: flex;
+  align-items: flex-end;
+  justify-content: center;
+  gap: var(--e-1);
+  min-width: 0;
+  width: 100%;
+}
+
+.iconeCartao {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  flex: 0 0 24px;
+  width: 24px;
+  height: 24px;
+  color: var(--laranja);
+}
+
+.iconeCartao svg {
+  display: block;
+  width: 20px;
+  height: 20px;
+}
+
+.numero {
+  display: block;
+  align-self: center;
+  text-align: center;
+  font-family: var(--fonte-marca);
+  font-size: 2.25rem;
+  line-height: 1;
+  font-weight: 800;
+  color: var(--texto-forte);
+  font-variant-numeric: tabular-nums;
+}
+
+.rotulo {
+  min-width: 0;
+  margin: 0;
+  font-family: var(--fonte-marca);
+  font-size: var(--t-medio);
+  font-weight: 700;
+  line-height: 1.25;
+  text-align: center;
+  color: var(--texto-forte);
+}
+
+.grafico {
+  padding: var(--e-5);
+}
+
+.grafico h2 {
+  margin: 0 0 var(--e-4);
+  font-family: var(--fonte-marca);
+  font-size: var(--t-titulo);
+}
+
+.listaBarras {
+  display: flex;
+  flex-direction: column;
+  gap: var(--e-4);
+}
+
+.barra {
+  display: grid;
+  grid-template-columns: minmax(140px, 1fr) auto;
+  gap: var(--e-1) var(--e-3);
+  align-items: center;
+}
+
+.barra span {
+  color: var(--texto-medio);
+}
+
+.barra strong {
+  color: var(--texto-forte);
+}
+
+.barra progress {
+  grid-column: 1 / -1;
+  width: 100%;
+  height: 12px;
+  border: 0;
+  border-radius: 999px;
+  overflow: hidden;
+  accent-color: var(--laranja);
+}
+
+.barra progress::-webkit-progress-bar {
+  background: var(--pagina);
+  border-radius: 999px;
+}
+
+.barra progress::-webkit-progress-value,
+.barra progress::-moz-progress-bar {
+  background: var(--laranja);
+  border-radius: 999px;
+}
+
+/* ------------------------------------------------- Mapa + lista lateral */
+
+.corpoMapa {
+  position: relative;
+  z-index: 0;
+  display: grid;
+  grid-template-columns: minmax(0, 2fr) minmax(0, 1fr);
+  gap: var(--e-4);
+  align-items: start;
+}
+
+.areaMapa {
+  position: relative;
+  z-index: 0;
+  min-width: 0;
+}
+
+.contorno {
+  stroke: var(--verde);
+  stroke-width: 2;
+  fill: var(--verde);
+  fill-opacity: 0.06;
+}
+
+.mapa,
+.mapaCarregando {
+  width: 100%;
+  height: 380px;
+  border-radius: var(--raio-g);
+  border: 1px solid var(--linha);
+  overflow: hidden; /* sem isso, o mapa "vaza" das bordas arredondadas */
+}
+
+/* Crédito do mapa: o Leaflet usa 11px; o mínimo do painel é 12px (--t-micro). */
+.mapa :global(.leaflet-control-attribution) {
+  font-size: var(--t-micro);
+}
+
+.legendaMapa {
+  position: absolute;
+  left: var(--e-3);
+  bottom: var(--e-3);
+  z-index: 1000;
+  max-width: calc(100% - var(--e-6));
+  padding: var(--e-3);
+  border: 1px solid var(--linha);
+  border-radius: var(--raio-p);
+  background: var(--superficie);
+  box-shadow: var(--sombra);
+  color: var(--texto-medio);
+  font-size: var(--t-micro);
+}
+
+.legendaMapa > strong {
+  display: block;
+  margin-bottom: var(--e-2);
+  color: var(--texto-forte);
+  font-family: var(--fonte-marca);
+  font-size: var(--t-micro);
+  font-weight: 800;
+}
+
+.legendaMapa ul {
+  display: grid;
+  gap: var(--e-1);
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.legendaMapa li {
+  display: flex;
+  align-items: center;
+  gap: var(--e-2);
+}
+
+.legendaMapa p {
+  margin: 0;
+}
+
+.amostraLegenda {
+  width: 8px;
+  height: 8px;
+  flex: 0 0 8px;
+  border-radius: 50%;
+}
+
+.amostraGrande { background: var(--laranja); }
+.amostraMedia { background: var(--ambar); }
+.amostraPequena { background: var(--verde); }
+
+.mapaCarregando {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-style: dashed;
+  color: var(--texto-medio);
+  font-size: var(--t-apoio);
+}
+
+/* Ícone do pino: zeramos o que o Leaflet herdaria por padrão. O círculo
+   colorido em si é montado com estilo inline no componente, porque o
+   tamanho e a cor mudam por comunidade. */
+.pino {
+  background: transparent !important;
+  border: none !important;
+}
+
+.pino > div {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 50%;
+  border: 2px solid #fff;
+  box-shadow: 0 2px 6px rgb(31 27 24 / 35%);
+  color: #fff;
+  font-family: var(--fonte-marca);
+  font-weight: 800;
+  font-size: var(--t-micro);
+}
+
+.lista {
+  padding: var(--e-4) var(--e-5);
+  min-width: 0;
+  max-height: 380px;
+  overflow-y: auto;
+}
+
+.listaTitulo {
+  margin: 0;
+  font-family: var(--fonte-marca);
+  font-size: var(--t-base);
+  font-weight: 800;
+  color: var(--texto-forte);
+}
+
+.listaVazia {
+  margin: var(--e-3) 0 0;
+  color: var(--texto-medio);
+  font-size: var(--t-apoio);
+}
+
+.listaItens {
+  list-style: none;
+  margin: var(--e-3) 0 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: var(--e-3);
+}
+
+.listaItem {
+  padding-bottom: var(--e-3);
+  border-bottom: 1px solid var(--linha);
+}
+
+.listaItem:last-child {
+  border-bottom: none;
+  padding-bottom: 0;
+}
+
+.listaItemCabecalho {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  gap: var(--e-2);
+  font-family: var(--fonte-marca);
+  font-weight: 700;
+  color: var(--texto-forte);
+}
+
+.listaItemLocal {
+  display: block;
+  font-size: var(--t-micro);
+  color: var(--texto-medio);
+  margin-bottom: var(--e-2);
+}
+
+.listaBarraFundo {
+  height: 6px;
+  border-radius: 999px;
+  background: var(--pagina);
+  overflow: hidden;
+}
+
+.listaBarraPreenchida {
+  height: 100%;
+  border-radius: 999px;
+  background: var(--laranja);
+}
+
+.semLocalizacao {
+  display: inline-block;
+  margin-top: var(--e-2);
+  font-size: var(--t-micro);
+  font-weight: 700;
+  color: var(--erro);
+}
+
+/* --------------------------------------------------------- Responsivo -- */
+
+@media (max-width: 899px) {
+  .cartoes {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .corpoMapa {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  .filtros {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .lista {
+    max-height: none;
+  }
+}
+
+@media (max-width: 640px) {
+  .filtros,
+  .cartoes {
+    /* "minmax(0, 1fr)" e não só "1fr": uma única coluna sem o minmax ainda
+       carrega o mínimo implícito do conteúdo — foi exatamente isso que
+       vazou a tabela de Pessoas antes. O <select> de município, com um
+       nome de cidade comprido, é o próximo candidato a repetir o bug. */
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  .filtros {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  .cartaoIndicador {
+    min-height: auto;
+    padding: var(--e-4);
+  }
+
+  .numero {
+    font-size: 1.875rem;
+  }
+
+  .mapa,
+  .mapaCarregando {
+    height: 280px;
+  }
+
+  /* Aproximar/Afastar: o Leaflet desenha 30px; no toque, 44px (WCAG 2.5.5). */
+  .mapa :global(.leaflet-bar a) {
+    width: 44px;
+    height: 44px;
+    line-height: 44px;
+  }
+}
+
+@media print {
+  .filtros,
+  .corpoMapa,
+  .grafico {
+    break-inside: avoid;
+  }
+
+  .areaMapa .mapa {
+    height: 300px;
+  }
+
+  .legendaMapa {
+    box-shadow: none;
+  }
+}

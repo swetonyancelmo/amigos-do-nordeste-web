@@ -1,0 +1,26 @@
+node_modules/
+.next/
+out/
+build/
+coverage/
+
+# Vitrine do design system: saída gerada. Cada arquivo carrega a fonte e o
+# logo em base64, então versionar isso é ~1 MB de diff a cada mexida no CSS.
+# Rode `pnpm design-system` — ou abra o link do Artifact, no README.
+design-system/site/
+*.tsbuildinfo
+next-env.d.ts
+
+.env
+.env*.local
+!.env.example
+
+.DS_Store
+.idea/
+.vscode/*
+!.vscode/extensions.json
+*.log
+
+# Playwright (pnpm test)
+test-results/
+playwright-report/
