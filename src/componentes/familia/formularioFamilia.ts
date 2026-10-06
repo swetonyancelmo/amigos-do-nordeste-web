@@ -1,4 +1,5 @@
 import type { ErroDeCampo } from '@/componentes/useErrosDeCampo';
+import { cpfValido } from '@/lib/cpf';
 import { hoje } from '@/lib/datas';
 import type {
   AbastecimentoAgua, AtualizarFamiliaRequisicao, EscoamentoSanitario, FaixaRenda, FamiliaDetalhe, Opcao, Parentesco, Serie, Sexo,
@@ -191,6 +192,7 @@ export function montarCorpoCriacao(form: Formulario) {
 
 export const ID_RESPONSAVEL = 'nome-responsavel';
 export const ID_COMUNIDADE = 'comunidade-familia';
+export const ID_CPF = 'cpf-responsavel';
 export const idTipoFonte = (chave: string) => `tipo-fonte-${chave}`;
 
 /** Valida tudo de uma vez, na ordem da tela; o primeiro da lista recebe o foco. */
@@ -201,6 +203,9 @@ export function validar(form: Formulario): ErroDeCampo[] {
   }
   if (!form.responsavelNome.trim()) {
     erros.push({ id: ID_RESPONSAVEL, mensagem: 'Informe o nome da responsável.' });
+  }
+  if (!cpfValido(form.responsavelCpf)) {
+    erros.push({ id: ID_CPF, mensagem: 'CPF inválido. Confira os números.' });
   }
   form.fontes.forEach((f, i) => {
     if (f.tipo !== '') return;

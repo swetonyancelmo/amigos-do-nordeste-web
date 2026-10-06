@@ -10,6 +10,7 @@ import { Campo } from '@/componentes/Campo';
 import { Dado } from '@/componentes/Dados';
 import { Selecao } from '@/componentes/Selecao';
 import { api } from '@/lib/api';
+import { cpfValido } from '@/lib/cpf';
 import { data, dataHora } from '@/lib/datas';
 import { useMetadados } from '@/lib/metadados';
 import type {
@@ -138,6 +139,10 @@ export default function RevisaoChamado() {
     }
     if (fontes.some((f) => f.tipo === '')) {
       setErroAcao('Escolha o tipo de cada fonte de renda, ou remova a que ficou em branco.');
+      return;
+    }
+    if (!cpfValido(cpf)) {
+      setErroAcao('CPF inválido. Confira os números ou deixe em branco.');
       return;
     }
 

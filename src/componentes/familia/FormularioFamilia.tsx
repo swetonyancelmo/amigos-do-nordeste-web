@@ -17,7 +17,7 @@ import type {
   Parentesco, Serie, Sexo, TamanhoRoupa, TipoFonteRenda, TratamentoAgua,
 } from '@/tipos/dominio';
 import {
-  ID_COMUNIDADE, ID_RESPONSAVEL, SIM_NAO, idTipoFonte, idadeDe, novaChave, novaPessoa,
+  ID_COMUNIDADE, ID_CPF, ID_RESPONSAVEL, SIM_NAO, idTipoFonte, idadeDe, novaChave, novaPessoa,
   pessoaEmBranco, validar, type FormFonte, type FormPessoa, type Formulario, type TresEstados,
 } from './formularioFamilia';
 import estilos from './FormularioFamilia.module.css';
@@ -74,6 +74,7 @@ export function FormularioFamilia({ inicial, rotuloSalvar, aoEnviar, acima, edic
   function mudar<K extends keyof Formulario>(chave: K, valor: Formulario[K]) {
     setForm((atual) => ({ ...atual, [chave]: valor }));
     if (chave === 'comunidadeId') validacao.limpar(ID_COMUNIDADE);
+    if (chave === 'responsavelCpf') validacao.limpar(ID_CPF);
   }
 
   function mudarResponsavel(nome: string) {
@@ -190,12 +191,14 @@ export function FormularioFamilia({ inicial, rotuloSalvar, aoEnviar, acima, edic
             autoFocus={!edicao}
           />
           <Campo
+            id={ID_CPF}
             rotulo="CPF da responsável"
             inputMode="numeric"
             maxLength={14}
             placeholder="Opcional"
             value={form.responsavelCpf}
             onChange={(e) => mudar('responsavelCpf', e.target.value)}
+            erro={validacao.erroDe(ID_CPF)}
           />
           <Campo
             rotulo="Telefone"
