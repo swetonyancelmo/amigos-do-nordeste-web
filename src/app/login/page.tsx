@@ -37,7 +37,7 @@ export default function Login() {
       );
       guardarToken(accessToken);
       guardarUsuario(usuario);
-      router.push('/familias');
+      router.push('/inicio');
     } catch (err) {
       setErro(err instanceof Error ? err.message : 'Não foi possível entrar.');
     } finally {
