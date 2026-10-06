@@ -1,16 +1,12 @@
 'use client';
 
-import { useRef, useState, type ChangeEvent, type FormEvent } from 'react';
+import { useState, type ChangeEvent, type FormEvent } from 'react';
 import { useCabecalho } from '@/componentes/ContextoCabecalho';
 import { Aviso } from '@/componentes/Aviso';
 import { Botao } from '@/componentes/Botao';
 import { Campo } from '@/componentes/Campo';
-import {
-  IconeCamera,
-  IconeChave,
-  IconeConfirmar,
-  IconePerfil,
-} from '@/componentes/Icones';
+import { IconeChave, IconeConfirmar, IconePerfil } from '@/componentes/Icones';
+import { api, usuarioDaSessao } from '@/lib/api';
 import { useRecado } from '@/lib/useRecado';
 import styles from './perfil.module.css';
 
@@ -20,21 +16,14 @@ import styles from './perfil.module.css';
  *
  * O título "Perfil" já vem do cabeçalho do casco (useCabecalho), por isso a
  * tela não repete nome nenhum no corpo: entra direto nos dados.
+ *
+ * A API não tem rota de perfil (não existe /api/usuario): nome e e-mail vêm
+ * da resposta do login e aqui são só leitura. Editar dados ou trocar foto
+ * pede essa rota no repositório da API antes.
  */
 
-/** Mesmo mínimo que o endpoint de senha vai exigir quando existir. */
-const MINIMO_DA_SENHA = 8;
-
-const TIPOS_DE_USUARIO = ['NÃO É PRESTADOR', 'PRESTADOR', 'ADMINISTRADOR'];
-
-type DadosPessoais = {
-  login: string;
-  nome: string;
-  nascimento: string;
-  telefone: string;
-  celular: string;
-  tipoDeUsuario: string;
-};
+/** Mesmo mínimo do `TrocarSenhaRequisicao` da API (@Size(min = 10)). */
+const MINIMO_DA_SENHA = 10;
 
 type Senhas = {
   atual: string;
@@ -44,45 +33,20 @@ type Senhas = {
 
 type ErrosDaSenha = Partial<Record<keyof Senhas, string>>;
 
-/**
- * A tela abre vazia, com os textos nos placeholders: enquanto a API não
- * devolve os dados da usuária, um "Seu Nome" dentro do campo só esconderia
- * que ainda não há dado nenhum.
- */
-const DADOS_VAZIOS: DadosPessoais = {
-  login: '',
-  nome: '',
-  nascimento: '',
-  telefone: '',
-  celular: '',
-  tipoDeUsuario: TIPOS_DE_USUARIO[0],
-};
-
 const SENHAS_VAZIAS: Senhas = { atual: '', nova: '', confirmacao: '' };
-
-/** "NÃO É PRESTADOR" na etiqueta vira "Não é prestador" — caixa alta grita. */
-function formatarTipoDeUsuario(tipo: string) {
-  return tipo.charAt(0) + tipo.slice(1).toLowerCase();
-}
 
 export default function Perfil() {
   useCabecalho('Perfil');
 
-  const arquivoRef = useRef<HTMLInputElement>(null);
-
-  const [foto, setFoto] = useState<string | null>(null);
-  const [dados, setDados] = useState(DADOS_VAZIOS);
+  // Lido uma vez: o usuário da sessão só muda no login, que é outra tela.
+  const [usuario] = useState(usuarioDaSessao);
   const [redefinindoSenha, setRedefinindoSenha] = useState(false);
   const [senhas, setSenhas] = useState(SENHAS_VAZIAS);
   const [errosDaSenha, setErrosDaSenha] = useState<ErrosDaSenha>({});
+  const [erroDoEnvio, setErroDoEnvio] = useState<string | null>(null);
+  const [enviando, setEnviando] = useState(false);
 
-  const recadoDosDados = useRecado();
   const recadoDaSenha = useRecado();
-
-  function alterarDado(evento: ChangeEvent<HTMLInputElement | HTMLSelectElement>) {
-    const { name, value } = evento.target;
-    setDados((anterior) => ({ ...anterior, [name]: value }));
-  }
 
   function alterarSenha(evento: ChangeEvent<HTMLInputElement>) {
     const campo = evento.target.name as keyof Senhas;
@@ -101,22 +65,6 @@ export default function Perfil() {
     });
   }
 
-  function escolherFoto(evento: ChangeEvent<HTMLInputElement>) {
-    const arquivo = evento.target.files?.[0];
-    if (!arquivo) return;
-
-    // A foto fica só na tela até a API ter upload. O endereço é liberado
-    // quando a próxima foto entra no lugar desta.
-    const endereco = URL.createObjectURL(arquivo);
-    if (foto) URL.revokeObjectURL(foto);
-    setFoto(endereco);
-  }
-
-  function salvarDados(evento: FormEvent<HTMLFormElement>) {
-    evento.preventDefault();
-    recadoDosDados.mostrar('Dados atualizados com sucesso!');
-  }
-
   function conferirSenhas(): ErrosDaSenha {
     const erros: ErrosDaSenha = {};
 
@@ -126,6 +74,8 @@ export default function Perfil() {
 
     if (senhas.nova.length < MINIMO_DA_SENHA) {
       erros.nova = `Use pelo menos ${MINIMO_DA_SENHA} caracteres.`;
+    } else if (senhas.nova === senhas.atual) {
+      erros.nova = 'A nova senha precisa ser diferente da atual.';
     }
 
     if (senhas.confirmacao !== senhas.nova) {
@@ -135,159 +85,58 @@ export default function Perfil() {
     return erros;
   }
 
-  function salvarSenha(evento: FormEvent<HTMLFormElement>) {
+  async function salvarSenha(evento: FormEvent<HTMLFormElement>) {
     evento.preventDefault();
+    if (enviando) return;
 
     const erros = conferirSenhas();
     setErrosDaSenha(erros);
+    setErroDoEnvio(null);
     if (Object.keys(erros).length > 0) return;
 
-    // TODO(equipe frontend): trocar por api.post('/auth/redefinir-senha', …)
-    // quando o endpoint existir. Até lá a tela só confirma o que foi digitado,
-    // como já fazia o "Salvar alterações".
-    fecharSenha();
-    recadoDaSenha.mostrar('Senha redefinida com sucesso!');
+    setEnviando(true);
+    try {
+      await api.post('/auth/trocar-senha', {
+        senhaAtual: senhas.atual,
+        senhaNova: senhas.nova,
+      });
+      fecharSenha();
+      recadoDaSenha.mostrar('Senha alterada. Use a nova no próximo login.');
+    } catch (erro) {
+      // 400 traz a mensagem da API ("A senha atual está incorreta.", tamanho
+      // mínimo); rede caída já vem traduzida pelo api.ts.
+      setErroDoEnvio(erro instanceof Error ? erro.message : 'Não foi possível trocar a senha.');
+    } finally {
+      setEnviando(false);
+    }
   }
 
   function fecharSenha() {
     setRedefinindoSenha(false);
     setSenhas(SENHAS_VAZIAS);
     setErrosDaSenha({});
+    setErroDoEnvio(null);
   }
 
   return (
-    <main className={styles.tela}>
+    <div className={styles.tela}>
       <section className={`cartao ${styles.bloco}`}>
-        <div className={styles.identidade}>
-          <div className={styles.quem}>
-            <div className={styles.avatar}>
-              {foto ? (
-                /* A foto vem de um arquivo local (URL de blob), então o
-                   otimizador do next/image não tem o que otimizar — e ele
-                   tentaria buscar no servidor um endereço que só existe no
-                   navegador. Aqui a tag simples é a ferramenta certa. */
-                // eslint-disable-next-line @next/next/no-img-element
-                <img
-                  src={foto}
-                  alt={`Foto de ${dados.nome || 'perfil'}`}
-                  className={styles.foto}
-                />
-              ) : (
-                <IconePerfil tamanho={46} />
-              )}
-            </div>
-
-            <div>
-              <h2>{dados.nome || 'Usuário'}</h2>
-              <p>{formatarTipoDeUsuario(dados.tipoDeUsuario)}</p>
-            </div>
+        <div className={styles.quem}>
+          <div className={styles.avatar}>
+            <IconePerfil tamanho={46} />
           </div>
 
-          {/* O input de arquivo não dá para estilizar; quem aparece é o botão,
-              que repassa o clique para ele. */}
-          <input
-            ref={arquivoRef}
-            type="file"
-            accept="image/*"
-            onChange={escolherFoto}
-            className={styles.escondido}
-            tabIndex={-1}
-            aria-hidden="true"
-          />
-
-          <Botao
-            variante="secundario"
-            type="button"
-            onClick={() => arquivoRef.current?.click()}
-          >
-            <IconeCamera />
-            Alterar foto
-          </Botao>
+          <div>
+            <h2>{usuario?.nome || 'Usuária do painel'}</h2>
+            {usuario?.email && <p>{usuario.email}</p>}
+          </div>
         </div>
 
-        <form onSubmit={salvarDados}>
-          <div className={styles.grade}>
-            <Campo
-              rotulo="E-mail / Login"
-              name="login"
-              type="email"
-              autoComplete="username"
-              value={dados.login}
-              onChange={alterarDado}
-              placeholder="voce@exemplo.com"
-              required
-            />
-
-            <Campo
-              rotulo="Data de nascimento"
-              name="nascimento"
-              type="date"
-              autoComplete="bday"
-              value={dados.nascimento}
-              onChange={alterarDado}
-            />
-
-            <Campo
-              rotulo="Nome"
-              name="nome"
-              type="text"
-              autoComplete="name"
-              value={dados.nome}
-              onChange={alterarDado}
-              placeholder="Nome completo"
-              required
-            />
-
-            <Campo
-              rotulo="Celular"
-              name="celular"
-              type="tel"
-              autoComplete="tel"
-              value={dados.celular}
-              onChange={alterarDado}
-              placeholder="(00) 00000-0000"
-            />
-
-            <Campo
-              rotulo="Telefone"
-              name="telefone"
-              type="tel"
-              value={dados.telefone}
-              onChange={alterarDado}
-              placeholder="(00) 0000-0000"
-            />
-
-            <div className="campo">
-              <label className="campo__rotulo" htmlFor="tipoDeUsuario">
-                Tipo de usuário
-              </label>
-              <select
-                id="tipoDeUsuario"
-                name="tipoDeUsuario"
-                className="campo__entrada"
-                value={dados.tipoDeUsuario}
-                onChange={alterarDado}
-              >
-                {TIPOS_DE_USUARIO.map((tipo) => (
-                  <option key={tipo} value={tipo}>
-                    {tipo}
-                  </option>
-                ))}
-              </select>
-            </div>
-          </div>
-
-          <div className={styles.acoes}>
-            <Botao type="submit">
-              <IconeConfirmar />
-              Salvar alterações
-            </Botao>
-          </div>
-        </form>
-
-        {recadoDosDados.recado && (
-          <Aviso titulo="Tudo certo">{recadoDosDados.recado}</Aviso>
-        )}
+        <p className="texto-apoio">
+          {usuario
+            ? 'Nome e e-mail são definidos na instalação do sistema e ainda não podem ser alterados por aqui.'
+            : 'Entre de novo para ver nome e e-mail: eles só chegam no momento do login.'}
+        </p>
       </section>
 
       <section className={`cartao ${styles.bloco}`}>
@@ -320,18 +169,20 @@ export default function Perfil() {
         {redefinindoSenha && (
           <form className={styles.formSenha} onSubmit={salvarSenha} noValidate>
             {/* Senha sem campo de usuário deixa o gerenciador de senhas do
-                navegador perdido — e ele avisa isso no console. É o mesmo
-                login do cadastro; fora da tela e sem receber foco. */}
-            <input
-              type="text"
-              name="login"
-              autoComplete="username"
-              value={dados.login}
-              readOnly
-              tabIndex={-1}
-              aria-hidden="true"
-              className="so-leitor-de-tela"
-            />
+                navegador perdido — e ele avisa isso no console. É o e-mail
+                do login; fora da tela e sem receber foco. */}
+            {usuario?.email && (
+              <input
+                type="text"
+                name="login"
+                autoComplete="username"
+                value={usuario.email}
+                readOnly
+                tabIndex={-1}
+                aria-hidden="true"
+                className="so-leitor-de-tela"
+              />
+            )}
 
             <div className={styles.grade}>
               <div className={styles.campoLargo}>
@@ -344,6 +195,7 @@ export default function Perfil() {
                   onChange={alterarSenha}
                   erro={errosDaSenha.atual}
                   required
+                  autoFocus
                 />
               </div>
 
@@ -371,23 +223,33 @@ export default function Perfil() {
               />
             </div>
 
+            {erroDoEnvio && (
+              <Aviso tom="erro" titulo="Senha não alterada">
+                {erroDoEnvio}
+              </Aviso>
+            )}
+
             <div className={styles.acoes}>
-              <Botao type="submit">
+              <Botao type="submit" disabled={enviando}>
                 <IconeConfirmar />
-                Salvar nova senha
+                {enviando ? 'Salvando…' : 'Salvar nova senha'}
               </Botao>
 
-              <Botao variante="secundario" type="button" onClick={fecharSenha}>
+              <Botao variante="secundario" type="button" onClick={fecharSenha} disabled={enviando}>
                 Cancelar
               </Botao>
             </div>
           </form>
         )}
 
-        {recadoDaSenha.recado && (
-          <Aviso titulo="Tudo certo">{recadoDaSenha.recado}</Aviso>
-        )}
+        {/* A região fica sempre na página: o leitor de tela só anuncia o que
+            muda dentro de uma região que já existia. */}
+        <div role="status">
+          {recadoDaSenha.recado && (
+            <Aviso titulo="Tudo certo">{recadoDaSenha.recado}</Aviso>
+          )}
+        </div>
       </section>
-    </main>
+    </div>
   );
 }

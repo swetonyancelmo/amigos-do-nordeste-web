@@ -2,7 +2,8 @@
 
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
-import { api, guardarToken } from '@/lib/api';
+import { api, guardarToken, guardarUsuario } from '@/lib/api';
+import type { UsuarioResumo } from '@/tipos/dominio';
 import { Marca } from '@/componentes/Marca';
 import { Sol } from '@/componentes/Sol';
 import { Campo } from '@/componentes/Campo';
@@ -30,8 +31,12 @@ export default function Login() {
     setErro(null);
     setEnviando(true);
     try {
-      const { accessToken } = await api.post<{ accessToken: string }>('/auth/login', { email, senha });
+      const { accessToken, usuario } = await api.post<{ accessToken: string; usuario: UsuarioResumo }>(
+        '/auth/login',
+        { email, senha },
+      );
       guardarToken(accessToken);
+      guardarUsuario(usuario);
       router.push('/familias');
     } catch (err) {
       setErro(err instanceof Error ? err.message : 'Não foi possível entrar.');

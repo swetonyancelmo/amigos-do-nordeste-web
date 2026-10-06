@@ -1,3 +1,5 @@
+import type { UsuarioResumo } from '@/tipos/dominio';
+
 /**
  * Cliente da API.
  *
@@ -15,7 +17,21 @@
  *    `aoPerderSessao` (o layout logado) manda para o login.
  */
 let accessToken: string | null = null;
-export const guardarToken = (t: string | null) => { accessToken = t; };
+let usuario: UsuarioResumo | null = null;
+
+/** Sem token, a sessão acabou: quem tinha entrado deixa de valer também. */
+export const guardarToken = (t: string | null) => {
+  accessToken = t;
+  if (t === null) usuario = null;
+};
+
+/**
+ * Nome e e-mail de quem entrou, também só em memória. A API só os devolve no
+ * login (não há `/api/usuario`), então depois de recarregar a página isto
+ * volta `null` até o próximo login.
+ */
+export const guardarUsuario = (u: UsuarioResumo | null) => { usuario = u; };
+export const usuarioDaSessao = () => usuario;
 
 const SEM_SERVIDOR = 'Não foi possível falar com o servidor. Confira a internet e tente de novo.';
 
@@ -50,8 +66,9 @@ async function chamar<T>(caminho: string, init: RequestInit = {}, jaRenovou = fa
   }
 
   // Login e renovação respondem 401 por conta própria (senha errada, cookie
-  // vencido): renovar aí não faz sentido.
-  const rotaDeEntrada = caminho.startsWith('/auth/');
+  // vencido): renovar aí não faz sentido. As outras rotas de /auth (trocar
+  // senha) exigem token como qualquer outra e renovam normalmente.
+  const rotaDeEntrada = caminho === '/auth/login' || caminho === '/auth/renovar';
   if (resposta.status === 401 && !jaRenovou && !rotaDeEntrada) {
     const renovado = await renovar();
     if (renovado) return chamar<T>(caminho, init, true);
