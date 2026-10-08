@@ -100,8 +100,10 @@ listar, `/{id}/novo-convite`; não há rota para desativar nem renomear).
   responsável em `GET /api/familias?busca=`); a comunidade vem da família. Fonte
   de renda saiu do modal de pessoa: a API só aceita renda no POST/PUT da família,
   e `ModalFonteRenda` fica para a tela de família.
-- A API ainda não tem rota de mapa (`/api/relatorios/mapa`) nem de perfil
-  (`/api/usuario`). Troca de senha é `POST /api/auth/trocar-senha`.
+- `GET /api/relatorios/mapa?municipioId=` devolve `{ municipio | null, pontos[] }`
+  (um ponto por comunidade: `comunidadeId`, `nome`, `latitude`, `longitude`,
+  `familias`); o Início usa o `municipio.codigoIbge` dela para o contorno. Não há
+  rota de perfil (`/api/usuario`). Troca de senha é `POST /api/auth/trocar-senha`.
 - `src/tipos/dominio.ts` foi alinhado com os enums e DTOs Java nesta data. Ao
   mudar algo na API, ajuste aqui no mesmo PR (skill `mudanca-de-contrato`).
 
