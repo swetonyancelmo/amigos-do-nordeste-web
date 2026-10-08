@@ -52,13 +52,19 @@ type ComunidadePainel = {
     municipioId: string;
 };
 
+/** Um ponto de GET /api/relatorios/mapa: uma comunidade (ADR-0005), nunca uma família. */
 type ComunidadeMapa = {
-    id: string;
+    comunidadeId: string;
     nome: string;
-    municipioId: string;
-    totalFamilias: number;
+    familias: number;
     latitude: number | null;
     longitude: number | null;
+};
+
+type RespostaMapa = {
+    /** `null` na visão geral (sem filtro de município). */
+    municipio: { id: string; nome: string; codigoIbge: string | null } | null;
+    pontos: ComunidadeMapa[];
 };
 
 /** Mesmas faixas da legenda do mapa: mais de 80, de 40 a 80, menos de 40. */
@@ -165,6 +171,7 @@ export function ConteudoDashboard() {
     const [situacao, setSituacao] = useState<SituacaoPainel | null>(null);
     const [necessidades, setNecessidades] = useState<NecessidadesPainel | null>(null);
     const [comunidadesMapa, setComunidadesMapa] = useState<ComunidadeMapa[]>([]);
+    const [codigoIbgeSelecionado, setCodigoIbgeSelecionado] = useState<string | null>(null);
     const [carregandoRelatorios, setCarregandoRelatorios] = useState(true);
     const [erroRelatorios, setErroRelatorios] = useState<string | null>(null);
     const [carregandoMapa, setCarregandoMapa] = useState(true);
@@ -172,12 +179,9 @@ export function ConteudoDashboard() {
     const [semContorno, setSemContorno] = useState(false);
     const [modoMapa, setModoMapa] = useState<'familias' | 'comunidades'>('familias');
 
-    // codigoIbge do município filtrado — vem do mesmo município já
-    // carregado para o <select>, sem precisar de mais uma chamada.
-    // "Todos os municípios" e um município sem codigoIbge cadastrado caem
-    // os dois em `null`, e o mapa sabe funcionar sem desenhar o polígono.
-    const codigoIbgeSelecionado =
-        municipios.find((municipio) => municipio.id === municipioId)?.codigoIbge ?? null;
+    // codigoIbgeSelecionado vem da resposta do mapa (`municipio.codigoIbge`).
+    // "Todos os municípios" e um município sem código caem os dois em `null`,
+    // e o mapa funciona sem desenhar o contorno.
 
     // --- Mapa: refs do Leaflet e do elemento DOM -----------------------
     const elementoMapaRef = useRef<HTMLDivElement | null>(null);
@@ -229,19 +233,24 @@ export function ConteudoDashboard() {
         const parametros = new URLSearchParams();
 
         if (municipioId) parametros.set('municipioId', municipioId);
-        if (comunidadeId) parametros.set('comunidadeId', comunidadeId);
 
         const consulta = parametros.toString() ? `?${parametros.toString()}` : '';
         setCarregandoMapa(true);
         setErroMapa(null);
 
-        api.get<ComunidadeMapa[]>(`/relatorios/mapa${consulta}`)
+        api.get<RespostaMapa>(`/relatorios/mapa${consulta}`)
             .then((dados) => {
-                if (!cancelado) setComunidadesMapa(dados);
+                if (cancelado) return;
+                // A rota só filtra por município; o recorte por comunidade é aqui.
+                setComunidadesMapa(
+                    comunidadeId ? dados.pontos.filter((p) => p.comunidadeId === comunidadeId) : dados.pontos
+                );
+                setCodigoIbgeSelecionado(dados.municipio?.codigoIbge ?? null);
             })
             .catch(() => {
                 if (!cancelado) {
                     setComunidadesMapa([]);
+                    setCodigoIbgeSelecionado(null);
                     setErroMapa('Não foi possível carregar os pontos do mapa.');
                 }
             })
@@ -357,23 +366,23 @@ export function ConteudoDashboard() {
         );
 
         comCoordenadas.forEach((comunidade) => {
-            const tamanho = tamanhoPinoPorTotalFamilias(comunidade.totalFamilias);
+            const tamanho = tamanhoPinoPorTotalFamilias(comunidade.familias);
             const mostrandoFamilias = modoMapa === 'familias';
             const tamanhoPino = mostrandoFamilias ? tamanho : 32;
             const cor = mostrandoFamilias
-                ? corPorTotalFamilias(comunidade.totalFamilias)
+                ? corPorTotalFamilias(comunidade.familias)
                 : 'var(--laranja)';
 
             const icone = L.divIcon({
                 className: styles.pino,
-                html: `<div style="width:${tamanhoPino}px;height:${tamanhoPino}px;background:${cor};">${mostrandoFamilias ? comunidade.totalFamilias : ''}</div>`,
+                html: `<div style="width:${tamanhoPino}px;height:${tamanhoPino}px;background:${cor};">${mostrandoFamilias ? comunidade.familias : ''}</div>`,
                 iconSize: [tamanhoPino, tamanhoPino],
                 iconAnchor: [tamanhoPino / 2, tamanhoPino / 2],
             });
 
             L.marker([comunidade.latitude, comunidade.longitude], { icon: icone })
                 .bindTooltip(mostrandoFamilias
-                    ? `<strong>${comunidade.nome}</strong><br>${comunidade.totalFamilias} famílias`
+                    ? `<strong>${comunidade.nome}</strong><br>${comunidade.familias} famílias`
                     : `<strong>${comunidade.nome}</strong><br>Comunidade atendida`)
                 .addTo(camadaPinos);
         });
@@ -459,9 +468,9 @@ export function ConteudoDashboard() {
     }
 
     const comunidadesOrdenadas = [...comunidadesMapa].sort(
-        (a, b) => b.totalFamilias - a.totalFamilias
+        (a, b) => b.familias - a.familias
     );
-    const maiorTotalFamilias = Math.max(1, ...comunidadesMapa.map((c) => c.totalFamilias));
+    const maiorTotalFamilias = Math.max(1, ...comunidadesMapa.map((c) => c.familias));
 
     return (
         <div className={styles.pagina}>
@@ -625,15 +634,17 @@ export function ConteudoDashboard() {
                     ) : (
                         <ul className={styles.listaItens}>
                             {comunidadesOrdenadas.map((comunidade) => {
+                                // O ponto do mapa não traz município; vem da lista de comunidades.
                                 const municipioDaComunidade = municipios.find(
-                                    (municipio) => municipio.id === comunidade.municipioId
+                                    (municipio) => municipio.id
+                                        === comunidades.find((c) => c.id === comunidade.comunidadeId)?.municipioId
                                 );
 
                                 return (
-                                    <li key={comunidade.id} className={styles.listaItem}>
+                                    <li key={comunidade.comunidadeId} className={styles.listaItem}>
                                         <div className={styles.listaItemCabecalho}>
                                             <span>{comunidade.nome}</span>
-                                            <strong>{comunidade.totalFamilias}</strong>
+                                            <strong>{comunidade.familias}</strong>
                                         </div>
 
                                         {municipioDaComunidade && (
@@ -646,7 +657,7 @@ export function ConteudoDashboard() {
                                             <div
                                                 className={styles.listaBarraPreenchida}
                                                 style={{
-                                                    width: `${(comunidade.totalFamilias / maiorTotalFamilias) * 100}%`,
+                                                    width: `${(comunidade.familias / maiorTotalFamilias) * 100}%`,
                                                 }}
                                             />
                                         </div>
