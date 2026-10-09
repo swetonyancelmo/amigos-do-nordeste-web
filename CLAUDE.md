@@ -12,26 +12,34 @@ Next.js 15 (App Router) · React 19 · TypeScript · Node 22 · **pnpm** ·
 CSS puro (variáveis + `componentes.css` + CSS Modules) · Leaflet + react-leaflet
 (mini-mapa da comunidade; carregar com `next/dynamic` e `ssr: false`). Sem biblioteca de UI.
 @react-pdf/renderer só para o PDF do relatório, carregado sob demanda no clique.
-Testes: só de acessibilidade, com Playwright + axe em `e2e/` (API falsa, sem dado real).
+Testes: Playwright em `e2e/`, com a API interceptada por `e2e/api-falsa.ts` (sem
+dado real): acessibilidade (axe, WCAG 2.1 AA), teclado e foco de modais, validação
+e edição de família, abas de Chamados, exportação em PDF e, em `e2e/mobile/`,
+fluxos no celular (Pixel 7 e iPhone 13). **O CI não roda esses testes** (só
+`typecheck`, `lint` e `build`): rode `pnpm test` antes do PR.
 
 ## Estrutura
 
 ```
 src/app/
   layout.tsx, globals.css (tokens), componentes.css (classes de componente)
-  page.tsx                 redireciona para /login
+  page.tsx                 redireciona para /login (o login leva a /inicio)
   login/                   tela de entrada (POST /api/auth/login)
-  (app)/layout.tsx         casco logado: <Navegacao> + cabeçalho via ContextoCabecalho
-  (app)/chamados/          fila de pré-cadastros do app; [id] revisa, aprova ou devolve
+  (app)/layout.tsx         casco logado: <GuardaSessao> + <Navegacao> + cabeçalho via ContextoCabecalho
+  (app)/inicio/            painel: indicadores (famílias, pessoas, crianças até 12, sem banheiro), situação
+                           das famílias e mapa de comunidades (GET /api/relatorios/mapa) com filtro de município
+  (app)/chamados/          fila de pré-cadastros do app em abas por situação, com aviso de possível duplicata;
+                           [id] revisa, completa (moradia, renda, dados por pessoa), aprova ou devolve
   (app)/agentes/           agentes do app: cadastrar e gerar código de convite (novo código desliga o celular atual)
   (app)/familias/          lista com busca, filtros e ficha em modal (API), que inativa/reativa; nova/ cadastra (POST /api/familias);
                            [id]/editar edita (PUT /api/familias/{id}); o formulário é src/componentes/familia/
   (app)/pessoas/           lista com filtros e modal criar/editar/remover (API)
-  (app)/comunidades/       lista com busca e ficha em modal (GET /api/comunidades); nova/ cadastra com mini-mapa; ainda sem edição
+  (app)/comunidades/       lista com busca e ficha em modal (GET /api/comunidades); nova/ cadastra com mini-mapa; sem edição
+                           (a API tem PUT, o painel não usa)
   (app)/relatorios/        necessidades (roupa/calçado por tamanho), situação das famílias e qualidade do cadastro;
                            exporta .xlsx (API) e PDF (gerado no navegador, src/componentes/relatorios/)
   (app)/perfil/            nome e e-mail do login (só leitura) e troca de senha (POST /api/auth/trocar-senha)
-src/componentes/           Botao, Campo, Selecao, Aviso, Modal, Paginacao, Marca, Sol, Cabecalho,
+src/componentes/           Botao, Campo, Selecao, Aviso, Modal, Paginacao, Loading, Marca, Sol, Cabecalho,
                            ContextoCabecalho (useCabecalho), Navegacao, GuardaSessao,
                            pessoas/{ListaPessoas,ModalPessoa,PessoaForm},
                            fonte-renda/ModalFonteRenda,
@@ -48,6 +56,7 @@ src/lib/recado.ts          recado em memória para a próxima tela ("Família at
 src/lib/useRecado.ts       recado passageiro de sucesso na mesma tela (some em 4 s)
 src/tipos/dominio.ts       só tipos, espelhando os enums/DTOs do backend
 design-system/             gerador da vitrine (pnpm design-system)
+e2e/                       testes Playwright (api-falsa.ts, axe.spec.ts, mobile/…)
 .claude/contextos/guia-cadastro-familia.md   guia longo da tela de cadastro de família
 ```
 
@@ -91,21 +100,29 @@ Swagger: `http://localhost:3333/swagger-ui.html`. Rotas que interessam ao painel
 `totais` calculados), `/api/pessoas`, `/api/familias/{id}/pessoas`,
 `/api/comunidades`, `/api/municipios`, `/api/pre-cadastros` (fila de chamados:
 listar, ficha em `/{id}`, `/{id}/aprovar`, `/{id}/devolver`), `/api/relatorios/necessidades`,
-`/api/relatorios/situacao`, `/api/auth/trocar-senha`, `/api/agentes` (criar,
-listar, `/{id}/novo-convite`; não há rota para desativar nem renomear).
+`/api/relatorios/situacao`, `/api/relatorios/necessidades.xlsx` (via `api.baixar`),
+`/api/relatorios/mapa`, `/api/auth/trocar-senha`, `/api/agentes` (criar, listar,
+`/{id}/novo-convite`; não há rota para desativar nem renomear).
 
-**O que ainda falta ou diverge (02/10/2026):**
+**Pontos de atenção (conferido em 08/10/2026):**
 
 - `/pessoas` está ligada à API. Pessoa nasce dentro de uma família (busca por
-  responsável em `GET /api/familias?busca=`); a comunidade vem da família. Fonte
-  de renda saiu do modal de pessoa: a API só aceita renda no POST/PUT da família,
-  e `ModalFonteRenda` fica para a tela de família.
+  responsável em `GET /api/familias?busca=`) e pode ser movida para outra
+  (`POST /api/pessoas/{id}/mover`); a comunidade vem da família. Fonte de renda
+  só entra no POST/PUT da família (`ModalFonteRenda`, no formulário de família)
+  e na aprovação de um chamado.
 - `GET /api/relatorios/mapa?municipioId=` devolve `{ municipio | null, pontos[] }`
   (um ponto por comunidade: `comunidadeId`, `nome`, `latitude`, `longitude`,
   `familias`); o Início usa o `municipio.codigoIbge` dela para o contorno. Não há
-  rota de perfil (`/api/usuario`). Troca de senha é `POST /api/auth/trocar-senha`.
-- `src/tipos/dominio.ts` foi alinhado com os enums e DTOs Java nesta data. Ao
-  mudar algo na API, ajuste aqui no mesmo PR (skill `mudanca-de-contrato`).
+  rota de perfil (`/api/usuario`): nome e e-mail vêm do login e da renovação
+  (`guardarUsuario` em `src/lib/api.ts`).
+- A faixa de renda é **da família** (`faixaRenda`), não de cada fonte.
+- O navegador chama dois serviços externos direto: IBGE (malha do município, em
+  `src/lib/municipios.ts`) e Nominatim/OpenStreetMap (`src/lib/nominatim.ts`, só
+  no clique, 1 busca/s). Só vão nome de município/comunidade e UF, nunca dado de
+  família. A malha do IBGE e o Nominatim exigem internet no navegador.
+- `src/tipos/dominio.ts` espelha os enums e DTOs Java. Ao mudar algo na API,
+  ajuste aqui no mesmo PR (skill `mudanca-de-contrato`).
 
 As decisões de arquitetura (ADRs) e os requisitos estão no repositório da API,
 em `docs/`. Leia antes de mudar autenticação, modelo de dados ou mapa.
@@ -117,8 +134,8 @@ cp .env.example .env.local     # API_URL=http://localhost:3333 (lida pelo Next, 
 pnpm dev                       # http://localhost:3000 (a API precisa estar de pé)
 pnpm typecheck && pnpm lint    # antes do PR; o CI também roda pnpm build
 pnpm design-system             # regenera design-system/site/
-pnpm test                      # Playwright + axe (sobe o Next na 3100; não precisa da API)
-                               # 1ª vez: npx playwright install chromium
+pnpm test                      # Playwright: axe, fluxos e celular (sobe o Next na 3100; não precisa da API)
+                               # 1ª vez: npx playwright install chromium (e webkit, para o iPhone)
 ```
 
 ## Skills
