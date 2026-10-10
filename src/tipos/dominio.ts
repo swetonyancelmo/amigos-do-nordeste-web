@@ -94,6 +94,12 @@ export interface Metadados {
   tamanhoRoupa: Opcao[];
   numeroCalcado: Opcao[];
   situacaoPreCadastro: Opcao[];
+  /**
+   * Estratos da avaliação de vulnerabilidade, na ordem de prioridade. O rótulo
+   * é configurável na base de conhecimento da API (ADR-0010): nunca escreva
+   * esse texto no front.
+   */
+  estratoVulnerabilidade: Opcao[];
 }
 
 /* ------------------------------------------------------- comunidade e município */
@@ -252,6 +258,10 @@ export interface FamiliaDetalhe extends CamposFamilia {
   criadoEm: string;
   atualizadoEm: string;
   totais: TotaisFamiliaDetalhe;
+  /** Cômodos do domicílio (V17). null = não informado, nunca zero. */
+  numeroComodos: number | null;
+  /** Sugestão de prioridade com a explicação, calculada na hora pela API. */
+  vulnerabilidade: AvaliacaoVulnerabilidade;
 }
 
 /** `FamiliaResponse` — resposta de POST/PUT `/api/familias` e da aprovação de pré-cadastro. */
@@ -300,6 +310,156 @@ export interface FamiliaResumo {
   totalDe13A59Anos: number;
   total60AnosOuMais: number;
   totalSemIdadeConhecida: number;
+  vulnerabilidade: VulnerabilidadeResumo;
+}
+
+/* ------------------------------------------- avaliação de vulnerabilidade */
+
+/*
+ * Escala de Risco Familiar de Coelho-Savassi, adaptada (ADR-0010 da API).
+ * O front NUNCA calcula escore nem estrato: mostra o que a API devolve. Pesos,
+ * cortes e rótulos vivem na base de conhecimento da API e podem mudar sem
+ * deploy; qualquer conta aqui divergiria no primeiro ajuste.
+ */
+
+/**
+ * Código do estrato (`EstratoRisco`). R1/R2/R3 são os do instrumento; os
+ * outros dois não. O texto para a tela é o `rotulo` que vem junto, nunca este
+ * código. `string` no fim: um código novo na API não pode quebrar a tela.
+ */
+export type EstratoRisco =
+  | 'R3' | 'R2' | 'R1' | 'SEM_RISCO_IDENTIFICADO' | 'DADOS_INSUFICIENTES'
+  | (string & {});
+
+/** `GET /api/familias?ordenacao=` */
+export type OrdenacaoFamilia = 'NOME' | 'PRIORIDADE';
+
+/** PRESENTE soma; AUSENTE soma 0 (o dado diz que não); INDETERMINADA: falta o dado. */
+export type Constatacao = 'PRESENTE' | 'AUSENTE' | 'INDETERMINADA';
+
+/** `FamiliaResumoResponse.Vulnerabilidade` — o estrato numa linha da lista. */
+export interface VulnerabilidadeResumo {
+  estrato: EstratoRisco;
+  rotulo: string;
+  /** null em DADOS_INSUFICIENTES. */
+  escore: number | null;
+  pontosConfirmados: number;
+}
+
+/** `Avaliacao.ItemExplicacao` — uma sentinela e o que a API concluiu dela. */
+export interface ItemExplicacao {
+  /** Código técnico: não mostre. Para a tela, `nome` e `detalhe`. */
+  codigo: string;
+  /** Nome da sentinela como está no artigo ("Baixas condições de saneamento"). */
+  nome: string;
+  constatacao: Constatacao;
+  /** Pontos somados; 0 se ausente; null se indeterminada. */
+  pontos: number | null;
+  pontosMaximos: number;
+  /** Por que a API concluiu isso, em português ("sem banheiro; …"). */
+  detalhe: string;
+  /** Nomes técnicos de campo da família ("numeroComodos", "pessoas.idade"). */
+  camposFaltantes: string[];
+}
+
+/** `Avaliacao` — `FamiliaDetalheResponse.vulnerabilidade`. */
+export interface AvaliacaoVulnerabilidade {
+  estrato: EstratoRisco;
+  rotulo: string;
+  /** null em DADOS_INSUFICIENTES: sem dado, não há escore. */
+  escore: number | null;
+  pontosConfirmados: number;
+  pontosEmAberto: number;
+  escoreMaximoAlcancavel: number;
+  sentinelasPresentes: ItemExplicacao[];
+  sentinelasAusentes: ItemExplicacao[];
+  sentinelasIndeterminadas: ItemExplicacao[];
+  camposFaltantes: string[];
+}
+
+/** `VulnerabilidadeResponse.ContagemEstrato`. Todo estrato vem, mesmo com zero, na ordem de prioridade. */
+export interface ContagemEstrato {
+  estrato: EstratoRisco;
+  rotulo: string;
+  valor: number;
+  /** 0 a 100, duas casas, sobre o total de famílias do recorte. */
+  percentual: number;
+}
+
+export interface VulnerabilidadePorMunicipio {
+  municipioId: string;
+  municipioNome: string;
+  totalFamilias: number;
+  distribuicao: ContagemEstrato[];
+}
+
+export interface VulnerabilidadePorComunidade {
+  comunidadeId: string;
+  comunidadeNome: string;
+  municipioNome: string;
+  totalFamilias: number;
+  distribuicao: ContagemEstrato[];
+}
+
+/** Sentinela do instrumento que a avaliação não vê (dado de saúde, ou não coletado). */
+export interface SentinelaNaoAvaliada {
+  codigo: string;
+  nome: string;
+  pontos: number | null;
+  situacao: 'AVALIADA' | 'NAO_COLETADA' | 'DESCARTADA_LGPD';
+  justificativa: string | null;
+}
+
+/**
+ * `VulnerabilidadeResponse` — `GET /api/relatorios/vulnerabilidade`. Só
+ * contagens: nenhum nome de família vem nesta rota.
+ */
+export interface RelatorioVulnerabilidade {
+  totalFamilias: number;
+  escoreMaximoAlcancavel: number;
+  distribuicao: ContagemEstrato[];
+  porMunicipio: VulnerabilidadePorMunicipio[];
+  porComunidade: VulnerabilidadePorComunidade[];
+  /** Nas famílias em DADOS_INSUFICIENTES, quantas não têm cada campo. */
+  camposFaltantes: { campo: string; familias: number }[];
+  sentinelasNaoAvaliadas: SentinelaNaoAvaliada[];
+}
+
+/** Faixa de uma sentinela de razão (morador/cômodo): "razão OPERADOR limite → pontos". */
+export interface FaixaSentinela {
+  operador: 'MENOR' | 'IGUAL' | 'MAIOR';
+  limite: number;
+  pontos: number;
+}
+
+/**
+ * `BaseDeConhecimentoResposta` — `GET /api/vulnerabilidade/base`: as regras EM
+ * USO, como o motor as aplica. Mostradas na tela tal como vêm; nada aqui é
+ * recalculado no front.
+ */
+export interface BaseVulnerabilidade {
+  escoreMaximoAlcancavel: number;
+  sentinelas: {
+    codigo: string;
+    nome: string;
+    tipo: 'BINARIA' | 'FAIXA';
+    /** null numa FAIXA: os pontos estão em `faixas`. */
+    pontos: number | null;
+    faixas: FaixaSentinela[];
+    /** Como o cadastro é lido para esta sentinela. */
+    criterio: string | null;
+  }[];
+  estratos: {
+    estrato: EstratoRisco;
+    rotulo: string;
+    descricaoInstrumento: string;
+    /** null em DADOS_INSUFICIENTES. */
+    escoreMinimo: number | null;
+    /** null no estrato mais alto e em DADOS_INSUFICIENTES. */
+    escoreMaximo: number | null;
+    ordem: number;
+  }[];
+  sentinelasNaoAvaliadas: SentinelaNaoAvaliada[];
 }
 
 /* ------------------------------------------------------------ pré-cadastros */

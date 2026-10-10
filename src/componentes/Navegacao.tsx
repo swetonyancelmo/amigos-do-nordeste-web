@@ -138,6 +138,20 @@ function IconeComunidade() {
   );
 }
 
+function IconePriorizacao() {
+  return (
+    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+         strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"
+         aria-hidden="true" focusable="false">
+      <path d="M10 6h10" />
+      <path d="M10 12h7" />
+      <path d="M10 18h4" />
+      <path d="M5 4v16" />
+      <path d="m3 17 2 3 2-3" />
+    </svg>
+  );
+}
+
 function IconeMenu() {
   return (
     <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor"
@@ -173,6 +187,7 @@ function IconePerfil() {
 const ITENS = [
   { href: '/inicio', rotulo: 'Início', Icone: IconePainel },
   { href: '/familias', rotulo: 'Famílias', Icone: IconeCasa },
+  { href: '/priorizacao', rotulo: 'Priorização', Icone: IconePriorizacao },
   { href: '/chamados', rotulo: 'Chamados', Icone: IconeChamados, contaPendentes: true },
   { href: '/agentes', rotulo: 'Agentes', Icone: IconeAgentes },
   { href: '/pessoas', rotulo: 'Pessoas', Icone: IconePessoas },

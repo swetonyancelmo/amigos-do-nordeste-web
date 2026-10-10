@@ -1,0 +1,401 @@
+.pagina {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  gap: var(--e-5);
+  min-width: 0;
+}
+
+/* ------------------------------------------------------------------ filtros */
+
+.filtros {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-end;
+  gap: var(--e-4);
+}
+
+.filtro {
+  display: grid;
+  gap: var(--e-1);
+}
+
+.filtroRotulo {
+  color: var(--texto-medio);
+  font-size: var(--t-apoio);
+  font-weight: 700;
+}
+
+.filtroSelect {
+  min-height: 44px;
+  padding: 8px 12px;
+  border: 1px solid var(--linha-forte);
+  border-radius: var(--raio);
+  background: var(--superficie);
+  color: var(--texto-forte);
+  font: inherit;
+  font-size: var(--t-medio);
+}
+
+.marcar {
+  display: flex;
+  align-items: center;
+  gap: var(--e-2);
+  min-height: 44px;
+  color: var(--texto-forte);
+}
+
+.marcar input {
+  width: 20px;
+  height: 20px;
+  accent-color: var(--laranja);
+}
+
+/* ------------------------------------------------------- cabeçalho da folha */
+
+.folhaCabecalho {
+  display: grid;
+  gap: var(--e-2);
+}
+
+.recorte {
+  margin: 0;
+  color: var(--texto-medio);
+  font-size: var(--t-apoio);
+}
+
+.frase {
+  margin: 0;
+  padding: var(--e-2) var(--e-3);
+  border-left: 3px solid var(--verde);
+  background: var(--verde-claro);
+  color: var(--texto-forte);
+}
+
+.instrumento {
+  margin: 0;
+  color: var(--texto-medio);
+  font-size: var(--t-apoio);
+  line-height: 1.45;
+}
+
+/* -------------------------------------------------------------------- blocos */
+
+.bloco {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  gap: var(--e-4);
+  min-width: 0;
+}
+
+.blocoTitulo {
+  margin: 0;
+  padding-bottom: var(--e-2);
+  border-bottom: 2px solid var(--linha-forte);
+  font-family: var(--fonte-marca);
+  font-size: var(--t-titulo);
+}
+
+/* Cadastros a completar: separado e com a borda tracejada do selo. */
+.blocoACompletar {
+  padding: var(--e-4);
+  border: 2px dashed var(--texto-forte);
+  border-radius: var(--raio);
+  background: var(--ambar-claro);
+}
+
+.nota {
+  margin: 0;
+  color: var(--texto-forte);
+}
+
+.vazio {
+  margin: 0;
+  color: var(--texto-medio);
+}
+
+
+.comunidade {
+  display: grid;
+  gap: var(--e-2);
+}
+
+.comunidadeTitulo {
+  margin: 0;
+  font-size: var(--t-base);
+  font-weight: 800;
+}
+
+.comunidadeTitulo span {
+  color: var(--texto-medio);
+  font-weight: 400;
+}
+
+/* -------------------------------------------------------------------- tabela */
+
+.tabelaRolagem {
+  overflow-x: auto;
+}
+
+.tabela {
+  width: 100%;
+  border-collapse: collapse;
+  background: var(--superficie);
+  font-size: var(--t-apoio);
+}
+
+.legenda {
+  padding-bottom: var(--e-2);
+  color: var(--texto-forte);
+  font-weight: 800;
+  text-align: left;
+}
+
+.tabela th,
+.tabela td {
+  padding: 6px 10px;
+  border-bottom: 1px solid var(--linha);
+  text-align: left;
+  vertical-align: middle;
+}
+
+.tabela thead th {
+  color: var(--texto-medio);
+  font-size: var(--t-micro);
+  font-weight: 700;
+  /* o cabeçalho é o rótulo do estrato, que pode ser longo: quebra em vez de
+     alargar a tabela além da tela (ou da folha) */
+  white-space: normal;
+  vertical-align: bottom;
+}
+
+
+
+.tabela tbody th {
+  font-weight: 600;
+}
+
+/* Larguras fixas: as tabelas de todas as comunidades alinham as colunas,
+   e a tabela não estica criando vãos entre elas. */
+.tabelaFamilias,
+.tabelaTotais {
+  table-layout: fixed;
+}
+
+.tabelaFamilias {
+  max-width: 64rem;
+}
+
+.colPrioridade {
+  width: 22rem;
+}
+
+.colNome {
+  width: 16rem;
+}
+
+.colNumero {
+  width: 5.5rem;
+}
+
+.colAcao {
+  width: 7rem;
+}
+
+.responsavel {
+  overflow-wrap: anywhere;
+}
+
+.numero {
+  text-align: right !important;
+  white-space: nowrap;
+}
+
+/* ---------------------------------------------------------------- celular */
+
+/*
+ * As larguras fixas acima servem à tela larga e ao papel. No celular elas
+ * não cabem: a coluna da prioridade sozinha passa da tela e as outras
+ * encolhem a zero. Aqui:
+ *  - a tabela de famílias vira um cartão por família (como na lista de
+ *    Famílias), com o rótulo de cada número vindo do data-rotulo;
+ *  - as de totais voltam à largura automática e rolam de lado, dentro delas.
+ */
+@media (max-width: 640px) {
+  .tabelaFamilias,
+  .tabelaTotais {
+    table-layout: auto;
+  }
+
+  .tabelaFamilias col,
+  .tabelaTotais col {
+    width: auto;
+  }
+
+  /* Totais: um bloco por município/comunidade, "rótulo … número" por linha. */
+  .tabelaTotais thead,
+  .tabelaFamilias thead {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    overflow: hidden;
+    clip-path: inset(50%);
+  }
+
+  .tabelaFamilias tbody,
+  .tabelaFamilias tr,
+  .tabelaTotais tbody,
+  .tabelaTotais tr {
+    display: block;
+  }
+
+  .tabelaTotais tr {
+    padding: var(--e-3);
+    border-bottom: 1px solid var(--linha);
+  }
+
+  .tabelaTotais th,
+  .tabelaTotais td {
+    display: flex;
+    justify-content: space-between;
+    gap: var(--e-3);
+    padding: 2px 0;
+    border: 0;
+  }
+
+  .tabelaTotais th {
+    padding-bottom: var(--e-1);
+  }
+
+  .tabelaTotais td[data-rotulo]::before {
+    content: attr(data-rotulo);
+    color: var(--texto-medio);
+    font-weight: 400;
+    text-align: left;
+  }
+
+  .tabelaTotais .celulaTotal {
+    font-weight: 700;
+  }
+
+  .tabelaFamilias tr {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: var(--e-2) var(--e-3);
+    padding: var(--e-3);
+    border-bottom: 1px solid var(--linha);
+  }
+
+  .tabelaFamilias th,
+  .tabelaFamilias td {
+    display: block;
+    padding: 0;
+    border: 0;
+    white-space: normal;
+  }
+
+  .celulaPrioridade,
+  .tabelaFamilias .responsavel,
+  .celulaAcao {
+    grid-column: 1 / -1;
+  }
+
+  .tabelaFamilias .responsavel {
+    font-size: var(--t-base);
+  }
+
+  .tabelaFamilias td[data-rotulo]::before {
+    content: attr(data-rotulo);
+    display: block;
+    color: var(--texto-suave);
+    font-size: var(--t-micro);
+    font-weight: 700;
+  }
+
+  .tabelaFamilias .numero {
+    text-align: left !important;
+  }
+
+  /* alvo de toque confortável para "Completar" */
+  .celulaAcao a {
+    display: inline-flex;
+    align-items: center;
+    min-height: 44px;
+  }
+}
+
+/* ------------------------------------------------------------------ papel */
+
+@media print {
+  .pagina {
+    gap: var(--e-4);
+  }
+
+  /* No papel a tabela do método vira anexo: a folha começa pelo que se usa
+     na semana (totais e famílias) e a explicação fecha o documento. */
+  .comoCalcula {
+    order: 99;
+    break-before: page;
+  }
+
+  .tabelaRolagem {
+    overflow: visible;
+  }
+
+  /* A4: colunas mais estreitas, para os cabeçalhos dos estratos respirarem. */
+  .colNome {
+    width: 8.5rem;
+  }
+
+  .colNumero {
+    width: 3.8rem;
+  }
+
+  .colPrioridade {
+    width: 15rem;
+  }
+
+  .tabela thead th {
+    font-size: 8pt;
+  }
+
+
+  .tabela {
+    font-size: 10pt;
+  }
+
+  .tabela th,
+  .tabela td {
+    padding: 3px 6px;
+    border-bottom-color: var(--linha-forte);
+  }
+
+  /* A comunidade não se parte entre duas folhas quando cabe numa; a linha
+     da família nunca. */
+  .comunidade {
+    break-inside: avoid-page;
+  }
+
+  .tabela tr {
+    break-inside: avoid;
+  }
+
+  .tabela thead {
+    display: table-header-group;
+  }
+
+  .blocoTitulo,
+  .comunidadeTitulo {
+    break-after: avoid;
+  }
+
+  /* Cadastros a completar começam em folha nova: é outra lista de trabalho. */
+  .blocoACompletar {
+    break-before: page;
+    background: var(--superficie);
+  }
+
+  .frase {
+    border-left-color: var(--texto-forte);
+    background: var(--superficie);
+  }
+}

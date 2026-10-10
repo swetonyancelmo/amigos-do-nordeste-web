@@ -1,0 +1,58 @@
+.carregando {
+  display: grid;
+  gap: var(--e-2);
+  padding: var(--e-4) 0;
+}
+
+.mensagem {
+  margin: 0;
+  color: var(--texto-forte);
+  font-size: var(--t-base);
+}
+
+.explicacao {
+  margin: 0;
+  color: var(--texto-medio);
+  font-size: var(--t-apoio);
+  line-height: 1.45;
+}
+
+.esqueleto {
+  display: grid;
+  gap: var(--e-2);
+  margin-top: var(--e-2);
+}
+
+.barra {
+  display: block;
+  height: 14px;
+  border-radius: var(--raio-p);
+  background: var(--linha);
+  animation: pulsar 1.6s ease-in-out infinite;
+}
+
+.barra:nth-child(2n) {
+  width: 82%;
+}
+
+.barra:nth-child(3n) {
+  width: 64%;
+}
+
+@keyframes pulsar {
+  50% {
+    opacity: 0.45;
+  }
+}
+
+.falha {
+  display: grid;
+  justify-items: start;
+  gap: var(--e-3);
+}
+
+@media print {
+  .esqueleto {
+    display: none;
+  }
+}
