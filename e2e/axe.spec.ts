@@ -14,6 +14,7 @@ const TELAS = [
   { rota: '/pessoas', titulo: 'Pessoas' },
   { rota: '/comunidades', titulo: 'Comunidades' },
   { rota: '/relatorios', titulo: 'Necessidades da comunidade' },
+  { rota: '/priorizacao', titulo: 'Priorização' },
   { rota: '/perfil', titulo: 'Perfil' },
 ];
 

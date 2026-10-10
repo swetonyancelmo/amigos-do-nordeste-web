@@ -275,6 +275,11 @@
   color: var(--laranja-escuro);
 }
 
+/* O selo do estrato não quebra no meio na tabela larga. */
+.celulaPrioridade {
+  min-width: 12rem;
+}
+
 .estado {
   padding: var(--e-6) var(--e-4);
   color: var(--texto-medio);
@@ -443,6 +448,7 @@
 
   /* Nome, comunidade/município e situação ocupam a linha toda ou meia. */
   .celulaNome,
+  .celulaPrioridade,
   .celulaSituacao {
     grid-column: 1 / -1;
   }

@@ -1,18 +1,22 @@
 'use client';
 
 import Link from 'next/link';
-import { useCallback, useEffect, useRef, useState } from 'react';
+import { usePathname, useRouter, useSearchParams } from 'next/navigation';
+import { Suspense, useCallback, useEffect, useRef, useState } from 'react';
 import { Aviso } from '@/componentes/Aviso';
 import { Botao } from '@/componentes/Botao';
 import { useCabecalho } from '@/componentes/ContextoCabecalho';
 import { Dado } from '@/componentes/Dados';
+import { Carregando, FalhaAoCarregar, mensagemDeFalha } from '@/componentes/EstadoCarga';
 import { Modal } from '@/componentes/Modal';
 import { Paginacao } from '@/componentes/Paginacao';
+import { PainelExplicacao } from '@/componentes/vulnerabilidade/PainelExplicacao';
+import { SeloEstrato } from '@/componentes/vulnerabilidade/SeloEstrato';
 import { api } from '@/lib/api';
 import { data } from '@/lib/datas';
 import { pegarRecado } from '@/lib/recado';
 import { useMetadados } from '@/lib/metadados';
-import type { Comunidade, FamiliaDetalhe, FamiliaResumo, Opcao, Pagina, Pessoa } from '@/tipos/dominio';
+import type { Comunidade, FamiliaDetalhe, FamiliaResumo, Opcao, OrdenacaoFamilia, Pagina, Pessoa } from '@/tipos/dominio';
 import styles from './familias.module.css';
 
 // Fora do componente: JSX estável, o cabeçalho não re-renderiza à toa.
@@ -76,20 +80,22 @@ function DetalhesFamilia({ id, onSituacaoMudou }: { id: string; onSituacaoMudou:
   const [erro, setErro] = useState('');
   const [mudandoSituacao, setMudandoSituacao] = useState(false);
   const [erroSituacao, setErroSituacao] = useState('');
+  const [tentativa, setTentativa] = useState(0);
 
   useEffect(() => {
     let ativo = true;
+    setErro('');
     api
       .get<FamiliaDetalhe>(`/familias/${id}`)
       .then((dado) => ativo && setFicha(dado))
-      .catch((e) => ativo && setErro(mensagemDeErro(e, 'Não foi possível carregar a família.')));
+      .catch((e) => ativo && setErro(mensagemDeFalha(e, 'Não foi possível carregar a família. Tente de novo.')));
     return () => {
       ativo = false;
     };
-  }, [id]);
+  }, [id, tentativa]);
 
-  if (erro) return <Aviso tom="erro">{erro}</Aviso>;
-  if (!ficha) return <p className={styles.estado} role="status">Carregando…</p>;
+  if (erro) return <FalhaAoCarregar mensagem={erro} onTentarDeNovo={() => setTentativa((n) => n + 1)} />;
+  if (!ficha) return <Carregando mensagem="Carregando a ficha da família" linhas={6} />;
 
   const { totais, pessoas, fontesRenda } = ficha;
 
@@ -132,6 +138,8 @@ function DetalhesFamilia({ id, onSituacaoMudou }: { id: string; onSituacaoMudou:
         </Link>
       </div>
       {erroSituacao && <Aviso tom="erro">{erroSituacao}</Aviso>}
+
+      {ficha.vulnerabilidade && <PainelExplicacao avaliacao={ficha.vulnerabilidade} familiaId={ficha.id} />}
 
       <section className={styles.secao}>
         <h3 className={styles.secaoTitulo}>Família</h3>
@@ -263,14 +271,33 @@ function DetalhesFamilia({ id, onSituacaoMudou }: { id: string; onSituacaoMudou:
  * Lista de famílias (tela 02 do Figma).
  *  - a busca é pelo nome da responsável (a API ignora acento);
  *  - os totais de cada linha vêm calculados da API;
- *  - paginação simples, sem scroll infinito.
+ *  - paginação simples, sem scroll infinito;
+ *  - estrato, ordenação, comunidade e município moram na URL: a tela
+ *    sobrevive ao recarregar e o Início linka direto para "cadastros a
+ *    completar". Filtro e ordem por estrato são da API (o estrato é
+ *    calculado lá); reordenar a página aqui faria a paginação mentir.
  */
 export default function Familias() {
+  return (
+    <Suspense fallback={<Carregando mensagem="Carregando famílias" linhas={6} />}>
+      <ConteudoFamilias />
+    </Suspense>
+  );
+}
+
+function ConteudoFamilias() {
   useCabecalho('Famílias', ACOES);
+  const router = useRouter();
+  const pathname = usePathname();
+  const parametrosUrl = useSearchParams();
+  const comunidadeId = parametrosUrl.get('comunidadeId') ?? '';
+  const municipioId = parametrosUrl.get('municipioId') ?? '';
+  const estrato = parametrosUrl.get('estrato') ?? '';
+  const ordenacao: OrdenacaoFamilia = parametrosUrl.get('ordenacao') === 'PRIORIDADE' ? 'PRIORIDADE' : 'NOME';
+  const { metadados } = useMetadados();
 
   const [digitado, setDigitado] = useState('');
   const [busca, setBusca] = useState('');
-  const [comunidadeId, setComunidadeId] = useState('');
   const [semBanheiro, setSemBanheiro] = useState(false);
   const [incluirInativas, setIncluirInativas] = useState(false);
   const [pagina, setPagina] = useState(0);
@@ -315,17 +342,30 @@ export default function Familias() {
     const params = new URLSearchParams({ pagina: String(pagina), porPagina: String(porPagina) });
     if (busca) params.set('busca', busca);
     if (comunidadeId) params.set('comunidadeId', comunidadeId);
+    if (municipioId) params.set('municipioId', municipioId);
     if (semBanheiro) params.set('semBanheiro', 'true');
     if (incluirInativas) params.set('incluirInativas', 'true');
+    if (estrato) params.set('estrato', estrato);
+    if (ordenacao === 'PRIORIDADE') params.set('ordenacao', 'PRIORIDADE');
 
     setCarregando(true);
     setErro('');
     api
       .get<Pagina<FamiliaResumo>>(`/familias?${params}`)
       .then((dado) => atual() && setResposta(dado))
-      .catch((e) => atual() && setErro(mensagemDeErro(e, 'Não foi possível carregar as famílias.')))
+      .catch((e) => atual() && setErro(mensagemDeFalha(e, 'Não foi possível carregar as famílias. Tente de novo.')))
       .finally(() => atual() && setCarregando(false));
-  }, [busca, comunidadeId, semBanheiro, incluirInativas, pagina, porPagina, recarga]);
+  }, [busca, comunidadeId, municipioId, estrato, ordenacao, semBanheiro, incluirInativas, pagina, porPagina, recarga]);
+
+  /** Troca um filtro que mora na URL e volta para a primeira página. */
+  function trocarNaUrl(nome: string, valor: string) {
+    const novos = new URLSearchParams(parametrosUrl.toString());
+    if (valor) novos.set(nome, valor);
+    else novos.delete(nome);
+    const consulta = novos.toString();
+    router.replace(`${pathname}${consulta ? `?${consulta}` : ''}`, { scroll: false });
+    setPagina(0);
+  }
 
   const fecharModal = useCallback(() => setSelecionada(null), []);
   const aoMudarSituacao = useCallback((texto: string) => {
@@ -334,10 +374,9 @@ export default function Familias() {
     setRecarga((n) => n + 1);
   }, []);
 
-  const escolherComunidade = (id: string) => {
-    setComunidadeId(id);
-    setPagina(0);
-  };
+  const escolherComunidade = (id: string) => trocarNaUrl('comunidadeId', id);
+  // o filtro de município só chega pela URL (link do Início); aqui ele só se desfaz
+  const nomeMunicipioFiltrado = comunidades.find((c) => c.municipioId === municipioId)?.municipioNome;
   const alternarSemBanheiro = () => {
     setSemBanheiro((v) => !v);
     setPagina(0);
@@ -386,6 +425,39 @@ export default function Familias() {
               </option>
             ))}
           </select>
+          {/* Rótulos dos estratos vêm da API (configuráveis), nunca daqui. */}
+          <select
+            className={`${styles.filtroComunidade} ${estrato ? styles.filtroComunidadeAtivo : ''}`}
+            value={estrato}
+            onChange={(e) => trocarNaUrl('estrato', e.target.value)}
+            aria-label="Prioridade sugerida"
+          >
+            <option value="">Toda prioridade sugerida</option>
+            {metadados?.estratoVulnerabilidade?.map((o) => (
+              <option key={o.valor} value={o.valor}>
+                {o.rotulo}
+              </option>
+            ))}
+          </select>
+          <select
+            className={`${styles.filtroComunidade} ${ordenacao === 'PRIORIDADE' ? styles.filtroComunidadeAtivo : ''}`}
+            value={ordenacao}
+            onChange={(e) => trocarNaUrl('ordenacao', e.target.value === 'PRIORIDADE' ? 'PRIORIDADE' : '')}
+            aria-label="Ordenar"
+          >
+            <option value="NOME">Ordem: nome da responsável</option>
+            <option value="PRIORIDADE">Ordem: prioridade sugerida</option>
+          </select>
+          {municipioId && (
+            <button
+              type="button"
+              className={`${styles.chip} ${styles.chipAtivo}`}
+              onClick={() => trocarNaUrl('municipioId', '')}
+              aria-label={`Tirar o filtro de município${nomeMunicipioFiltrado ? ` ${nomeMunicipioFiltrado}` : ''}`}
+            >
+              Município: {nomeMunicipioFiltrado ?? 'filtrado'} ✕
+            </button>
+          )}
           <button
             type="button"
             className={`${styles.chip} ${semBanheiro ? styles.chipAtivo : ''}`}
@@ -404,8 +476,11 @@ export default function Familias() {
           </button>
         </div>
 
-        {erro && <Aviso tom="erro">{erro}</Aviso>}
+        {erro && <FalhaAoCarregar mensagem={erro} onTentarDeNovo={() => setRecarga((n) => n + 1)} />}
 
+        {!resposta && carregando && <Carregando mensagem="Carregando famílias" linhas={6} />}
+
+        {resposta && (
         <div className={styles.cartaoTabela}>
           <div className={`${styles.tabelaRolagem} ${carregando && resposta ? styles.carregando : ''}`} aria-busy={carregando}>
             <table className={styles.tabela}>
@@ -415,6 +490,7 @@ export default function Familias() {
               <thead>
                 <tr>
                   <th>Responsável</th>
+                  <th>Prioridade sugerida</th>
                   <th>Comunidade</th>
                   <th>Município</th>
                   <th className={styles.numero}>Pessoas</th>
@@ -439,6 +515,11 @@ export default function Familias() {
                         {familia.responsavelNome}
                       </button>
                     </td>
+                    <td className={styles.celulaPrioridade} data-rotulo="Prioridade sugerida">
+                      {familia.vulnerabilidade
+                        ? <SeloEstrato estrato={familia.vulnerabilidade.estrato} rotulo={familia.vulnerabilidade.rotulo} />
+                        : '—'}
+                    </td>
                     <td data-rotulo="Comunidade">{familia.comunidadeNome}</td>
                     <td data-rotulo="Município">{familia.municipioNome}</td>
                     <td className={styles.numero} data-rotulo="Pessoas">{familia.totalPessoas}</td>
@@ -458,11 +539,11 @@ export default function Familias() {
             </table>
           </div>
 
-          {!resposta && carregando && <p className={styles.estado}>Carregando…</p>}
-          {resposta && itens.length === 0 && (
+          {itens.length === 0 && (
             <p className={styles.estado}>Nenhuma família encontrada com esses filtros.</p>
           )}
         </div>
+        )}
 
         {resposta && total > 0 && (
           <Paginacao

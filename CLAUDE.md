@@ -31,8 +31,11 @@ src/app/
   (app)/chamados/          fila de pré-cadastros do app em abas por situação, com aviso de possível duplicata;
                            [id] revisa, completa (moradia, renda, dados por pessoa), aprova ou devolve
   (app)/agentes/           agentes do app: cadastrar e gerar código de convite (novo código desliga o celular atual)
-  (app)/familias/          lista com busca, filtros e ficha em modal (API), que inativa/reativa; nova/ cadastra (POST /api/familias);
+  (app)/familias/          lista com busca, filtros (estrato, ordenação, comunidade e município na URL) e ficha em modal
+                           com o painel da prioridade sugerida; inativa/reativa; nova/ cadastra (POST /api/familias);
                            [id]/editar edita (PUT /api/familias/{id}); o formulário é src/componentes/familia/
+  (app)/priorizacao/       prioridade sugerida para imprimir: totais (GET /api/relatorios/vulnerabilidade) e famílias
+                           por comunidade (GET /api/familias?ordenacao=PRIORIDADE), cadastros a completar no fim
   (app)/pessoas/           lista com filtros e modal criar/editar/remover (API)
   (app)/comunidades/       lista com busca e ficha em modal (GET /api/comunidades); nova/ cadastra com mini-mapa; sem edição
                            (a API tem PUT, o painel não usa)
@@ -46,6 +49,11 @@ src/componentes/           Botao, Campo, Selecao, Aviso, Modal, Paginacao, Loadi
                            familia/{FormularioFamilia,formularioFamilia} (cadastro e edição),
                            comunidade/MiniMapa (contorno IBGE, pino, satélite, "Procurar no mapa"),
                            relatorios/{PdfNecessidades,gerarPdfNecessidades} (@react-pdf, carregado só no clique)
+src/componentes/vulnerabilidade/  SeloEstrato (texto da API, aparência pelo código, legível sem cor), PainelExplicacao,
+                                  DistribuicaoEstratos e ComoECalculada (tabela do método, GET /api/vulnerabilidade/base;
+                                  recolhida na tela, anexo no papel)
+src/componentes/EstadoCarga.tsx   Carregando (esqueleto + aviso de servidor acordando), FalhaAoCarregar, mensagemDeFalha
+src/lib/vulnerabilidade.ts nome dos campos faltantes, referência do instrumento, frase "sugestão, não decisão"
 src/lib/municipios.ts      IBGE: UFs, municípios, malha (contorno); garantirMunicipio
 src/lib/nominatim.ts       sugestão de posição pelo nome (1 busca/s, só no clique, com cache)
 src/lib/api.ts             cliente HTTP (token em memória, renovação automática em 401; api.baixar para arquivo)
@@ -105,6 +113,14 @@ listar, ficha em `/{id}`, `/{id}/aprovar`, `/{id}/devolver`), `/api/relatorios/n
 `/{id}/novo-convite`; não há rota para desativar nem renomear).
 
 **Pontos de atenção (conferido em 08/10/2026):**
+
+- **Prioridade sugerida (ADR-0010 da API)**: estrato e explicação vêm prontos em
+  `vulnerabilidade` (lista e ficha) e em `/api/relatorios/vulnerabilidade` (só
+  contagens). A tabela do método (pesos, faixas, cortes) vem de
+  `/api/vulnerabilidade/base`, com os valores em uso: nunca a escreva no front. Nunca calcule escore no front, nunca escreva rótulo de estrato
+  (vem da API e de `metadados.estratoVulnerabilidade`), nunca use cor como única
+  informação e nunca leve estrato para o mapa. `DADOS_INSUFICIENTES` é
+  pendência ("completar"), nunca "sem risco".
 
 - `/pessoas` está ligada à API. Pessoa nasce dentro de uma família (busca por
   responsável em `GET /api/familias?busca=`) e pode ser movida para outra

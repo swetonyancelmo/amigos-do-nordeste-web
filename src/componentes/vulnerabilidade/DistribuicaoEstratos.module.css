@@ -1,0 +1,142 @@
+/* As colunas são da lista inteira (subgrid): a do selo cresce até o rótulo
+   mais longo que a API mandar, sem quebrar, e todas as linhas se alinham. */
+/*
+ * Toda linha tem o mesmo recuo: acolchoamento --recuo + borda de 2px
+ * (transparente, menos na de "a completar"). A lista volta esse recuo com
+ * margem negativa, então os selos alinham com o título de quem a usa e a
+ * caixa tracejada sobra só um pouco para fora, como destaque.
+ */
+.lista {
+  --recuo: var(--e-3);
+  display: grid;
+  grid-template-columns: max-content minmax(6rem, 1fr) max-content max-content;
+  column-gap: var(--e-4);
+  margin: 0 calc(-1 * (var(--recuo) + 2px));
+  padding: 0;
+  list-style: none;
+}
+
+.linha {
+  display: grid;
+  grid-column: 1 / -1;
+  grid-template-columns: subgrid;
+  align-items: center;
+  padding: var(--e-2) var(--recuo);
+  border: 2px solid transparent;
+  border-radius: var(--raio-p);
+}
+
+/* Divisória fina entre as linhas comuns. */
+.linha:not(:last-child):not(.linhaCompletar) {
+  box-shadow: inset 0 -1px 0 var(--linha);
+}
+
+/* Cadastros a completar: fundo e borda tracejada, a mesma linguagem do selo. */
+.linhaCompletar {
+  border: 2px dashed var(--texto-forte);
+  background: var(--ambar-claro);
+}
+
+.selo {
+  min-width: 0;
+  white-space: nowrap;
+}
+
+.barraFundo {
+  display: block;
+  height: 10px;
+  border-radius: 999px;
+  background: var(--linha);
+  overflow: hidden;
+  -webkit-print-color-adjust: exact;
+  print-color-adjust: exact;
+}
+
+.barra {
+  display: block;
+  height: 100%;
+  border-radius: 999px;
+}
+
+.barraR3 {
+  background: var(--erro);
+}
+
+.barraR2 {
+  background: var(--laranja-escuro);
+}
+
+.barraR1 {
+  background: var(--ambar);
+}
+
+.barraSemRisco {
+  background: var(--linha-forte);
+}
+
+.barraCompletar {
+  background: repeating-linear-gradient(
+    -45deg,
+    var(--texto-forte) 0 3px,
+    var(--amarelo) 3px 6px
+  );
+}
+
+.barraOutro {
+  background: var(--texto-medio);
+}
+
+.valor {
+  color: var(--texto-forte);
+  font-weight: 700;
+}
+
+.valor a {
+  color: inherit;
+}
+
+.acao {
+  font-weight: 400;
+}
+
+.percentual {
+  color: var(--texto-medio);
+  font-size: var(--t-apoio);
+  text-align: right;
+  white-space: nowrap;
+}
+
+/* Celular: selo numa linha, barra + número + % na de baixo. */
+@media (max-width: 640px) {
+  .lista {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  .linha {
+    grid-template-columns: minmax(0, 1fr) auto auto;
+    gap: var(--e-2);
+  }
+
+  .selo {
+    grid-column: 1 / -1;
+    white-space: normal;
+  }
+}
+
+@media print {
+  .lista {
+    column-gap: var(--e-3);
+  }
+
+  .linha {
+    padding: 4px var(--e-2);
+  }
+
+  .linhaCompletar {
+    background: var(--superficie);
+  }
+
+  .acao {
+    display: none;
+  }
+}

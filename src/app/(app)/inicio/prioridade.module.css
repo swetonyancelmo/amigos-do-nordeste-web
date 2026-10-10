@@ -1,0 +1,35 @@
+/* Mesmo respiro dos outros cartões do Início (.grafico, .cartaoIndicador). */
+.secao {
+  display: grid;
+  gap: var(--e-4);
+  padding: var(--e-5);
+}
+
+.topo {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: var(--e-2);
+}
+
+.titulo {
+  margin: 0;
+  font-family: var(--fonte-marca);
+  font-size: var(--t-titulo);
+}
+
+.abrir {
+  font-weight: 700;
+}
+
+.frase {
+  margin: 0;
+  color: var(--texto-medio);
+  font-size: var(--t-apoio);
+}
+
+.vazio {
+  margin: 0;
+  color: var(--texto-medio);
+}

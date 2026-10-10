@@ -8,6 +8,7 @@ import 'leaflet/dist/leaflet.css';
 import { useCabecalho } from '@/componentes/ContextoCabecalho';
 import { api } from '@/lib/api';
 import { buscarMalhaMunicipio } from '@/lib/municipios';
+import { PrioridadeSugerida } from './PrioridadeSugerida';
 import styles from './dashboard.module.css';
 
 type SituacaoPainel = {
@@ -602,6 +603,8 @@ export function ConteudoDashboard() {
                     {erroRelatorios}
                 </p>
             )}
+
+            <PrioridadeSugerida municipioId={municipioId} comunidadeId={comunidadeId} />
 
             <div className={styles.corpoMapa}>
                 <div className={styles.areaMapa}>

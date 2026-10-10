@@ -1,0 +1,136 @@
+.painel {
+  display: grid;
+  gap: var(--e-4);
+  margin-bottom: var(--e-5);
+  padding: var(--e-4);
+  border: 1px solid var(--linha-forte);
+  border-radius: var(--raio);
+  background: var(--superficie);
+}
+
+.titulo {
+  margin: 0;
+  color: var(--laranja-escuro);
+  font-family: var(--fonte-marca);
+  font-size: var(--t-apoio);
+  font-weight: 800;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+}
+
+/* A frase "é sugestão, não decisão": visível e com peso, não rodapé. */
+.frase {
+  margin: 0;
+  padding: var(--e-2) var(--e-3);
+  border-left: 3px solid var(--verde);
+  background: var(--verde-claro);
+  color: var(--texto-forte);
+  font-size: var(--t-base);
+}
+
+.resultado {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--e-3);
+}
+
+.escore {
+  margin: 0;
+  color: var(--texto-forte);
+}
+
+/* Pendência: mesma linguagem do selo (amarelo + tracejado), com a ação. */
+.pendencia {
+  display: grid;
+  justify-items: start;
+  gap: var(--e-2);
+  padding: var(--e-4);
+  border: 2px dashed var(--texto-forte);
+  border-radius: var(--raio);
+  background: var(--ambar-claro);
+}
+
+.pendenciaTitulo {
+  margin: 0;
+  color: var(--texto-forte);
+  font-weight: 800;
+}
+
+.pendenciaTexto {
+  margin: 0;
+  color: var(--texto-forte);
+  font-size: var(--t-base);
+}
+
+.campos {
+  margin: 0;
+  padding-left: var(--e-5);
+  color: var(--texto-forte);
+}
+
+.foraDoFormulario {
+  color: var(--texto-medio);
+  font-size: var(--t-apoio);
+}
+
+.grupo {
+  display: grid;
+  gap: var(--e-2);
+}
+
+.subtitulo {
+  margin: 0;
+  color: var(--texto-forte);
+  font-size: var(--t-base);
+  font-weight: 800;
+}
+
+.lista {
+  display: grid;
+  gap: var(--e-2);
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.item {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  gap: 2px var(--e-3);
+  padding: var(--e-2) var(--e-3);
+  border: 1px solid var(--linha);
+  border-radius: var(--raio-p);
+}
+
+.itemNome {
+  color: var(--texto-forte);
+  font-weight: 700;
+}
+
+.itemPontos {
+  color: var(--texto-forte);
+  font-weight: 800;
+  white-space: nowrap;
+}
+
+.itemDetalhe {
+  grid-column: 1 / -1;
+  color: var(--texto-medio);
+  font-size: var(--t-apoio);
+}
+
+.vazio {
+  margin: 0;
+  color: var(--texto-medio);
+  font-size: var(--t-apoio);
+}
+
+.instrumento {
+  margin: 0;
+  padding-top: var(--e-3);
+  border-top: 1px solid var(--linha);
+  color: var(--texto-medio);
+  font-size: var(--t-apoio);
+  line-height: 1.45;
+}

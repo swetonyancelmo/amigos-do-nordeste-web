@@ -1,0 +1,185 @@
+.secao {
+  display: grid;
+  gap: var(--e-3);
+  padding: var(--e-4) var(--e-5);
+  border: 1px solid var(--linha-forte);
+  border-radius: var(--raio);
+  background: var(--superficie);
+  scroll-margin-top: var(--e-6);
+}
+
+.topo {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--e-2);
+}
+
+.titulo {
+  margin: 0;
+  font-family: var(--fonte-marca);
+  font-size: var(--t-base);
+  font-weight: 800;
+}
+
+.alternar {
+  min-height: 44px;
+  padding: 0 var(--e-3);
+  border: 1px solid var(--linha-forte);
+  border-radius: var(--raio);
+  background: var(--superficie);
+  color: var(--laranja-escuro);
+  font: inherit;
+  font-weight: 700;
+  cursor: pointer;
+}
+
+.alternar:hover {
+  border-color: var(--laranja);
+}
+
+.conteudo {
+  display: grid;
+  gap: var(--e-4);
+}
+
+/* Recolhido só na tela: no papel a explicação sai sempre (ver @media print). */
+.recolhido {
+  display: none;
+}
+
+.texto {
+  margin: 0;
+  color: var(--texto-forte);
+  line-height: 1.5;
+}
+
+.rolagem {
+  overflow-x: auto;
+}
+
+.tabela {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: var(--t-apoio);
+}
+
+.legenda {
+  padding-bottom: var(--e-2);
+  color: var(--texto-forte);
+  font-weight: 800;
+  text-align: left;
+}
+
+.tabela th,
+.tabela td {
+  padding: 6px 10px;
+  border-bottom: 1px solid var(--linha);
+  text-align: left;
+  vertical-align: top;
+}
+
+.tabela thead th {
+  color: var(--texto-medio);
+  font-size: var(--t-micro);
+  font-weight: 700;
+}
+
+.tabela tbody th {
+  min-width: 11rem;
+  font-weight: 700;
+}
+
+.colPontos {
+  min-width: 7rem;
+  white-space: nowrap;
+}
+
+.faixas {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  white-space: normal;
+}
+
+.nota {
+  margin: 0;
+  color: var(--texto-medio);
+  font-size: var(--t-apoio);
+  line-height: 1.45;
+}
+
+/* Celular: cada linha vira um cartão; o rótulo de cada célula vem do data-rotulo. */
+@media (max-width: 640px) {
+  .secao {
+    padding: var(--e-4);
+  }
+
+  /* a legenda deixa de ser "de tabela" e ocupa a largura toda */
+  .legenda {
+    display: block;
+  }
+
+  .tabela thead {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    overflow: hidden;
+    clip-path: inset(50%);
+  }
+
+  .tabela,
+  .tabela tbody,
+  .tabela tr,
+  .tabela th,
+  .tabela td {
+    display: block;
+  }
+
+  .tabela tr {
+    display: grid;
+    gap: var(--e-2);
+    padding: var(--e-3) 0;
+    border-bottom: 1px solid var(--linha);
+  }
+
+  .tabela th,
+  .tabela td {
+    padding: 0;
+    border: 0;
+    min-width: 0;
+    white-space: normal;
+  }
+
+  .tabela td[data-rotulo]::before {
+    content: attr(data-rotulo);
+    display: block;
+    color: var(--texto-suave);
+    font-size: var(--t-micro);
+    font-weight: 700;
+  }
+}
+
+@media print {
+  .secao {
+    border-color: var(--texto-forte);
+  }
+
+  .tabela tr {
+    break-inside: avoid;
+  }
+
+  .recolhido {
+    display: grid;
+  }
+
+  .tabela {
+    font-size: 9pt;
+  }
+
+  .tabela th,
+  .tabela td {
+    padding: 2px 6px;
+  }
+}

@@ -1,0 +1,85 @@
+/*
+ * Selo do estrato. Cada estado difere em TRÊS coisas além da cor: espessura e
+ * estilo da borda, preenchimento e marcador. Assim continua distinto em preto
+ * e branco (ver o comentário em SeloEstrato.tsx).
+ */
+.selo {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  max-width: 100%;
+  padding: 3px 10px 3px 8px;
+  border: 1px solid var(--linha-forte);
+  border-radius: var(--raio-p);
+  font-size: var(--t-micro);
+  font-weight: 700;
+  line-height: 1.3;
+  /* o fundo também vai para o papel: a impressora faz dele um cinza, que
+     ajuda a separar os estratos junto com borda e marcador */
+  -webkit-print-color-adjust: exact;
+  print-color-adjust: exact;
+}
+
+.marcador {
+  flex: none;
+  width: 18px;
+  height: 14px;
+}
+
+.grande {
+  padding: 6px 14px 6px 10px;
+  font-size: var(--t-base);
+}
+
+.grande .marcador {
+  width: 22px;
+  height: 18px;
+}
+
+.r3 {
+  border: 2px solid var(--erro);
+  background: var(--erro);
+  color: var(--superficie);
+}
+
+.r2 {
+  border: 2px solid var(--laranja-escuro);
+  background: var(--laranja-claro);
+  color: var(--laranja-escuro);
+}
+
+.r1 {
+  border: 1px solid var(--ambar);
+  background: var(--ambar-claro);
+  color: var(--texto-forte);
+}
+
+/* Pendência que pede ação: amarelo forte e borda tracejada, nada de cinza. */
+.dadosInsuficientes {
+  border: 2px dashed var(--texto-forte);
+  background: var(--amarelo);
+  color: var(--texto-forte);
+}
+
+.semRisco {
+  border: 1px solid var(--linha-forte);
+  background: var(--superficie);
+  color: var(--texto-medio);
+}
+
+/* Código que o front não conhece: o rótulo da API, sem marcador nem cor de estrato. */
+.desconhecido {
+  border: 1px dotted var(--texto-medio);
+  background: var(--superficie);
+  color: var(--texto-forte);
+}
+
+@media print {
+  /* No papel a cor da borda vira preto, para o estilo (grossa, fina,
+     tracejada) aparecer mesmo em impressora clara. */
+  .r2,
+  .r1,
+  .semRisco {
+    border-color: var(--texto-forte);
+  }
+}
