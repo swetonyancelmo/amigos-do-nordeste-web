@@ -32,7 +32,8 @@ const CLASSE: Record<string, string> = {
   DADOS_INSUFICIENTES: styles.dadosInsuficientes,
 };
 
-function Marcador({ estrato }: { estrato: string }) {
+/** Exportado para o selo da interface nova (`ui/selo-estrato`) usar o mesmo ícone. */
+export function Marcador({ estrato }: { estrato: string }) {
   if (estrato === 'DADOS_INSUFICIENTES') {
     return (
       <svg className={styles.marcador} viewBox="0 0 16 16" aria-hidden="true" focusable="false">

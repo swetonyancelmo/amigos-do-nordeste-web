@@ -1,0 +1,128 @@
+/* ============================================================
+   EM VIGOR SÓ NA INTERFACE NOVA (Tailwind + shadcn/ui).
+   ------------------------------------------------------------
+   Importado por `src/app/tailwind.css`, que o expõe ao Tailwind
+   no bloco `@theme inline` (bg-primary, text-muted-foreground,
+   bg-estrato-r3…). O `components.json` do shadcn aponta para o
+   tailwind.css.
+
+   As telas antigas continuam com o `globals.css` (--laranja,
+   --pagina, --texto-forte…). Os nomes não colidem: lá é tudo
+   em português. Quando a última tela migrar, o globals.css sai.
+
+   É a mesma fonte dos tokens do arquivo do Paper
+   "Amigos do Nordeste — Refatoração de design": mesmos nomes,
+   mesmas cores. Mudou aqui, muda lá (e vice-versa).
+   ============================================================ */
+
+/* ============================================================
+   Amigos do Nordeste — tokens de design
+   ------------------------------------------------------------
+   Paleta derivada da identidade da ONG (logo + sistema atual).
+
+   Formato OKLCH, o que o shadcn/ui usa com Tailwind v4. Os
+   valores foram convertidos dos HEX originais SEM mudar a cor:
+   cada um volta exatamente ao HEX do comentário ao lado (8 bits
+   por canal), conferido na conversão e de novo no navegador
+   (página /estilo). O HEX ao lado é a referência para o Paper.
+   Mudou uma cor? Troque o HEX e o OKLCH juntos.
+
+   Todos os pares texto/fundo abaixo foram conferidos em 4.5:1
+   ou mais. Se algum valor mudar, confira o contraste de novo.
+   ============================================================ */
+
+:root {
+  /* --- superfícies ------------------------------------------ */
+  --background:            oklch(0.9748 0.0079 73.74); /* #FAF6F1 */  /* creme do sistema atual   */
+  --foreground:            oklch(0.2173 0.0196 40.88); /* #221713 */  /* tinta quente, não preto  */
+  --card:                  oklch(0.9925 0.0051 67.77); /* #FFFCF9 */
+  --card-foreground:       oklch(0.2173 0.0196 40.88); /* #221713 */
+  --popover:               oklch(0.9925 0.0051 67.77); /* #FFFCF9 */
+  --popover-foreground:    oklch(0.2173 0.0196 40.88); /* #221713 */
+
+  /* --- marca ------------------------------------------------ */
+  --primary:               oklch(0.5210 0.1751 34.68); /* #B8330F */  /* terracota da ONG         */
+  --primary-foreground:    oklch(0.9782 0.0134 60.57); /* #FFF6EF */
+
+  --secondary:             oklch(0.9441 0.0138 67.66); /* #F3EBE3 */
+  --secondary-foreground:  oklch(0.3660 0.0251 49.61); /* #4A3B33 */
+
+  --muted:                 oklch(0.9441 0.0138 67.66); /* #F3EBE3 */
+  --muted-foreground:      oklch(0.4814 0.0273 52.28); /* #6B5A50 */
+
+  --accent:                oklch(0.9514 0.0215 46.99); /* #FCEBE3 */  /* item de menu ativo       */
+  --accent-foreground:     oklch(0.5210 0.1751 34.68); /* #B8330F */
+
+  /* --- destrutivo -------------------------------------------
+     ATENÇÃO: a cor primária da ONG já é vermelha. Se destrutivo
+     usar o mesmo vermelho, excluir fica igual a salvar. Este é
+     um carmim mais escuro e mais frio, de matiz visivelmente
+     diferente do terracota. Não troque pelo vermelho padrão do
+     shadcn sem resolver essa colisão de outro jeito.          */
+  --destructive:           oklch(0.4509 0.1609 19.79); /* #9B1C2E */
+  --destructive-foreground:oklch(0.9694 0.0152 12.42); /* #FFF1F2 */
+
+  /* --- semânticos extras (não vêm no shadcn base) ----------- */
+  --success:               oklch(0.5065 0.1448 147.40); /* #0B7A2E */  /* verde do cacto, escurecido
+                                        para passar em 4.5:1     */
+  --success-foreground:    oklch(0.9794 0.0132 152.61); /* #F2FBF4 */
+  --warning:               oklch(0.5553 0.1455 49.00); /* #B45309 */
+  --warning-foreground:    oklch(0.9869 0.0214 95.28); /* #FFFBEB */
+
+  /* --- estrutura -------------------------------------------- */
+  --border:                oklch(0.8927 0.0207 62.84); /* #E6D9CE */
+  --input:                 oklch(0.8927 0.0207 62.84); /* #E6D9CE */
+  --ring:                  oklch(0.5210 0.1751 34.68); /* #B8330F */
+
+  --radius:                0.625rem; /* 10px                     */
+}
+
+/* ============================================================
+   Estratos de vulnerabilidade
+   ------------------------------------------------------------
+   REGRA QUE NÃO PODE SER QUEBRADA: a cor nunca informa sozinha.
+   Todo badge carrega texto, e o conjunto precisa continuar
+   legível impresso em preto e branco — a tela de Priorização
+   é impressa e levada a campo.
+
+   Por isso a rampa varia em CLARIDADE, não só em matiz, e cada
+   estrato mantém o ícone próprio que já existe hoje.
+   ============================================================ */
+
+:root {
+  /* R3 — maior necessidade de apoio: preenchido, o mais escuro */
+  --estrato-r3-bg:         oklch(0.4330 0.1367 33.96); /* #8C2A14 */
+  --estrato-r3-fg:         oklch(0.9672 0.0178 48.53); /* #FFF1EA */
+  --estrato-r3-border:     oklch(0.4330 0.1367 33.96); /* #8C2A14 */
+
+  /* R2 — necessidade intermediária: contorno forte             */
+  --estrato-r2-bg:         oklch(0.9925 0.0051 67.77); /* #FFFCF9 */
+  --estrato-r2-fg:         oklch(0.4330 0.1367 33.96); /* #8C2A14 */
+  --estrato-r2-border:     oklch(0.5210 0.1751 34.68); /* #B8330F */
+
+  /* R1 — necessidade a acompanhar: contorno mais claro         */
+  --estrato-r1-bg:         oklch(0.9925 0.0051 67.77); /* #FFFCF9 */
+  --estrato-r1-fg:         oklch(0.4924 0.1077 64.98); /* #8A5207 */
+  --estrato-r1-border:     oklch(0.6507 0.1381 63.38); /* #C97A1E */
+
+  /* Cadastro a completar (DADOS_INSUFICIENTES)
+     NÃO é "sem risco". Precisa ler como pendência que pede
+     ação: fundo âmbar, borda TRACEJADA e ícone de alerta.
+     Se isso virar cinza neutro, todo o cuidado do backend
+     morre aqui.                                                */
+  --estrato-pendente-bg:     oklch(0.9780 0.0335 94.05); /* #FFF8DF */
+  --estrato-pendente-fg:     oklch(0.4429 0.1002 61.14); /* #7A4405 */
+  --estrato-pendente-border: oklch(0.5553 0.1455 49.00); /* #B45309 */
+
+  /* Sem prioridade indicada pela escala: neutro de verdade     */
+  --estrato-sem-bg:        oklch(0.9925 0.0051 67.77); /* #FFFCF9 */
+  --estrato-sem-fg:        oklch(0.4814 0.0273 52.28); /* #6B5A50 */
+  --estrato-sem-border:    oklch(0.8522 0.0192 62.41); /* #D8CCC2 */
+}
+
+/* ============================================================
+   Sem modo escuro.
+   Decisão tomada: uma única usuária, relatórios impressos e
+   prazo curto. Não gere o bloco .dark — ele dobra a superfície
+   de revisão sem beneficiar ninguém neste projeto.
+   ============================================================ */

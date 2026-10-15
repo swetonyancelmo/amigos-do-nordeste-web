@@ -1,0 +1,141 @@
+/*
+ * Tailwind v4 + tema do shadcn/ui, para a interface NOVA.
+ *
+ * Convive com o CSS antigo (globals.css, componentes.css e os CSS Modules)
+ * até a última tela migrar. As regras desta convivência:
+ *
+ *  1. SEM preflight global. O `@import "tailwindcss"` padrão traz um reset
+ *     que zera margem, lista, borda e título em TODA a página; medido em
+ *     15/10/2026, ele mudou 27 das 30 capturas das telas antigas. No lugar
+ *     dele, `preflight-escopo.css` aplica o mesmo reset só dentro de
+ *     [data-slot] (todo primitivo do shadcn), [data-preflight] (tela já
+ *     migrada, e a /estilo) e [data-sonner-toaster]. Quando a última tela
+ *     migrar, troque as três linhas de import abaixo por
+ *     `@import "tailwindcss";` e apague preflight-escopo.css e o script.
+ *
+ *  2. As camadas (theme, base, components, utilities) perdem para o CSS
+ *     antigo, que não está em camada nenhuma. Por isso o globals.css tira
+ *     da interface nova as duas regras de elemento que ele tem (`a` e
+ *     `:focus-visible`); o resto dele é por classe e não encosta aqui.
+ *
+ *  3. Sem modo escuro (decisão registrada no tokens-amigos-do-nordeste.css):
+ *     não há bloco .dark, e a variante `dark:` fica presa a uma classe que
+ *     ninguém aplica (ver o @custom-variant abaixo).
+ */
+@layer theme, base, components, utilities;
+@import "tailwindcss/theme.css" layer(theme);
+@import "./preflight-escopo.css" layer(base);
+@import "tailwindcss/utilities.css" layer(utilities);
+
+@import "tw-animate-css";
+/* Animações e variantes (data-open:, data-checked:…) que os componentes do
+   estilo radix-nova usam. */
+@import "shadcn/tailwind.css";
+
+@import "./tokens-amigos-do-nordeste.css";
+
+/* Sem modo escuro, mas os componentes gerados vêm com classes `dark:`. Sem
+   esta linha o Tailwind v4 as liga pelo `prefers-color-scheme` do sistema, e
+   quem usa o computador em modo escuro veria campos meio escuros. Presa a
+   `.dark`, classe que nada no projeto aplica, elas nunca valem. */
+@custom-variant dark (&:where(.dark, .dark *));
+
+/* Só para a página /estilo: `data-demo-foco` mostra o estado de foco parado,
+   com as classes `focus-visible:` do próprio componente (copiá-las à mão
+   divergiria do componente na primeira atualização). Nenhuma tela usa esse
+   atributo; o foco de verdade continua sendo `:focus-visible`. */
+@custom-variant focus-visible (&:focus-visible, &[data-demo-foco]);
+
+@theme inline {
+  --color-background: var(--background);
+  --color-foreground: var(--foreground);
+  --color-card: var(--card);
+  --color-card-foreground: var(--card-foreground);
+  --color-popover: var(--popover);
+  --color-popover-foreground: var(--popover-foreground);
+  --color-primary: var(--primary);
+  --color-primary-foreground: var(--primary-foreground);
+  --color-secondary: var(--secondary);
+  --color-secondary-foreground: var(--secondary-foreground);
+  --color-muted: var(--muted);
+  --color-muted-foreground: var(--muted-foreground);
+  --color-accent: var(--accent);
+  --color-accent-foreground: var(--accent-foreground);
+  --color-destructive: var(--destructive);
+  --color-destructive-foreground: var(--destructive-foreground);
+  --color-success: var(--success);
+  --color-success-foreground: var(--success-foreground);
+  --color-warning: var(--warning);
+  --color-warning-foreground: var(--warning-foreground);
+  --color-border: var(--border);
+  --color-input: var(--input);
+  --color-ring: var(--ring);
+
+  /* Estratos de vulnerabilidade: bg-estrato-r3, border-estrato-pendente… */
+  --color-estrato-r3: var(--estrato-r3-bg);
+  --color-estrato-r3-foreground: var(--estrato-r3-fg);
+  --color-estrato-r3-border: var(--estrato-r3-border);
+  --color-estrato-r2: var(--estrato-r2-bg);
+  --color-estrato-r2-foreground: var(--estrato-r2-fg);
+  --color-estrato-r2-border: var(--estrato-r2-border);
+  --color-estrato-r1: var(--estrato-r1-bg);
+  --color-estrato-r1-foreground: var(--estrato-r1-fg);
+  --color-estrato-r1-border: var(--estrato-r1-border);
+  --color-estrato-pendente: var(--estrato-pendente-bg);
+  --color-estrato-pendente-foreground: var(--estrato-pendente-fg);
+  --color-estrato-pendente-border: var(--estrato-pendente-border);
+  --color-estrato-sem: var(--estrato-sem-bg);
+  --color-estrato-sem-foreground: var(--estrato-sem-fg);
+  --color-estrato-sem-border: var(--estrato-sem-border);
+
+  --radius-sm: calc(var(--radius) * 0.6);
+  --radius-md: calc(var(--radius) * 0.8);
+  --radius-lg: var(--radius);
+  --radius-xl: calc(var(--radius) * 1.4);
+  --radius-2xl: calc(var(--radius) * 1.8);
+  --radius-3xl: calc(var(--radius) * 2.2);
+  --radius-4xl: calc(var(--radius) * 2.6);
+
+  /* Título na fonte da marca (Nunito, injetada pelo next/font no layout),
+     como nas telas antigas; corpo na fonte do sistema. */
+  --font-heading: var(--fonte-nunito), ui-sans-serif, system-ui, sans-serif;
+}
+
+/* O `* { border-border outline-ring/50 }` do tema padrão do shadcn, mas só
+   na interface nova: global, ele recoloriria bordas das telas antigas. */
+@layer base {
+  :where([data-slot], [data-slot] *, [data-preflight], [data-preflight] *) {
+    border-color: var(--color-border);
+    outline-color: color-mix(in oklab, var(--color-ring) 50%, transparent);
+  }
+}
+
+/*
+ * LEAFLET × PREFLIGHT. Não apague sem ler.
+ *
+ * O preflight do Tailwind põe `img { max-width: 100%; height: auto;
+ * display: block }`. Os tiles do mapa são <img> de 256px posicionados um a
+ * um pelo Leaflet; com `max-width: 100%` o navegador encolhe o tile para
+ * caber no pai, e o mapa sai picotado, com faixas vazias e os tiles fora do
+ * lugar. O mesmo vale para marcador em <img> e camada de imagem.
+ *
+ * Hoje o preflight só vale dentro de [data-slot]/[data-preflight]; um mapa
+ * dentro de tela migrada (Início, Nova comunidade) cai nesse escopo.
+ *
+ * Medido em 15/10/2026 (Tailwind 4.3.3, Leaflet 1.9.4), com o mapa da
+ * /estilo dentro do escopo: SEM esta regra os tiles continuaram com 256px.
+ * Quem protege hoje é o próprio leaflet.css (`max-width: none !important`
+ * nos painéis de tile e marcador), que por estar fora de camada ainda ganha
+ * do preflight, que está em camada. O defeito clássico é do Tailwind v3.
+ *
+ * Esta regra é a segunda trava, independente do leaflet.css: cobre <img> em
+ * qualquer painel (inclusive painel criado à mão) e continua valendo se
+ * alguém puser o leaflet.css numa camada ou se ele parar de trazer a regra
+ * numa versão nova. Fora de camada e com !important, ganha do preflight em
+ * qualquer ordem de carga, inclusive quando ele voltar a ser global. Custa
+ * uma linha: não remova. Confira na seção "Mapa" da /estilo.
+ */
+.leaflet-container img {
+  max-width: none !important;
+  max-height: none !important;
+}
