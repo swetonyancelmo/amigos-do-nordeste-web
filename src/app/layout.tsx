@@ -1,5 +1,6 @@
 import type { Metadata } from 'next';
 import { Nunito } from 'next/font/google';
+import './tailwind.css';
 import './globals.css';
 
 /**

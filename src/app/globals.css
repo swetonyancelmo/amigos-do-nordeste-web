@@ -114,13 +114,19 @@ body {
   -webkit-font-smoothing: antialiased;
 }
 
-a {
+/*
+ * As duas regras de elemento abaixo valem só nas telas antigas. Na interface
+ * nova (shadcn/ui: [data-slot]; tela migrada: [data-preflight]) quem manda é o
+ * tailwind.css, e este CSS, por estar fora de camada, ganharia de qualquer
+ * classe do Tailwind. O `:not(:where(…))` não muda a especificidade.
+ */
+a:not(:where([data-slot], [data-slot] *, [data-preflight], [data-preflight] *)) {
   color: var(--laranja-escuro);
 }
 
 /* Foco sempre visível: a usuária pode navegar boa parte do cadastro no teclado,
    e é isso que torna a digitação rápida. */
-:focus-visible {
+:focus-visible:not(:where([data-slot], [data-slot] *, [data-preflight], [data-preflight] *)) {
   outline: 2px solid var(--laranja);
   outline-offset: 2px;
 }
