@@ -32,7 +32,8 @@ src/app/
                            [id] revisa, completa (moradia, renda, dados por pessoa), aprova ou devolve
   (app)/agentes/           agentes do app: cadastrar e gerar código de convite (novo código desliga o celular atual)
   (app)/familias/          lista com busca, filtros (estrato, ordenação, comunidade e município na URL) e ficha em modal
-                           com o painel da prioridade sugerida; inativa/reativa; nova/ cadastra (POST /api/familias);
+                           (DetalhesFamilia.tsx) com o painel da prioridade sugerida; inativa/reativa;
+                           interface nova (ver abaixo); nova/ cadastra (POST /api/familias);
                            [id]/editar edita (PUT /api/familias/{id}); o formulário é src/componentes/familia/
   (app)/priorizacao/       prioridade sugerida para imprimir: totais (GET /api/relatorios/vulnerabilidade) e famílias
                            por comunidade (GET /api/familias?ordenacao=PRIORIDADE), cadastros a completar no fim
@@ -70,6 +71,26 @@ e2e/                       testes Playwright (api-falsa.ts, axe.spec.ts, mobile/
 
 Cada página do grupo `(app)` define título e ações com `useCabecalho(titulo, acoes)`;
 as ações ficam numa constante fora do componente para o JSX ser estável.
+
+## Interface nova (Tailwind + shadcn/ui), tela por tela
+
+Já migradas: **Famílias** (lista e ficha). As outras seguem o CSS antigo até
+migrarem, uma por PR. Ao migrar uma tela, repita o que Famílias fez:
+
+- `data-preflight` na raiz da tela (o reset do Tailwind só vale ali; ver `tailwind.css`).
+- Primitivos de `src/componentes/ui/`, já na escala do projeto: botão e campo com 44px,
+  campo com fonte de 16px (zoom do iPhone), menor texto 12px (`text-[0.8rem]`; aqui
+  1rem = 15px). **Não** mude o font-size do `<html>`.
+- Filtro: `ui/filtro.tsx` (`BarraFiltros`, `FiltroBusca`, `FiltroSelecao`, `FiltroAlternar`,
+  `FiltroRemovivel`). Rótulo sempre visível; filtro ativo com borda grossa, negrito e ícone.
+- Tabela: `Table` + as classes de `ui/tabela-cartoes.ts` (vira cartão até 640px, com o
+  rótulo de cada célula em `data-rotulo`).
+- Paginação: `ui/paginacao.tsx` (mesmas props e textos do `Paginacao` antigo; troque só o import).
+- Ação destrutiva: `ui/confirmar-acao.tsx` com `destrutivo` (variante tonal), nunca
+  `window.confirm`.
+- Carga e erro: `Carregando` de `EstadoCarga.tsx` + `ui/falha-ao-carregar.tsx`.
+- `celular:` é o corte de 640px dos CSS antigos; `sm:`/`md:` do Tailwind são em rem.
+- Filtro, ordem e paginação continuam na API, e os filtros que já moravam na URL continuam lá.
 
 ## Regras
 

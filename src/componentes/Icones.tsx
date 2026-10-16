@@ -13,13 +13,16 @@
 type PropsIcone = {
   /** Lado do quadrado, em px. O viewBox é sempre 24. */
   tamanho?: number;
+  /** Para posicionar o ícone (ex.: dentro do campo de busca). */
+  className?: string;
 };
 
 type PropsSvg = PropsIcone & { children: React.ReactNode };
 
-function Svg({ tamanho = 18, children }: PropsSvg) {
+function Svg({ tamanho = 18, className, children }: PropsSvg) {
   return (
     <svg
+      className={className}
       width={tamanho}
       height={tamanho}
       viewBox="0 0 24 24"
@@ -60,6 +63,16 @@ export function IconeConfirmar({ tamanho }: PropsIcone) {
   return (
     <Svg tamanho={tamanho}>
       <path d="M5 12.5 10 17.5 19 7" />
+    </Svg>
+  );
+}
+
+/** Lupa dos campos de busca (Famílias, Comunidades). */
+export function IconeBusca({ tamanho, className }: PropsIcone) {
+  return (
+    <Svg tamanho={tamanho} className={className}>
+      <circle cx="10.5" cy="10.5" r="6.5" />
+      <path d="m16 16 5 5" />
     </Svg>
   );
 }

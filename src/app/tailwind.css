@@ -46,6 +46,11 @@
    atributo; o foco de verdade continua sendo `:focus-visible`. */
 @custom-variant focus-visible (&:focus-visible, &[data-demo-foco]);
 
+/* `celular:` = até 640px, o mesmo corte de todos os CSS Modules antigos. Os
+   `sm:`/`md:` do Tailwind são em rem, e aqui 1rem = 15px: `max-sm:` cortaria
+   em 600px e a tela migrada mudaria de layout num ponto diferente das outras. */
+@custom-variant celular (@media (max-width: 640px));
+
 @theme inline {
   --color-background: var(--background);
   --color-foreground: var(--foreground);
@@ -107,6 +112,23 @@
   :where([data-slot], [data-slot] *, [data-preflight], [data-preflight] *) {
     border-color: var(--color-border);
     outline-color: color-mix(in oklab, var(--color-ring) 50%, transparent);
+  }
+
+  /* Componente ANTIGO dentro de tela migrada ou de um Dialog (que vai para
+     um portal fora da tela): Paginacao, PainelExplicacao, link de texto…
+     O globals.css tira dele o contorno de foco e a cor de link, e o
+     preflight zera o sublinhado. Sem isto, ele ficaria sem foco
+     visível e o link pareceria texto. Em camada base, perde para qualquer
+     utilitário: os primitivos (outline-none + anel) não são afetados. */
+  :where([data-preflight] *, [data-slot] *):focus-visible {
+    outline: 2px solid var(--color-ring);
+    outline-offset: 2px;
+  }
+  /* `a` fora do :where para empatar com o `a:where(…)` do preflight e ganhar dele. */
+  a:not([class]):where([data-preflight] *, [data-slot] *) {
+    color: var(--color-primary);
+    text-decoration: underline;
+    text-underline-offset: 2px;
   }
 }
 

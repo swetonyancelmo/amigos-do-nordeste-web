@@ -3,21 +3,25 @@
 import Link from 'next/link';
 import { usePathname, useRouter, useSearchParams } from 'next/navigation';
 import { Suspense, useCallback, useEffect, useRef, useState } from 'react';
+import { XIcon } from 'lucide-react';
 import { Aviso } from '@/componentes/Aviso';
-import { Botao } from '@/componentes/Botao';
 import { useCabecalho } from '@/componentes/ContextoCabecalho';
-import { Dado } from '@/componentes/Dados';
-import { Carregando, FalhaAoCarregar, mensagemDeFalha } from '@/componentes/EstadoCarga';
-import { Modal } from '@/componentes/Modal';
-import { Paginacao } from '@/componentes/Paginacao';
-import { PainelExplicacao } from '@/componentes/vulnerabilidade/PainelExplicacao';
-import { SeloEstrato } from '@/componentes/vulnerabilidade/SeloEstrato';
+import { Carregando, mensagemDeFalha } from '@/componentes/EstadoCarga';
+import { Paginacao } from '@/componentes/ui/paginacao';
+import { Badge } from '@/componentes/ui/badge';
+import { Button } from '@/componentes/ui/button';
+import { Dialog, DialogClose, DialogContent, DialogHeader, DialogTitle } from '@/componentes/ui/dialog';
+import { FalhaAoCarregar } from '@/componentes/ui/falha-ao-carregar';
+import { BarraFiltros, FiltroAlternar, FiltroBusca, FiltroRemovivel, FiltroSelecao } from '@/componentes/ui/filtro';
+import { SeloEstrato } from '@/componentes/ui/selo-estrato';
+import { Table, TableBody, TableCaption, TableCell, TableHead, TableHeader, TableRow } from '@/componentes/ui/table';
+import { tabelaCartoes as tc } from '@/componentes/ui/tabela-cartoes';
 import { api } from '@/lib/api';
-import { data } from '@/lib/datas';
 import { pegarRecado } from '@/lib/recado';
 import { useMetadados } from '@/lib/metadados';
-import type { Comunidade, FamiliaDetalhe, FamiliaResumo, Opcao, OrdenacaoFamilia, Pagina, Pessoa } from '@/tipos/dominio';
-import styles from './familias.module.css';
+import { cn } from '@/lib/utils';
+import type { Comunidade, FamiliaResumo, OrdenacaoFamilia, Pagina } from '@/tipos/dominio';
+import { DetalhesFamilia } from './DetalhesFamilia';
 
 // Fora do componente: JSX estável, o cabeçalho não re-renderiza à toa.
 const ACOES = (
@@ -26,244 +30,7 @@ const ACOES = (
   </Link>
 );
 
-/* ------------------------------------------------------------- utilitários */
-
 const formatarNumero = (n: number) => n.toLocaleString('pt-BR');
-
-function rotuloDe(lista: Opcao[] | undefined, valor: string | null | undefined) {
-  if (!valor) return '';
-  return lista?.find((o) => o.valor === valor)?.rotulo ?? valor;
-}
-
-/** A idade vem calculada da API; aqui só se diz de onde ela saiu. */
-function exibirIdade(pessoa: Pessoa) {
-  if (pessoa.idade === null) return '';
-  if (pessoa.dataNascimento) return `${pessoa.idade} anos (nasceu em ${data(pessoa.dataNascimento)})`;
-  return `uns ${pessoa.idade} anos (estimada)`;
-}
-
-const simNao = (v: boolean | null) => (v === null ? 'Não informado' : v ? 'Sim' : 'Não');
-
-const mensagemDeErro = (e: unknown, padrao: string) => (e instanceof Error ? e.message : padrao);
-
-function IconeBusca() {
-  return (
-    <svg
-      className={styles.buscaIcone}
-      width="16"
-      height="16"
-      viewBox="0 0 24 24"
-      fill="none"
-      stroke="currentColor"
-      strokeWidth="1.8"
-      strokeLinecap="round"
-      strokeLinejoin="round"
-      aria-hidden="true"
-      focusable="false"
-    >
-      <circle cx="10.5" cy="10.5" r="6.5" />
-      <path d="m16 16 5 5" />
-    </svg>
-  );
-}
-
-/* ------------------------------------------------------------------ ficha */
-
-/**
- * Tudo o que está cadastrado da família: carrega a ficha ao abrir o modal.
- * Daqui também se inativa e reativa (família não se apaga, issue #43 da API);
- * `onSituacaoMudou` recebe o recado para a lista.
- */
-function DetalhesFamilia({ id, onSituacaoMudou }: { id: string; onSituacaoMudou: (recado: string) => void }) {
-  const { metadados } = useMetadados();
-  const [ficha, setFicha] = useState<FamiliaDetalhe | null>(null);
-  const [erro, setErro] = useState('');
-  const [mudandoSituacao, setMudandoSituacao] = useState(false);
-  const [erroSituacao, setErroSituacao] = useState('');
-  const [tentativa, setTentativa] = useState(0);
-
-  useEffect(() => {
-    let ativo = true;
-    setErro('');
-    api
-      .get<FamiliaDetalhe>(`/familias/${id}`)
-      .then((dado) => ativo && setFicha(dado))
-      .catch((e) => ativo && setErro(mensagemDeFalha(e, 'Não foi possível carregar a família. Tente de novo.')));
-    return () => {
-      ativo = false;
-    };
-  }, [id, tentativa]);
-
-  if (erro) return <FalhaAoCarregar mensagem={erro} onTentarDeNovo={() => setTentativa((n) => n + 1)} />;
-  if (!ficha) return <Carregando mensagem="Carregando a ficha da família" linhas={6} />;
-
-  const { totais, pessoas, fontesRenda } = ficha;
-
-  async function alternarSituacao() {
-    if (!ficha) return;
-    const inativar = ficha.ativa;
-    const pergunta = inativar
-      ? `Inativar a família de ${ficha.responsavelNome}? Ela sai das listas e dos relatórios, mas não é apagada: dá para reativar depois, em "Incluir inativas".`
-      : `Reativar a família de ${ficha.responsavelNome}? Ela volta para as listas e os relatórios.`;
-    if (!window.confirm(pergunta)) return;
-
-    setMudandoSituacao(true);
-    setErroSituacao('');
-    try {
-      await api.post(`/familias/${ficha.id}/${inativar ? 'inativar' : 'reativar'}`);
-      onSituacaoMudou(inativar ? 'Família inativada.' : 'Família reativada.');
-    } catch (e) {
-      setErroSituacao(mensagemDeErro(e, 'Não foi possível mudar a situação da família.'));
-      setMudandoSituacao(false);
-    }
-  }
-
-  return (
-    <>
-      <div className={styles.fichaAcoes}>
-        <Botao
-          variante="secundario"
-          onClick={alternarSituacao}
-          disabled={mudandoSituacao}
-          aria-label={`${ficha.ativa ? 'Inativar' : 'Reativar'} família de ${ficha.responsavelNome}`}
-        >
-          {ficha.ativa ? 'Inativar' : 'Reativar'}
-        </Botao>
-        <Link
-          href={`/familias/${ficha.id}/editar`}
-          className="botao botao--secundario"
-          aria-label={`Editar família de ${ficha.responsavelNome}`}
-        >
-          Editar
-        </Link>
-      </div>
-      {erroSituacao && <Aviso tom="erro">{erroSituacao}</Aviso>}
-
-      {ficha.vulnerabilidade && <PainelExplicacao avaliacao={ficha.vulnerabilidade} familiaId={ficha.id} />}
-
-      <section className={styles.secao}>
-        <h3 className={styles.secaoTitulo}>Família</h3>
-        <dl className="dados">
-          <Dado rotulo="Responsável">{ficha.responsavelNome}</Dado>
-          <Dado rotulo="CPF">{ficha.responsavelCpf}</Dado>
-          <Dado rotulo="Telefone">{ficha.telefone}</Dado>
-          <Dado rotulo="Situação">{ficha.ativa ? 'Ativa' : 'Inativa'}</Dado>
-          <Dado rotulo="Comunidade">{ficha.comunidade.nome}</Dado>
-          <Dado rotulo="Município">{ficha.comunidade.municipioNome}</Dado>
-          <Dado rotulo="Ponto de referência" larga>
-            {ficha.pontoReferencia}
-          </Dado>
-          {ficha.observacoes && (
-            <Dado rotulo="Observações" larga>
-              {ficha.observacoes}
-            </Dado>
-          )}
-        </dl>
-      </section>
-
-      <section className={styles.secao}>
-        <h3 className={styles.secaoTitulo}>Moradia</h3>
-        <dl className="dados">
-          <Dado rotulo="Abastecimento de água">
-            {ficha.abastecimentoAgua.map((v) => rotuloDe(metadados?.abastecimentoAgua, v)).join(', ')}
-          </Dado>
-          <Dado rotulo="Tratamento da água">{rotuloDe(metadados?.tratamentoAgua, ficha.tratamentoAgua)}</Dado>
-          <Dado rotulo="Tem banheiro">{simNao(ficha.temBanheiro)}</Dado>
-          <Dado rotulo="Escoamento sanitário">
-            {rotuloDe(metadados?.escoamentoSanitario, ficha.escoamentoSanitario)}
-          </Dado>
-        </dl>
-      </section>
-
-      <section className={styles.secao}>
-        <h3 className={styles.secaoTitulo}>Totais</h3>
-        <div className={styles.totais}>
-          {[
-            ['Pessoas', totais.totalPessoas],
-            ['Até 12 anos', totais.totalAte12Anos],
-            ['13 a 59 anos', totais.totalDe13A59Anos],
-            ['60 anos ou mais', totais.total60AnosOuMais],
-            ['Sem idade', totais.totalSemIdadeConhecida],
-          ].map(([rotulo, valor]) => (
-            <div key={rotulo} className={styles.totalCaixa}>
-              <span className={styles.totalNumero}>{valor}</span>
-              <span className={styles.totalRotulo}>{rotulo}</span>
-            </div>
-          ))}
-        </div>
-      </section>
-
-      <section className={styles.secao}>
-        <h3 className={styles.secaoTitulo}>Pessoas ({pessoas.length})</h3>
-        {pessoas.length === 0 ? (
-          <p className={styles.vazio}>Nenhuma pessoa cadastrada.</p>
-        ) : (
-          <div className={styles.lista}>
-            {pessoas.map((pessoa) => (
-              <article key={pessoa.id} className={styles.cartao}>
-                <div className={styles.cartaoTopo}>
-                  <span className={styles.cartaoNome}>{pessoa.nome ?? 'Sem nome'}</span>
-                  <div className={styles.badges}>
-                    {pessoa.cadastroIncompleto && <span className={`${styles.tag} ${styles.tagIncompleto}`}>Incompleto</span>}
-                    {pessoa.estuda && <span className={`${styles.tag} ${styles.tagEstuda}`}>Estuda</span>}
-                    {pessoa.gestante && <span className={`${styles.tag} ${styles.tagGestante}`}>Gestante</span>}
-                  </div>
-                </div>
-                <dl className="dados">
-                  <Dado rotulo="Parentesco">{rotuloDe(metadados?.parentesco, pessoa.parentesco)}</Dado>
-                  <Dado rotulo="Sexo">{rotuloDe(metadados?.sexo, pessoa.sexo)}</Dado>
-                  <Dado rotulo="Idade">{exibirIdade(pessoa)}</Dado>
-                  <Dado rotulo="Série">
-                    {pessoa.estuda === false ? 'Não estuda' : rotuloDe(metadados?.serie, pessoa.serie)}
-                  </Dado>
-                  <Dado rotulo="Tamanho da roupa">{rotuloDe(metadados?.tamanhoRoupa, pessoa.tamanhoRoupa)}</Dado>
-                  <Dado rotulo="Número do calçado">{pessoa.numeroCalcado}</Dado>
-                  {pessoa.observacoes && (
-                    <Dado rotulo="Observações" larga>
-                      {pessoa.observacoes}
-                    </Dado>
-                  )}
-                </dl>
-              </article>
-            ))}
-          </div>
-        )}
-      </section>
-
-      <section className={styles.secao}>
-        <h3 className={styles.secaoTitulo}>Renda</h3>
-        <dl className="dados">
-          <Dado rotulo="Quanto entra por mês, somando tudo" larga>
-            {rotuloDe(metadados?.faixaRenda, ficha.faixaRenda)}
-          </Dado>
-        </dl>
-        {fontesRenda.length === 0 ? (
-          <p className={styles.vazio}>Nenhuma fonte de renda cadastrada.</p>
-        ) : (
-          <div className={styles.lista}>
-            {fontesRenda.map((renda) => (
-              <article key={renda.id} className={styles.cartao}>
-                <dl className="dados">
-                  <Dado rotulo="De onde vem">{rotuloDe(metadados?.tipoFonteRenda, renda.tipo)}</Dado>
-                  <Dado rotulo="Quem recebe">
-                    {renda.pessoaId === null
-                      ? 'A família'
-                      : (pessoas.find((p) => p.id === renda.pessoaId)?.nome ?? 'Sem nome')}
-                  </Dado>
-                  {renda.observacao && (
-                    <Dado rotulo="Observação" larga>
-                      {renda.observacao}
-                    </Dado>
-                  )}
-                </dl>
-              </article>
-            ))}
-          </div>
-        )}
-      </section>
-    </>
-  );
-}
 
 /* ----------------------------------------------------------------- página */
 
@@ -312,6 +79,10 @@ function ConteudoFamilias() {
   // sobe quando a lista precisa vir de novo sem mudar filtro (ex.: inativou)
   const [recarga, setRecarga] = useState(0);
   const ultimaRequisicao = useRef(0);
+  // Nome da família que abriu a ficha: o foco volta para ele ao fechar. O
+  // Dialog é controlado (não há DialogTrigger), então o Radix não sabe quem
+  // abriu; e no toque do iPhone o botão nem chega a ganhar foco.
+  const origemDaFicha = useRef<HTMLElement | null>(null);
 
   // Recado de quem mandou para cá (ex.: "Família atualizada"). Lido depois de
   // montar, para a região role="status" já existir e o leitor de tela anunciar.
@@ -368,6 +139,10 @@ function ConteudoFamilias() {
   }
 
   const fecharModal = useCallback(() => setSelecionada(null), []);
+  const abrirFicha = (familia: FamiliaResumo, nome: HTMLElement | null) => {
+    origemDaFicha.current = nome;
+    setSelecionada(familia);
+  };
   const aoMudarSituacao = useCallback((texto: string) => {
     setSelecionada(null);
     setRecado(texto);
@@ -390,159 +165,144 @@ function ConteudoFamilias() {
   const total = resposta?.total ?? 0;
 
   return (
-    <div className={`${styles.pagina} pagina-pessoas`}>
-      <section className={styles.conteudo}>
+    // data-preflight: o reset do Tailwind vale nesta tela (sem ele os
+    // primitivos saem sutilmente errados). Ver tailwind.css. `pagina-pessoas`
+    // é o gancho do casco antigo (componentes.css) para a altura no celular.
+    <div data-preflight className="pagina-pessoas w-full max-w-full min-w-0 overflow-x-clip">
+      <section className="grid min-w-0 grid-cols-[minmax(0,1fr)] gap-4">
         <div role="status">{recado && <Aviso>{recado}</Aviso>}</div>
 
-        <p className={styles.resumo}>
+        <p className="text-sm text-muted-foreground">
           {resposta ? `${formatarNumero(total)} ${total === 1 ? 'família' : 'famílias'}` : 'Carregando famílias…'}
         </p>
 
-        <div className={styles.busca}>
-          <IconeBusca />
-          <input
-            className={styles.buscaEntrada}
-            type="search"
-            value={digitado}
-            onChange={(e) => setDigitado(e.target.value)}
-            placeholder="Buscar pelo nome da responsável…"
-            aria-label="Buscar pelo nome da responsável"
-          />
-        </div>
+        <FiltroBusca
+          rotulo="Buscar pelo nome da responsável"
+          value={digitado}
+          onChange={(e) => setDigitado(e.target.value)}
+          placeholder="Buscar pelo nome da responsável…"
+        />
 
-        <div className={styles.chips} role="group" aria-label="Filtros">
-          {/* Select, não chip: são dezenas de comunidades. */}
-          <select
-            className={`${styles.filtroComunidade} ${comunidadeId ? styles.filtroComunidadeAtivo : ''}`}
-            value={comunidadeId}
-            onChange={(e) => escolherComunidade(e.target.value)}
-            aria-label="Comunidade"
-          >
-            <option value="">Todas as comunidades</option>
-            {comunidades.map((c) => (
-              <option key={c.id} value={c.id}>
-                {c.nome} · {c.municipioNome}
-              </option>
-            ))}
-          </select>
+        <BarraFiltros>
+          <FiltroSelecao
+            rotulo="Comunidade"
+            className="w-72"
+            valor={comunidadeId}
+            onValor={escolherComunidade}
+            opcaoVazia="Todas as comunidades"
+            opcoes={comunidades.map((c) => ({ valor: c.id, rotulo: `${c.nome} · ${c.municipioNome}` }))}
+          />
           {/* Rótulos dos estratos vêm da API (configuráveis), nunca daqui. */}
-          <select
-            className={`${styles.filtroComunidade} ${estrato ? styles.filtroComunidadeAtivo : ''}`}
-            value={estrato}
-            onChange={(e) => trocarNaUrl('estrato', e.target.value)}
-            aria-label="Prioridade sugerida"
-          >
-            <option value="">Toda prioridade sugerida</option>
-            {metadados?.estratoVulnerabilidade?.map((o) => (
-              <option key={o.valor} value={o.valor}>
-                {o.rotulo}
-              </option>
-            ))}
-          </select>
-          <select
-            className={`${styles.filtroComunidade} ${ordenacao === 'PRIORIDADE' ? styles.filtroComunidadeAtivo : ''}`}
-            value={ordenacao}
-            onChange={(e) => trocarNaUrl('ordenacao', e.target.value === 'PRIORIDADE' ? 'PRIORIDADE' : '')}
-            aria-label="Ordenar"
-          >
-            <option value="NOME">Ordem: nome da responsável</option>
-            <option value="PRIORIDADE">Ordem: prioridade sugerida</option>
-          </select>
+          <FiltroSelecao
+            rotulo="Prioridade sugerida"
+            className="w-60"
+            valor={estrato}
+            onValor={(v) => trocarNaUrl('estrato', v)}
+            opcaoVazia="Toda prioridade sugerida"
+            opcoes={metadados?.estratoVulnerabilidade ?? []}
+          />
+          <FiltroSelecao
+            rotulo="Ordenar"
+            className="w-72"
+            valor={ordenacao}
+            onValor={(v) => trocarNaUrl('ordenacao', v === 'PRIORIDADE' ? 'PRIORIDADE' : '')}
+            ativo={ordenacao === 'PRIORIDADE'}
+            opcoes={[
+              { valor: 'NOME', rotulo: 'Ordem: nome da responsável' },
+              { valor: 'PRIORIDADE', rotulo: 'Ordem: prioridade sugerida' },
+            ]}
+          />
           {municipioId && (
-            <button
-              type="button"
-              className={`${styles.chip} ${styles.chipAtivo}`}
-              onClick={() => trocarNaUrl('municipioId', '')}
-              aria-label={`Tirar o filtro de município${nomeMunicipioFiltrado ? ` ${nomeMunicipioFiltrado}` : ''}`}
+            <FiltroRemovivel
+              rotuloRemover={`Tirar o filtro de município${nomeMunicipioFiltrado ? ` ${nomeMunicipioFiltrado}` : ''}`}
+              onRemover={() => trocarNaUrl('municipioId', '')}
             >
-              Município: {nomeMunicipioFiltrado ?? 'filtrado'} ✕
-            </button>
+              Município: {nomeMunicipioFiltrado ?? 'filtrado'}
+            </FiltroRemovivel>
           )}
-          <button
-            type="button"
-            className={`${styles.chip} ${semBanheiro ? styles.chipAtivo : ''}`}
-            aria-pressed={semBanheiro}
-            onClick={alternarSemBanheiro}
-          >
+          <FiltroAlternar ativo={semBanheiro} onAlternar={alternarSemBanheiro}>
             Sem banheiro
-          </button>
-          <button
-            type="button"
-            className={`${styles.chip} ${incluirInativas ? styles.chipAtivo : ''}`}
-            aria-pressed={incluirInativas}
-            onClick={alternarInativas}
-          >
+          </FiltroAlternar>
+          <FiltroAlternar ativo={incluirInativas} onAlternar={alternarInativas}>
             Incluir inativas
-          </button>
-        </div>
+          </FiltroAlternar>
+        </BarraFiltros>
 
         {erro && <FalhaAoCarregar mensagem={erro} onTentarDeNovo={() => setRecarga((n) => n + 1)} />}
 
         {!resposta && carregando && <Carregando mensagem="Carregando famílias" linhas={6} />}
 
         {resposta && (
-        <div className={styles.cartaoTabela}>
-          <div className={`${styles.tabelaRolagem} ${carregando && resposta ? styles.carregando : ''}`} aria-busy={carregando}>
-            <table className={styles.tabela}>
-              <caption className="so-leitor-de-tela">
-                Famílias cadastradas. Ative o nome da responsável para abrir a ficha.
-              </caption>
-              <thead>
-                <tr>
-                  <th>Responsável</th>
-                  <th>Prioridade sugerida</th>
-                  <th>Comunidade</th>
-                  <th>Município</th>
-                  <th className={styles.numero}>Pessoas</th>
-                  <th className={styles.numero}>Até 12</th>
-                  <th className={styles.numero}>13 a 59</th>
-                  <th className={styles.numero}>60+</th>
-                  <th>Situação</th>
-                </tr>
-              </thead>
-              <tbody>
-                {itens.map((familia) => (
-                  <tr key={familia.id} className={styles.linha} onClick={() => setSelecionada(familia)}>
-                    <td className={styles.celulaNome}>
-                      <button
-                        type="button"
-                        className={styles.nomeBotao}
-                        onClick={(e) => {
-                          e.stopPropagation();
-                          setSelecionada(familia);
-                        }}
-                      >
-                        {familia.responsavelNome}
-                      </button>
-                    </td>
-                    <td className={styles.celulaPrioridade} data-rotulo="Prioridade sugerida">
-                      {familia.vulnerabilidade
-                        ? <SeloEstrato estrato={familia.vulnerabilidade.estrato} rotulo={familia.vulnerabilidade.rotulo} />
-                        : '—'}
-                    </td>
-                    <td data-rotulo="Comunidade">{familia.comunidadeNome}</td>
-                    <td data-rotulo="Município">{familia.municipioNome}</td>
-                    <td className={styles.numero} data-rotulo="Pessoas">{familia.totalPessoas}</td>
-                    <td className={styles.numero} data-rotulo="Até 12">{familia.totalAte12Anos}</td>
-                    <td className={styles.numero} data-rotulo="13 a 59">{familia.totalDe13A59Anos}</td>
-                    <td className={styles.numero} data-rotulo="60+">{familia.total60AnosOuMais}</td>
-                    <td className={styles.celulaSituacao} data-rotulo="Situação">
-                      <div className={styles.badges}>
-                        {!familia.ativa && <span className={`${styles.tag} ${styles.tagInativa}`}>Inativa</span>}
-                        {familia.semBanheiro && <span className={`${styles.tag} ${styles.tagSemBanheiro}`}>Sem banheiro</span>}
-                        {familia.ativa && !familia.semBanheiro && '—'}
-                      </div>
-                    </td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
+          <div className={tc.moldura}>
+            <div
+              className={cn('transition-opacity', carregando && 'opacity-55')}
+              aria-busy={carregando}
+            >
+              <Table className={tc.tabela}>
+                <TableCaption className="sr-only">
+                  Famílias cadastradas. Ative o nome da responsável para abrir a ficha.
+                </TableCaption>
+                <TableHeader className={tc.cabecalho}>
+                  <TableRow className="hover:bg-transparent">
+                    <TableHead className={tc.cabeca}>Responsável</TableHead>
+                    <TableHead className={tc.cabeca}>Prioridade sugerida</TableHead>
+                    <TableHead className={tc.cabeca}>Comunidade</TableHead>
+                    <TableHead className={tc.cabeca}>Município</TableHead>
+                    <TableHead className={cn(tc.cabeca, tc.numero)}>Pessoas</TableHead>
+                    <TableHead className={cn(tc.cabeca, tc.numero)}>Até 12</TableHead>
+                    <TableHead className={cn(tc.cabeca, tc.numero)}>13 a 59</TableHead>
+                    <TableHead className={cn(tc.cabeca, tc.numero)}>60+</TableHead>
+                    <TableHead className={tc.cabeca}>Situação</TableHead>
+                  </TableRow>
+                </TableHeader>
+                <TableBody>
+                  {itens.map((familia) => (
+                    <TableRow
+                      key={familia.id}
+                      className={tc.linha}
+                      onClick={(e) => abrirFicha(familia, e.currentTarget.querySelector('button'))}
+                    >
+                      <TableCell className={cn(tc.celula, tc.inteira)}>
+                        <Button
+                          type="button"
+                          variant="link"
+                          className="-mx-1 h-auto min-h-[24px] px-1 py-0.5 font-heading text-base font-extrabold text-foreground hover:text-primary celular:min-h-11"
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            abrirFicha(familia, e.currentTarget);
+                          }}
+                        >
+                          {familia.responsavelNome}
+                        </Button>
+                      </TableCell>
+                      <TableCell className={cn(tc.celula, tc.inteira, 'min-w-48')} data-rotulo="Prioridade sugerida">
+                        {familia.vulnerabilidade
+                          ? <SeloEstrato estrato={familia.vulnerabilidade.estrato} rotulo={familia.vulnerabilidade.rotulo} />
+                          : '—'}
+                      </TableCell>
+                      <TableCell className={cn(tc.celula, tc.meia)} data-rotulo="Comunidade">{familia.comunidadeNome}</TableCell>
+                      <TableCell className={cn(tc.celula, tc.meia)} data-rotulo="Município">{familia.municipioNome}</TableCell>
+                      <TableCell className={cn(tc.celula, tc.numero)} data-rotulo="Pessoas">{familia.totalPessoas}</TableCell>
+                      <TableCell className={cn(tc.celula, tc.numero)} data-rotulo="Até 12">{familia.totalAte12Anos}</TableCell>
+                      <TableCell className={cn(tc.celula, tc.numero)} data-rotulo="13 a 59">{familia.totalDe13A59Anos}</TableCell>
+                      <TableCell className={cn(tc.celula, tc.numero)} data-rotulo="60+">{familia.total60AnosOuMais}</TableCell>
+                      <TableCell className={cn(tc.celula, tc.inteira)} data-rotulo="Situação">
+                        <div className="flex flex-wrap gap-2">
+                          {!familia.ativa && <Badge variant="destructive">Inativa</Badge>}
+                          {familia.semBanheiro && <Badge className="bg-accent text-accent-foreground">Sem banheiro</Badge>}
+                          {familia.ativa && !familia.semBanheiro && '—'}
+                        </div>
+                      </TableCell>
+                    </TableRow>
+                  ))}
+                </TableBody>
+              </Table>
+            </div>
 
-          {itens.length === 0 && (
-            <p className={styles.estado}>Nenhuma família encontrada com esses filtros.</p>
-          )}
-        </div>
+            {itens.length === 0 && (
+              <p className="px-4 py-6 text-center text-muted-foreground">Nenhuma família encontrada com esses filtros.</p>
+            )}
+          </div>
         )}
 
         {resposta && total > 0 && (
@@ -557,15 +317,32 @@ function ConteudoFamilias() {
         )}
       </section>
 
-      <Modal
-        aberto={selecionada !== null}
-        titulo={selecionada ? `Família de ${selecionada.responsavelNome}` : 'Família'}
-        onFechar={fecharModal}
-      >
-        {selecionada && (
-          <DetalhesFamilia key={selecionada.id} id={selecionada.id} onSituacaoMudou={aoMudarSituacao} />
-        )}
-      </Modal>
+      <Dialog open={selecionada !== null} onOpenChange={(aberto) => !aberto && fecharModal()}>
+        <DialogContent
+          showCloseButton={false}
+          onCloseAutoFocus={(e) => {
+            if (!origemDaFicha.current?.isConnected) return;
+            e.preventDefault();
+            origemDaFicha.current.focus();
+          }}
+          aria-describedby={undefined}
+          className="max-h-[90dvh] gap-5 overflow-y-auto p-6 sm:max-w-[760px] celular:p-4"
+        >
+          <DialogHeader className="flex-row items-center justify-between gap-3">
+            <DialogTitle className="text-[1.4rem] leading-tight font-extrabold">
+              {selecionada ? `Família de ${selecionada.responsavelNome}` : 'Família'}
+            </DialogTitle>
+            <DialogClose asChild>
+              <Button type="button" variant="outline" size="icon" aria-label="Fechar modal" className="shrink-0">
+                <XIcon aria-hidden="true" />
+              </Button>
+            </DialogClose>
+          </DialogHeader>
+          {selecionada && (
+            <DetalhesFamilia key={selecionada.id} id={selecionada.id} onSituacaoMudou={aoMudarSituacao} />
+          )}
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }

@@ -1,5 +1,11 @@
-import { expect, test } from '@playwright/test';
+import { expect, test, type Page } from '@playwright/test';
 import { usarApiFalsa } from './api-falsa';
+
+/** Filtro da lista de famílias (Select do Radix, não <select>): abre e escolhe pelo texto. */
+async function escolherNoFiltro(page: Page, filtro: string, opcao: string) {
+  await page.getByRole('combobox', { name: filtro }).click();
+  await page.getByRole('option', { name: opcao }).click();
+}
 
 /*
  * Prioridade sugerida (ADR-0010 da API) nas quatro frentes: lista, ficha,
@@ -24,19 +30,19 @@ test.describe('lista de famílias', () => {
     await page.goto('/familias');
 
     const pedido = page.waitForRequest((r) => r.url().includes('/api/familias?') && r.url().includes('estrato=DADOS_INSUFICIENTES'));
-    await page.getByRole('combobox', { name: 'Prioridade sugerida' }).selectOption({ label: 'Rótulo Falso Completar' });
+    await escolherNoFiltro(page, 'Prioridade sugerida', 'Rótulo Falso Completar');
     await pedido;
     await expect(page).toHaveURL(/estrato=DADOS_INSUFICIENTES/);
     await expect(page.getByRole('row', { name: /Responsável Fictícia A/ })).toHaveCount(0);
 
     const pedidoOrdem = page.waitForRequest((r) => r.url().includes('ordenacao=PRIORIDADE'));
-    await page.getByRole('combobox', { name: 'Ordenar' }).selectOption('PRIORIDADE');
+    await escolherNoFiltro(page, 'Ordenar', 'Ordem: prioridade sugerida');
     await pedidoOrdem;
     await expect(page).toHaveURL(/ordenacao=PRIORIDADE/);
 
     await page.reload();
-    await expect(page.getByRole('combobox', { name: 'Prioridade sugerida' })).toHaveValue('DADOS_INSUFICIENTES');
-    await expect(page.getByRole('combobox', { name: 'Ordenar' })).toHaveValue('PRIORIDADE');
+    await expect(page.getByRole('combobox', { name: 'Prioridade sugerida' })).toHaveText('Rótulo Falso Completar');
+    await expect(page.getByRole('combobox', { name: 'Ordenar' })).toHaveText('Ordem: prioridade sugerida');
   });
 
   test('código de estrato que o front não conhece mostra o rótulo da API, sem quebrar', async ({ page }) => {
@@ -118,7 +124,7 @@ test('Início: a contagem de cadastros a completar leva à lista já filtrada', 
   await expect(secao.getByText('Rótulo Falso R3')).toBeVisible();
   await secao.getByRole('link', { name: /1 a completar/ }).click();
   await expect(page).toHaveURL(/\/familias\?estrato=DADOS_INSUFICIENTES/);
-  await expect(page.getByRole('combobox', { name: 'Prioridade sugerida' })).toHaveValue('DADOS_INSUFICIENTES');
+  await expect(page.getByRole('combobox', { name: 'Prioridade sugerida' })).toHaveText('Rótulo Falso Completar');
 });
 
 test.describe('priorização', () => {

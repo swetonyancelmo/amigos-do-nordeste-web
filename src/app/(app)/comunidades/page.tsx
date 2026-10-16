@@ -4,6 +4,7 @@ import Link from 'next/link';
 import { useEffect, useMemo, useState } from 'react';
 import { Aviso } from '@/componentes/Aviso';
 import { useCabecalho } from '@/componentes/ContextoCabecalho';
+import { IconeBusca } from '@/componentes/Icones';
 import { Loading } from '@/componentes/Loading';
 import { Modal } from '@/componentes/Modal';
 import { Paginacao, paginarNoCliente } from '@/componentes/Paginacao';
@@ -26,27 +27,6 @@ const normalizar = (valor: string | null | undefined) =>
 
 const formatarCoordenada = (valor: number | null) =>
   valor === null ? '—' : valor.toLocaleString('pt-BR', { maximumFractionDigits: 6 });
-
-function IconeBusca() {
-  return (
-    <svg
-      className={styles.buscaIcone}
-      width="16"
-      height="16"
-      viewBox="0 0 24 24"
-      fill="none"
-      stroke="currentColor"
-      strokeWidth="1.8"
-      strokeLinecap="round"
-      strokeLinejoin="round"
-      aria-hidden="true"
-      focusable="false"
-    >
-      <circle cx="10.5" cy="10.5" r="6.5" />
-      <path d="m16 16 5 5" />
-    </svg>
-  );
-}
 
 function Dado({ rotulo, children }: { rotulo: string; children: React.ReactNode }) {
   return (
@@ -98,7 +78,7 @@ export default function Comunidades() {
         </p>
 
         <div className={styles.busca}>
-          <IconeBusca />
+          <IconeBusca tamanho={16} className={styles.buscaIcone} />
           <input
             className={styles.buscaEntrada}
             type="search"
