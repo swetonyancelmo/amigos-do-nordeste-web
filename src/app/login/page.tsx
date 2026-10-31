@@ -6,10 +6,9 @@ import { api, guardarToken, guardarUsuario } from '@/lib/api';
 import type { UsuarioResumo } from '@/tipos/dominio';
 import { Marca } from '@/componentes/Marca';
 import { Sol } from '@/componentes/Sol';
-import { Campo } from '@/componentes/Campo';
-import { Botao } from '@/componentes/Botao';
 import { Aviso } from '@/componentes/Aviso';
-import estilos from './login.module.css';
+import { Button } from '@/componentes/ui/button';
+import { Campo } from '@/componentes/ui/campo';
 
 /**
  * Tela de entrada. Não existe "criar conta" aqui de propósito: o sistema tem
@@ -46,20 +45,28 @@ export default function Login() {
   }
 
   return (
-    <main className={estilos.tela}>
-      <section className={estilos.identidade}>
-        <Sol className={estilos.sol} />
-        <div className={estilos.conteudoIdentidade}>
+    // data-preflight: o reset do Tailwind vale nesta tela. Ver tailwind.css.
+    // A tela é dividida: à esquerda o lugar, à direita o trabalho. No celular
+    // a identidade vira faixa de topo, para o formulário caber na primeira dobra.
+    <main data-preflight className="grid min-h-dvh grid-cols-1 grid-rows-[auto_1fr] min-[900px]:grid-cols-[1.05fr_1fr] min-[900px]:grid-rows-1">
+      <section className="relative flex flex-col justify-center overflow-hidden bg-accent px-6 py-8 min-[900px]:px-12 min-[900px]:py-16">
+        {/* Marca d'água, cortada pela borda de propósito. */}
+        <Sol className="pointer-events-none absolute -right-[7%] -bottom-[32%] aspect-square w-[180px] opacity-[0.22] min-[900px]:-bottom-[16%] min-[900px]:w-[min(300px,46%)]" />
+        <div className="relative flex flex-col items-center gap-4 max-[899px]:[&_.marca>p]:text-[0.9375rem]! max-[899px]:[&_img]:w-[124px] min-[900px]:gap-8">
           <Marca largura={208} placa linha="Cadastro das famílias atendidas pela associação" />
-          <p className={estilos.lugar}>Sertão do Moxotó · Pernambuco</p>
+          <p className="text-center text-sm font-bold tracking-[0.14em] text-primary uppercase">
+            Sertão do Moxotó · Pernambuco
+          </p>
         </div>
       </section>
 
-      <section className={estilos.acesso}>
-        <form className={estilos.formulario} onSubmit={entrar}>
-          <h1 className={estilos.titulo}>Entrar</h1>
+      <section className="flex flex-col bg-card px-6 pt-8 pb-12 min-[900px]:justify-center min-[900px]:border-l min-[900px]:px-12 min-[900px]:py-16">
+        <form className="mx-auto flex w-full max-w-[380px] flex-col gap-6" onSubmit={entrar}>
+          <h1 className="font-heading text-[1.375rem] font-extrabold tracking-[-0.01em] text-foreground before:mb-4 before:block before:h-1 before:w-14 before:rounded-full before:bg-primary before:content-['']">
+            Entrar
+          </h1>
 
-          <div className={estilos.campos}>
+          <div className="flex flex-col gap-4">
             <Campo
               rotulo="E-mail"
               type="email"
@@ -88,9 +95,9 @@ export default function Login() {
             </Aviso>
           )}
 
-          <Botao type="submit" largo disabled={enviando}>
+          <Button type="submit" size="lg" className="w-full" disabled={enviando}>
             {enviando ? 'Entrando…' : 'Entrar'}
-          </Botao>
+          </Button>
         </form>
       </section>
     </main>
