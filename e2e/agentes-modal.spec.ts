@@ -47,3 +47,18 @@ test('agentes: Copiar e Gerar novo código dizem de qual agente são', async ({ 
   await expect(page.getByRole('button', { name: 'Gerar novo código para Agente Teste' })).toHaveText('Gerar novo código');
   await expect(page.getByRole('button', { name: 'Gerar novo código para Agente Fictícia Dois' })).toBeVisible();
 });
+
+test('agentes: gerar código de celular ativo pergunta antes e devolve o foco', async ({ page }) => {
+  const gerar = page.getByRole('button', { name: 'Gerar novo código para Agente Teste' });
+  await gerar.click();
+  const dialogo = page.getByRole('dialog', { name: 'Gerar novo código?' });
+  await expect(dialogo).toContainText('Agente Teste');
+  await page.keyboard.press('Escape');
+  await expect(dialogo).toBeHidden();
+  await expect(gerar).toBeFocused();
+});
+
+test('agentes: gerar código de quem ainda não ativou não pergunta', async ({ page }) => {
+  await page.getByRole('button', { name: 'Gerar novo código para Agente Fictícia Dois' }).click();
+  await expect(page.getByRole('dialog')).toHaveCount(0);
+});

@@ -28,6 +28,10 @@ import {
  * `onConfirmar` pode ser assíncrona: enquanto roda, o botão fica ocupado; ao
  * terminar (com sucesso ou erro) o diálogo fecha e o foco volta ao gatilho.
  * O erro é de quem chamou mostrar, na tela de origem.
+ *
+ * `dispensar`: o mesmo gatilho executa direto, sem perguntar. Serve para a
+ * ação que só às vezes tem consequência: o botão continua o mesmo elemento,
+ * e o foco não se perde quando a condição muda.
  */
 type Props = {
   gatilho: React.ReactElement;
@@ -35,10 +39,11 @@ type Props = {
   descricao: React.ReactNode;
   rotuloConfirmar: string;
   destrutivo?: boolean;
+  dispensar?: boolean;
   onConfirmar: () => Promise<void> | void;
 };
 
-export function ConfirmarAcao({ gatilho, titulo, descricao, rotuloConfirmar, destrutivo = false, onConfirmar }: Props) {
+export function ConfirmarAcao({ gatilho, titulo, descricao, rotuloConfirmar, destrutivo = false, dispensar = false, onConfirmar }: Props) {
   const [aberto, setAberto] = useState(false);
   const [ocupado, setOcupado] = useState(false);
 
@@ -52,8 +57,14 @@ export function ConfirmarAcao({ gatilho, titulo, descricao, rotuloConfirmar, des
     }
   }
 
+  function mudar(v: boolean) {
+    if (ocupado) return;
+    if (v && dispensar) void onConfirmar();
+    else setAberto(v);
+  }
+
   return (
-    <Dialog open={aberto} onOpenChange={(v) => !ocupado && setAberto(v)}>
+    <Dialog open={aberto} onOpenChange={mudar}>
       <DialogTrigger asChild>{gatilho}</DialogTrigger>
       <DialogContent showCloseButton={false} className="gap-5 p-6 sm:max-w-md">
         <DialogHeader>
