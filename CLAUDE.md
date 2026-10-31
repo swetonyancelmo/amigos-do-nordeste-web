@@ -74,7 +74,7 @@ as ações ficam numa constante fora do componente para o JSX ser estável.
 
 ## Interface nova (Tailwind + shadcn/ui), tela por tela
 
-Já migradas: **Famílias** (lista e ficha). As outras seguem o CSS antigo até
+Já migradas: **Famílias** (lista e ficha) e **Perfil**. As outras seguem o CSS antigo até
 migrarem, uma por PR. Ao migrar uma tela, repita o que Famílias fez:
 
 - `data-preflight` na raiz da tela (o reset do Tailwind só vale ali; ver `tailwind.css`).
@@ -85,6 +85,7 @@ migrarem, uma por PR. Ao migrar uma tela, repita o que Famílias fez:
   `FiltroRemovivel`). Rótulo sempre visível; filtro ativo com borda grossa, negrito e ícone.
 - Tabela: `Table` + as classes de `ui/tabela-cartoes.ts` (vira cartão até 640px, com o
   rótulo de cada célula em `data-rotulo`).
+- Campo de texto: `ui/campo.tsx` (mesmas props do `Campo` antigo: `rotulo`, `ajuda`, `erro`).
 - Paginação: `ui/paginacao.tsx` (mesmas props e textos do `Paginacao` antigo; troque só o import).
 - Ação destrutiva: `ui/confirmar-acao.tsx` com `destrutivo` (variante tonal), nunca
   `window.confirm`.

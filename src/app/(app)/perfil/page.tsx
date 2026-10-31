@@ -3,12 +3,12 @@
 import { useState, type ChangeEvent, type FormEvent } from 'react';
 import { useCabecalho } from '@/componentes/ContextoCabecalho';
 import { Aviso } from '@/componentes/Aviso';
-import { Botao } from '@/componentes/Botao';
-import { Campo } from '@/componentes/Campo';
 import { IconeChave, IconeConfirmar, IconePerfil } from '@/componentes/Icones';
+import { Button } from '@/componentes/ui/button';
+import { Campo } from '@/componentes/ui/campo';
+import { Card } from '@/componentes/ui/card';
 import { api, usuarioDaSessao } from '@/lib/api';
 import { useRecado } from '@/lib/useRecado';
-import styles from './perfil.module.css';
 
 /**
  * Perfil da usuária — quem usa o sistema é uma pessoa só (regra 5), então
@@ -34,6 +34,10 @@ type Senhas = {
 type ErrosDaSenha = Partial<Record<keyof Senhas, string>>;
 
 const SENHAS_VAZIAS: Senhas = { atual: '', nova: '', confirmacao: '' };
+
+const BLOCO = 'gap-6 p-8 text-[1rem] celular:p-6';
+const TITULO = 'font-heading text-[1.375rem] font-bold text-foreground';
+const APOIO = 'text-sm text-muted-foreground';
 
 export default function Perfil() {
   useCabecalho('Perfil');
@@ -120,54 +124,55 @@ export default function Perfil() {
   }
 
   return (
-    <div className={styles.tela}>
-      <section className={`cartao ${styles.bloco}`}>
-        <div className={styles.quem}>
-          <div className={styles.avatar}>
+    // data-preflight: o reset do Tailwind vale nesta tela. Ver tailwind.css.
+    <div data-preflight className="flex flex-col gap-6">
+      <Card className={BLOCO}>
+        <div className="flex min-w-0 items-center gap-4 celular:flex-col celular:items-start">
+          <div className="flex size-24 flex-none items-center justify-center rounded-full border border-border bg-accent text-muted-foreground">
             <IconePerfil tamanho={46} />
           </div>
 
           <div>
-            <h2>{usuario?.nome || 'Usuária do painel'}</h2>
-            {usuario?.email && <p>{usuario.email}</p>}
+            <h2 className={`${TITULO} mb-1 wrap-anywhere`}>{usuario?.nome || 'Usuária do painel'}</h2>
+            {usuario?.email && <p className={`${APOIO} wrap-anywhere`}>{usuario.email}</p>}
           </div>
         </div>
 
-        <p className="texto-apoio">
+        <p className={APOIO}>
           Nome e e-mail são definidos na instalação do sistema e ainda não podem
           ser alterados por aqui.
         </p>
-      </section>
+      </Card>
 
-      <section className={`cartao ${styles.bloco}`}>
+      <Card className={BLOCO}>
         <div>
-          <h2 className={styles.tituloSecao}>Senha</h2>
-          <p className="texto-apoio">
+          <h2 className={`${TITULO} mb-2`}>Senha</h2>
+          <p className={APOIO}>
             A senha não aparece na tela. Para trocá-la, confirme a atual e
             escolha uma nova.
           </p>
         </div>
 
         {!redefinindoSenha && (
-          <div className={styles.senha}>
-            <span className={styles.pontos} aria-hidden="true">
+          <div className="flex flex-wrap items-center justify-between gap-4 rounded-lg border border-dashed border-border bg-background p-4">
+            <span className="text-[1.375rem] tracking-[0.18em] text-muted-foreground" aria-hidden="true">
               ••••••••••
             </span>
             <span className="so-leitor-de-tela">Senha cadastrada</span>
 
-            <Botao
-              variante="secundario"
+            <Button
+              variant="outline"
               type="button"
               onClick={() => setRedefinindoSenha(true)}
             >
               <IconeChave />
               Redefinir senha
-            </Botao>
+            </Button>
           </div>
         )}
 
         {redefinindoSenha && (
-          <form className={styles.formSenha} onSubmit={salvarSenha} noValidate>
+          <form className="flex flex-col gap-6" onSubmit={salvarSenha} noValidate>
             {/* Senha sem campo de usuário deixa o gerenciador de senhas do
                 navegador perdido — e ele avisa isso no console. É o e-mail
                 do login; fora da tela e sem receber foco. */}
@@ -184,8 +189,8 @@ export default function Perfil() {
               />
             )}
 
-            <div className={styles.grade}>
-              <div className={styles.campoLargo}>
+            <div className="grid grid-cols-2 gap-x-6 gap-y-4 celular:grid-cols-1">
+              <div className="col-span-full">
                 <Campo
                   rotulo="Senha atual"
                   name="atual"
@@ -229,15 +234,15 @@ export default function Perfil() {
               </Aviso>
             )}
 
-            <div className={styles.acoes}>
-              <Botao type="submit" disabled={enviando}>
+            <div className="flex flex-wrap items-center gap-3">
+              <Button type="submit" disabled={enviando}>
                 <IconeConfirmar />
                 {enviando ? 'Salvando…' : 'Salvar nova senha'}
-              </Botao>
+              </Button>
 
-              <Botao variante="secundario" type="button" onClick={fecharSenha} disabled={enviando}>
+              <Button variant="outline" type="button" onClick={fecharSenha} disabled={enviando}>
                 Cancelar
-              </Botao>
+              </Button>
             </div>
           </form>
         )}
@@ -249,7 +254,7 @@ export default function Perfil() {
             <Aviso titulo="Tudo certo">{recadoDaSenha.recado}</Aviso>
           )}
         </div>
-      </section>
+      </Card>
     </div>
   );
 }
