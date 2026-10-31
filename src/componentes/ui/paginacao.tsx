@@ -121,3 +121,8 @@ export function Paginacao({ pagina, porPagina, total, onPagina, onPorPagina, rot
     </Pagination>
   );
 }
+
+/** Fatia de uma lista que a API devolve inteira (chamados, agentes). */
+export function paginarNoCliente<T>(lista: T[], pagina: number, porPagina: number): T[] {
+  return lista.slice(pagina * porPagina, (pagina + 1) * porPagina);
+}
