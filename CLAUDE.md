@@ -74,7 +74,7 @@ as ações ficam numa constante fora do componente para o JSX ser estável.
 
 ## Interface nova (Tailwind + shadcn/ui), tela por tela
 
-Já migradas: **Famílias** (lista e ficha), **Perfil** e **Agentes**. As outras seguem o CSS antigo até
+Já migradas: **Famílias** (lista e ficha), **Perfil**, **Agentes** e **Login**. As outras seguem o CSS antigo até
 migrarem, uma por PR. Ao migrar uma tela, repita o que Famílias fez:
 
 - `data-preflight` na raiz da tela (o reset do Tailwind só vale ali; ver `tailwind.css`).
